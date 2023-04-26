@@ -21,10 +21,10 @@ repositories {
 }
 
 dependencies {
-//	implementation 'mysql:mysql-connector-java:8.0.22'
+	implementation 'mysql:mysql-connector-java:8.0.22'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'mysql:mysql-connector-java'
+//	implementation 'mysql:mysql-connector-java'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -38,13 +38,9 @@ ext {
 	snippetsDir = file('build/generated-snippets')
 }
 
-bootJar {
-	dependsOn asciidoctor
-	copy {
-		from "${asciidoctor.outputDir}"
-		into 'src/main/resources/static/docs'
-
-	}
+test {
+	useJUnitPlatform()
+	outputs.dir snippetsDir
 }
 
 asciidoctor {
@@ -57,17 +53,16 @@ asciidoctor.doFirst {
 	delete file('src/main/resources/static/docs')
 }
 
-task copyDocument(type: Copy) {
-	dependsOn asciidoctor
-	from file("build/docs/asciidoc")
-	into file("src/main/resources/static/docs")
-}
+asciidoctor.doLast {
+	copy {
+		from file("build/docs/asciidoc")
+		into file("src/main/resources/static/docs")
+	}
 
-test {
-	useJUnitPlatform()
-	outputs.dir snippetsDir
-}
-
-build {
-	dependsOn copyDocument
+	bootJar {
+		copy {
+			from "${asciidoctor.outputDir}"
+			into 'src/main/resources/static/docs'
+		}
+	}
 }

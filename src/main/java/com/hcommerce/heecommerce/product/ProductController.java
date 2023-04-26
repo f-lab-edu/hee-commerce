@@ -37,8 +37,8 @@ public class ProductController {
 
         ProductDTO productDTO = new ProductDTO();
         productDTO.setProducts(products);
-        productDTO.setPage(0);
-        productDTO.setSize(20);
+//        productDTO.setPage(0);
+//        productDTO.setSize(20);
 
         return new ResponseEntity<>(productDTO, HttpStatus.OK);
     }

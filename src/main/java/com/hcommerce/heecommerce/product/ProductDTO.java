@@ -10,6 +10,6 @@ import java.util.List;
 @Setter
 public class ProductDTO {
     private List<Product> products;
-    private int page;
-    private int size;
+//    private int page;
+//    private int size;
 }

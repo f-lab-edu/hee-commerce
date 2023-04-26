@@ -16,16 +16,16 @@ endif::[]
 
 ==== Request
 ===== Example
-include::{snippets}/get-products/http-request.adoc[]
+include::{snippets}/get-products-by-center-id/http-request.adoc[]
 
 ===== Structure
-include::{snippets}/get-products/path-parameters.adoc[]
+include::{snippets}/get-products-by-center-id/path-parameters.adoc[]
 
 ==== Response
 ===== Example
-include::{snippets}/get-products/http-response.adoc[]
+include::{snippets}/get-products-by-center-id/http-response.adoc[]
 
 ===== Structure
-include::{snippets}/get-products/response-fields.adoc[]
+include::{snippets}/get-products-by-center-id/response-fields.adoc[]
 
 === 상품 등록

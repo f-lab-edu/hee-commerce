@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@AutoConfigureRestDocs(outputDir = "build/generated-snippets")
+@AutoConfigureRestDocs
 class ProductControllerTest {
 
     @Autowired
@@ -46,12 +46,12 @@ class ProductControllerTest {
                             parameterWithName("center_id").description("센터 ID")
                     ),
                     responseFields(
-                            fieldWithPath("products[].id").description("상품 ID"),
+                            fieldWithPath("products[].id").description("상품 ID17"),
                             fieldWithPath("products[].name").description("상품 이름"),
-                            fieldWithPath("products[].quantity").description("상품 재고 수량"),
-                            fieldWithPath("totalElement").description("페이지 번호"),
-                            fieldWithPath("pageNumber").description("페이지 번호"),
-                            fieldWithPath("pageSize").description("페이지당 개수")
+                            fieldWithPath("products[].quantity").description("상품 재고 수량")
+//                            fieldWithPath("totalElement").description("페이지 번호"),
+//                            fieldWithPath("pageNumber").description("페이지 번호"),
+//                            fieldWithPath("pageSize").description("페이지당 개수")
                             )
             );
         }
