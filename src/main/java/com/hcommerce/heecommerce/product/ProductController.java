@@ -22,9 +22,9 @@ public class ProductController {
 
     @GetMapping("{center_id}")
     public ResponseEntity<ProductDTO> getProductsByCenterId(
-            @PathVariable("center_id") Long center_id,
-            @RequestParam final Integer page,
-            @RequestParam final Integer size
+            @PathVariable("center_id") Long center_id
+//            @RequestParam final Integer page,
+//            @RequestParam final Integer size
             ) {
         List<Product> products = new ArrayList<>();
 //        List<Product> products = productService.findProducts(center_id);

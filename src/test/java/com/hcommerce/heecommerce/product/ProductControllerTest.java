@@ -49,8 +49,9 @@ class ProductControllerTest {
                             fieldWithPath("products[].id").description("상품 ID"),
                             fieldWithPath("products[].name").description("상품 이름"),
                             fieldWithPath("products[].quantity").description("상품 재고 수량"),
-                            fieldWithPath("page").description("페이지 번호"),
-                            fieldWithPath("size").description("페이지당 개수")
+                            fieldWithPath("totalElement").description("페이지 번호"),
+                            fieldWithPath("pageNumber").description("페이지 번호"),
+                            fieldWithPath("pageSize").description("페이지당 개수")
                             )
             );
         }
