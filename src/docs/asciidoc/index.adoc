@@ -29,3 +29,19 @@ include::{snippets}/get-products-by-center-id/http-response.adoc[]
 
 ===== Structure
 include::{snippets}/get-products-by-center-id/response-fields.adoc[]
+
+== 주문
+=== 주문 접수 완료
+==== Request
+===== Example
+include::{snippets}/order-receipt-complete/http-request.adoc[]
+
+===== Structure
+include::{snippets}/order-receipt-complete/path-parameters.adoc[]
+
+==== Response
+===== Example
+include::{snippets}/order-receipt-complete/http-response.adoc[]
+
+===== Structure
+include::{snippets}/order-receipt-complete/response-fields.adoc[]
