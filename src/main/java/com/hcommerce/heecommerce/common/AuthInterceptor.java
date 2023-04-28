@@ -12,7 +12,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         HttpSession session = request.getSession();
 
-        // TODO : 추후 삭제 필요!
+        // TODO : 추후 삭제 필요! 이거 주석처리 후 테스트해야 제대로 테스트 됨
         session.setAttribute("isAdmin", isRandomAdmin());
 
         // TODO : 임시로 isAdmin에 랜덤값 넣어줌 -> 관리 태희님과 상의하여 user에 담을지 아니면 isAdmin으로 할지 결정할 예정.
