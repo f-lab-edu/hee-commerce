@@ -7,6 +7,8 @@ create table user
     main_address   varchar(500)                        not null,
     detail_address varchar(500)                        null,
     created_at     timestamp default CURRENT_TIMESTAMP null,
-    deleted_at     timestamp                           null
+    deleted_at     timestamp                           null,
+    constraint key_name
+        unique (phone_number)
 );
 

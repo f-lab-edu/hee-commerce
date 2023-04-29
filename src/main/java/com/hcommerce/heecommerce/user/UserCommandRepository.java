@@ -10,8 +10,9 @@ public class UserCommandRepository {
 
     private final UserCommandMapper userCommandMapper;
 
-    public void save(UserSignUpRequestDto user) {
-        userCommandMapper.save(user);
+    public Long save(UserSignUpRequestDto userSignUpRequestDto) {
+        userCommandMapper.save(userSignUpRequestDto);
+        return userSignUpRequestDto.getId();
     }
 
 }
