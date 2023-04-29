@@ -8,6 +8,6 @@ import java.sql.SQLIntegrityConstraintViolationException;
 @Mapper
 public interface UserCommandMapper {
 
-    Long save(UserSignUpRequestDto user) throws SQLIntegrityConstraintViolationException;
+    Long save(UserSignUpRequestDto user);
 
 }

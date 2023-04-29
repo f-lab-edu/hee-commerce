@@ -12,7 +12,7 @@ public class UserCommandRepository {
 
     private final UserCommandMapper userCommandMapper;
 
-    public Long save(UserSignUpRequestDto userSignUpRequestDto) throws SQLIntegrityConstraintViolationException {
+    public Long save(UserSignUpRequestDto userSignUpRequestDto) {
         userCommandMapper.save(userSignUpRequestDto);
         return userSignUpRequestDto.getId();
     }

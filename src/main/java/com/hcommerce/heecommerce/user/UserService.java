@@ -13,7 +13,7 @@ public class UserService {
 
     private final UserCommandRepository userRepository;
 
-    public UserSignUpResponseDto signUp(UserSignUpRequestDto userSignUpRequestDto) throws SQLIntegrityConstraintViolationException {
+    public UserSignUpResponseDto signUp(UserSignUpRequestDto userSignUpRequestDto) {
         Long savedId = userRepository.save(userSignUpRequestDto);
         return new UserSignUpResponseDto(savedId);
     }

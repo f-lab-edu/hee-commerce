@@ -44,7 +44,7 @@ class UserServiceTest {
     }
 
     @Test
-    void phoneNumberHaveToBeUnique() throws SQLIntegrityConstraintViolationException {
+    void phoneNumberHaveToBeUnique() {
         // given
         String phoneNumber = "01000000000";
         String password = "password";
@@ -56,7 +56,6 @@ class UserServiceTest {
 
         // when
         UserSignUpResponseDto userSignUpResponseDto = userService.signUp(userSignUpRequestDto);
-
 
         // then
         assertThrows(SQLIntegrityConstraintViolationException.class, () -> {
