@@ -1,6 +1,7 @@
 package com.hcommerce.heecommerce.user;
 
-import com.hcommerce.heecommerce.user.dto.UserSignUpDto;
+import com.hcommerce.heecommerce.user.dto.request.UserSignUpRequestDto;
+import com.hcommerce.heecommerce.user.dto.response.UserSignUpResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,8 +13,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/sign-up")
-    void signUp(@RequestBody UserSignUpDto userSignUpDto) {
-         userService.signUp(userSignUpDto);
+    UserSignUpResponseDto signUp(@RequestBody UserSignUpRequestDto userSignUpRequestDto) {
+        return userService.signUp(userSignUpRequestDto);
     }
-
 }

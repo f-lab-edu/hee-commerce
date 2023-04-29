@@ -1,11 +1,11 @@
-package com.hcommerce.heecommerce.user.dto;
+package com.hcommerce.heecommerce.user.dto.request;
 
 import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.NonNull;
 
 @Getter
-public class UserSignUpDto {
+public class UserSignUpRequestDto {
 
     private Long id;
 
@@ -21,7 +21,7 @@ public class UserSignUpDto {
     @Nullable
     private String detailAddress;
 
-    public UserSignUpDto(@NonNull String phoneNumber, @NonNull String password, @NonNull String mainAddress) {
+    public UserSignUpRequestDto(@NonNull String phoneNumber, @NonNull String password, @NonNull String mainAddress) {
         this.phoneNumber = phoneNumber;
         this.password = password;
         this.mainAddress = mainAddress;

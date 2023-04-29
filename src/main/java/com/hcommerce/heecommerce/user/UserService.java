@@ -1,6 +1,7 @@
 package com.hcommerce.heecommerce.user;
 
-import com.hcommerce.heecommerce.user.dto.UserSignUpDto;
+import com.hcommerce.heecommerce.user.dto.request.UserSignUpRequestDto;
+import com.hcommerce.heecommerce.user.dto.response.UserSignUpResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +11,8 @@ public class UserService {
 
     private final UserCommandRepository userRepository;
 
-    public void signUp(UserSignUpDto userSignUpDto) {
-        userRepository.save(userSignUpDto);
+    public UserSignUpResponseDto signUp(UserSignUpRequestDto userSignUpRequestDto) {
+        userRepository.save(userSignUpRequestDto);
+        return new UserSignUpResponseDto(userSignUpRequestDto.getId());
     }
 }
