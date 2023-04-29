@@ -1,6 +1,6 @@
 package com.hcommerce.heecommerce.user;
 
-import com.hcommerce.heecommerce.user.dto.SaveUserDto;
+import com.hcommerce.heecommerce.user.dto.UserSignUpDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -8,10 +8,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository userRepository;
+    private final UserCommandRepository userRepository;
 
-
-    public void save(SaveUserDto userDto) {
-        userRepository.save(userDto.of(userDto));
+    public void signUp(UserSignUpDto userSignUpDto) {
+        userRepository.save(userSignUpDto);
     }
 }
