@@ -13,10 +13,15 @@ public class AuthInterceptor implements HandlerInterceptor {
         HttpSession session = request.getSession();
 
         // TODO : 추후 삭제 필요! 이거 주석처리 후 테스트해야 제대로 테스트 됨
-        session.setAttribute("isAdmin", isRandomAdmin());
-
         // TODO : 임시로 isAdmin에 랜덤값 넣어줌 -> 관리 태희님과 상의하여 user에 담을지 아니면 isAdmin으로 할지 결정할 예정.
-        if (session == null || session.getAttribute("isAdmin") == null || !(boolean) session.getAttribute("isAdmin")) {
+//        session.setAttribute("isAdmin", true);
+
+        if (session == null || session.getAttribute("isAdmin") == null) {
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            return false;
+        }
+
+        if(!(boolean) session.getAttribute("isAdmin")) {
             response.setStatus(HttpStatus.FORBIDDEN.value());
             return false;
         }
