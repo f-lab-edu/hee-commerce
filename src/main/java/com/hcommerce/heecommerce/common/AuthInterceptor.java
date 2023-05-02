@@ -2,7 +2,6 @@ package com.hcommerce.heecommerce.common;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -10,18 +9,18 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        HttpSession session = request.getSession();
+
 
         // TODO : 추후 삭제 필요! 이거 주석처리 후 테스트해야 제대로 테스트 됨
-        // TODO : 임시로 isAdmin에 랜덤값 넣어줌 -> 관리 태희님과 상의하여 user에 담을지 아니면 isAdmin으로 할지 결정할 예정.
-//        session.setAttribute("isAdmin", true);
+//        HttpSession session = request.getSession();
+//        session.setAttribute("isAdmin", isRandomAdmin();
 
-        if (session == null || session.getAttribute("isAdmin") == null) {
+        if (!AuthHelper.isLogin(request)) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             return false;
         }
 
-        if(!(boolean) session.getAttribute("isAdmin")) {
+        if(!AuthHelper.isAdmin(request)) {
             response.setStatus(HttpStatus.FORBIDDEN.value());
             return false;
         }
