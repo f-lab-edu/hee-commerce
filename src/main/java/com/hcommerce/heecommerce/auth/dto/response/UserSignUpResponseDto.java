@@ -1,8 +1,6 @@
-package com.hcommerce.heecommerce.user.dto.response;
+package com.hcommerce.heecommerce.auth.dto.response;
 
-import jakarta.annotation.Nullable;
 import lombok.Getter;
-import lombok.NonNull;
 
 @Getter
 public class UserSignUpResponseDto {

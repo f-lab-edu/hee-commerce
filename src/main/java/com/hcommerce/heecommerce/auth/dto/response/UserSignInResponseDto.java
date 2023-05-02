@@ -1,4 +1,4 @@
-package com.hcommerce.heecommerce.user.dto.response;
+package com.hcommerce.heecommerce.auth.dto.response;
 
 import lombok.Getter;
 

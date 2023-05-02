@@ -1,10 +1,8 @@
 package com.hcommerce.heecommerce.user;
 
-import com.hcommerce.heecommerce.user.dto.request.UserSignUpRequestDto;
+import com.hcommerce.heecommerce.auth.dto.request.UserSignUpRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-
-import java.sql.SQLIntegrityConstraintViolationException;
 
 @Repository
 @RequiredArgsConstructor

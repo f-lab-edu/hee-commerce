@@ -1,8 +1,7 @@
 package com.hcommerce.heecommerce.user;
 
-import com.hcommerce.heecommerce.user.dto.request.UserSignInRequestDto;
-import com.hcommerce.heecommerce.user.dto.request.UserSignUpRequestDto;
-import com.hcommerce.heecommerce.user.dto.response.UserSignInResponseDto;
+import com.hcommerce.heecommerce.auth.dto.request.UserSignInRequestDto;
+import com.hcommerce.heecommerce.auth.dto.response.UserSignInResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

@@ -1,4 +1,4 @@
-package com.hcommerce.heecommerce.user.dto.request;
+package com.hcommerce.heecommerce.auth.dto.request;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -11,6 +11,9 @@ public class UserSignInRequestDto {
 
     @NonNull
     private String password;
+
+    public UserSignInRequestDto() {
+    }
 
     public UserSignInRequestDto(@NonNull String loginId, @NonNull String password) {
         this.loginId = loginId;
