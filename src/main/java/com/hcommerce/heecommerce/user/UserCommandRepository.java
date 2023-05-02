@@ -13,7 +13,11 @@ public class UserCommandRepository {
     private final UserCommandMapper userCommandMapper;
 
     public Long save(UserSignUpRequestDto userSignUpRequestDto) {
-        userCommandMapper.save(userSignUpRequestDto);
+        try {
+            userCommandMapper.save(userSignUpRequestDto);
+        }catch (Exception error) {
+            throw error;
+        }
         return userSignUpRequestDto.getId();
     }
 

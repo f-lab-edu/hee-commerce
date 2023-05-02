@@ -4,7 +4,8 @@
 <mapper namespace="com.hcommerce.heecommerce.user.UserCommandMapper">
 
     <insert id="save" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO user (phone_number, password, main_address, detail_address)
-        values (#{phoneNumber}, #{password}, #{mainAddress}, #{detailAddress})
+        INSERT INTO user (login_id, phone_number, password, main_address, detail_address)
+        values (#{loginId}, #{phoneNumber}, #{password}, #{mainAddress}, #{detailAddress})
     </insert>
+
 </mapper>
