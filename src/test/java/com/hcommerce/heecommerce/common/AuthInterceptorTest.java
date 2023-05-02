@@ -30,17 +30,15 @@ class AuthInterceptorTest {
     }
 
     @Nested
-    @DisplayName("로그인한 사용자가 관리자인 경우")
+    @DisplayName("when login user is admin")
     class Context_LoginUser_is_Admin {
-        @BeforeEach
-        void setUp() {
+        @Test
+        @DisplayName("returns 200 OK")
+        void it_returns_HTTP_200_OK() throws Exception {
+            // given
             session.setAttribute("isAdmin", true);
             request.setSession(session);
-        }
 
-        @Test
-        @DisplayName("200 를 return 한다.")
-        void it_returns_200() throws Exception {
             // when
             boolean result = authInterceptor.preHandle(request, response, null);
 
@@ -51,18 +49,15 @@ class AuthInterceptorTest {
     }
 
     @Nested
-    @DisplayName("로그인한 사용자가 관리자가 아닌 경우")
+    @DisplayName("when login user is not admin")
     class Context_LoginUser_is_Not_Admin {
-        @BeforeEach
-        void setUp() {
+        @Test
+        @DisplayName("returns 403 error")
+        void it_returns_403_Error() throws Exception {
             // given
             session.setAttribute("isAdmin", false);
             request.setSession(session);
-        }
 
-        @Test
-        @DisplayName("403 을 return 한다.")
-        void it_returns_403() throws Exception {
             // when
             boolean result = authInterceptor.preHandle(request, response, null);
 
@@ -73,16 +68,14 @@ class AuthInterceptorTest {
     }
 
     @Nested
-    @DisplayName("로그인 하지 않은 사용자인 경우")
-    class Context_LoginUser_is_Not {
-        @BeforeEach
-        void setUp() {
-            request.setSession(null);
-        }
-
+    @DisplayName("when user is not login")
+    class Context_User_is_Not_Login {
         @Test
-        @DisplayName("401 를 return 한다.")
-        void it_returns_401() throws Exception {
+        @DisplayName("returns 401 error")
+        void it_returns_401_Error() throws Exception {
+            // given
+            request.setSession(null);
+
             // when
             boolean result = authInterceptor.preHandle(request, response, null);
 
