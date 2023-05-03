@@ -20,7 +20,7 @@ public class OrderControllerRestDocs {
                         parameterWithName("order_uuid").description("주문 ID")
                 ),
                 responseFields(
-                        fieldWithPath("order_uuid").type(JsonFieldType.STRING).description("주문 ID")
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("메시지")
                 )
         );
     }
