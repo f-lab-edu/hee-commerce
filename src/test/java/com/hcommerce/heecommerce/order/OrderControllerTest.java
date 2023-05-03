@@ -67,7 +67,8 @@ class OrderControllerTest {
                     );
 
                     // then
-                    resultActions.andExpect(status().isNotFound());
+                    resultActions.andExpect(status().isOk())
+                            .andExpect(content().string(containsString("해당 주문을 찾을 수 없습니다.")));
                 }
             }
 

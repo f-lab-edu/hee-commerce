@@ -1,12 +1,7 @@
 package com.hcommerce.heecommerce.order;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 
 import java.util.UUID;
 
@@ -20,7 +15,11 @@ public class OrderService {
         this.orderRepository = orderRepository;
     }
 
-    public void completeOrderReceipt(UUID order_uuid) {
-        orderRepository.updateToCompleteOrderReceipt(order_uuid);
+    public void completeOrderReceipt(UUID orderUuid) {
+        UUID resultOrderUuid = orderRepository.updateToCompleteOrderReceipt(orderUuid);
+
+        if(resultOrderUuid == null) {
+            throw new OrderNotFoundException(orderUuid);
+        }
     }
 }
