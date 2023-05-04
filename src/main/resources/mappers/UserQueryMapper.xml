@@ -11,11 +11,12 @@
         WHERE phone_number = #{phoneNumber}
     </select>
 
-    <select id="findByLoginIdAndPassword" resultType="UserSignInResponseDto">
+    <select id="findByLoginId" resultType="UserSignInResponseDto">
         SELECT
-            login_id, phone_number
+            login_id, password
         FROM
             user
-        WHERE login_id = #{loginId} AND password = #{password}
+        WHERE login_id = #{loginId}
     </select>
+
 </mapper>

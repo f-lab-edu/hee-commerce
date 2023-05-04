@@ -7,10 +7,10 @@ public class UserSignInResponseDto {
 
     private String loginId;
 
-    private String phoneNumber;
+    private String password;
 
-    public UserSignInResponseDto(String loginId, String phoneNumber) {
+    public UserSignInResponseDto(String loginId, String password) {
         this.loginId = loginId;
-        this.phoneNumber = phoneNumber;
+        this.password = password;
     }
 }

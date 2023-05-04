@@ -26,15 +26,15 @@ public class AuthController {
     }
 
     @PostMapping("/user/sign-in")
-    UserSignInResponseDto signIn(@RequestBody UserSignInRequestDto userSignInRequestDto, HttpServletRequest httpServletRequest) {
+    String signIn(@RequestBody UserSignInRequestDto userSignInRequestDto, HttpServletRequest httpServletRequest) {
 
-        UserSignInResponseDto userSignInResponseDto = authService.signIn(userSignInRequestDto);
+        String loginId = authService.signIn(userSignInRequestDto);
 
         HttpSession session = httpServletRequest.getSession();
 
-        session.setAttribute(SessionConstant.LOGIN_USER, userSignInResponseDto);
+        session.setAttribute(SessionConstant.LOGIN_USER, loginId);
 
-        return userSignInResponseDto;
+        return loginId;
     }
 
     @PostMapping("/user/logOut")

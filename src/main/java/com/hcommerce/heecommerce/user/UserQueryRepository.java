@@ -19,9 +19,9 @@ public class UserQueryRepository {
         }
     }
 
-    public UserSignInResponseDto findByLoginIdAndPassword(UserSignInRequestDto userSignInRequestDto) {
+    public UserSignInResponseDto findByLoginId(String loginId) {
         try {
-            return userQueryMapper.findByLoginIdAndPassword(userSignInRequestDto);
+            return userQueryMapper.findByLoginId(loginId);
         } catch (Exception error) {
             throw error;
         }

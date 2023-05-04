@@ -19,4 +19,8 @@ public class UserSignInRequestDto {
         this.loginId = loginId;
         this.password = password;
     }
+
+    public void setHashedPassword(String hashedPassword) {
+        this.password = hashedPassword;
+    }
 }

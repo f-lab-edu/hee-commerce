@@ -32,4 +32,8 @@ public class UserSignUpRequestDto {
         this.password = password;
         this.mainAddress = mainAddress;
     }
+
+    public void setHashedPassword(String hashedPassword) {
+        this.password = hashedPassword;
+    }
 }

@@ -9,6 +9,6 @@ public interface UserQueryMapper {
 
     String findByPhoneNumber(String phoneNumber);
 
-    UserSignInResponseDto findByLoginIdAndPassword(UserSignInRequestDto userSignInRequestDto);
+    UserSignInResponseDto findByLoginId(String loginId);
 
 }
