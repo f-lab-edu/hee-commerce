@@ -59,26 +59,6 @@ class OrderControllerTest {
             }
 
             @Nested
-            @DisplayName("when `orderUuid` does not exist in DB")
-            class Context_Without_Exited_OrderUuid {
-                @Test
-                @DisplayName("returns 404 error")
-                void it_returns_404_Error() throws Exception {
-                    String TEMP_NOT_EXIST_UUID = "8b455042-e709-11ed-93e5-0242ac110002";
-
-                    // when
-                    ResultActions resultActions = mockMvc.perform(
-                            patch(ORDER_RECEIPT_COMPLETE_URL, TEMP_NOT_EXIST_UUID)
-                                    .session(session)
-                    );
-
-                    // then
-                    resultActions.andExpect(status().isNotFound())
-                            .andExpect(content().string(containsString("해당 주문을 찾을 수 없습니다.")));
-                }
-            }
-
-            @Nested
             @DisplayName("when `orderUuid` exists in DB")
             class Context_With_Exited_OrderUuid {
                 @Nested
@@ -122,6 +102,28 @@ class OrderControllerTest {
                     }
                 }
             }
+
+            @Nested
+            @DisplayName("when `orderUuid` does not exist in DB")
+            class Context_Without_Exited_OrderUuid {
+                @Test
+                @DisplayName("returns 404 error")
+                void it_returns_404_Error() throws Exception {
+                    String TEMP_NOT_EXIST_UUID = "8b455042-e709-11ed-93e5-0242ac110002";
+
+                    // when
+                    ResultActions resultActions = mockMvc.perform(
+                            patch(ORDER_RECEIPT_COMPLETE_URL, TEMP_NOT_EXIST_UUID)
+                                    .session(session)
+                    );
+
+                    // then
+                    resultActions.andExpect(status().isNotFound())
+                            .andExpect(content().string(containsString("해당 주문을 찾을 수 없습니다.")));
+                }
+            }
+
+
         }
 
         @Nested
