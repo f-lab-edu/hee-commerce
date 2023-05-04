@@ -1,0 +1,31 @@
+ifndef::snippets[]
+:snippets: ./build/generated-snippets
+endif::[]
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:sectlinks:
+
+= hee-commerce API
+
+== 상품
+=== 상품 목록 조회
+==== Request
+===== Example
+include::{snippets}/get-products-by-center-id/http-request.adoc[]
+
+===== Structure
+====== Path Parameters
+include::{snippets}/get-products-by-center-id/path-parameters.adoc[]
+
+====== Query Parameters
+include::{snippets}/get-products-by-center-id/query-parameters.adoc[]
+
+==== Response
+===== Example
+include::{snippets}/get-products-by-center-id/http-response.adoc[]
+
+===== Structure
+include::{snippets}/get-products-by-center-id/response-fields.adoc[]
