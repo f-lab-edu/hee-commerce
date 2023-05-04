@@ -1,6 +1,6 @@
 package com.hcommerce.heecommerce.order;
 
-import com.hcommerce.heecommerce.common.CommandSuccessResponseDto;
+import com.hcommerce.heecommerce.common.dto.CommandSuccessResponseDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;

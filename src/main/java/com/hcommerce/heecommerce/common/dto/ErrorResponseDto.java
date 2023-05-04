@@ -1,4 +1,4 @@
-package com.hcommerce.heecommerce.common;
+package com.hcommerce.heecommerce.common.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

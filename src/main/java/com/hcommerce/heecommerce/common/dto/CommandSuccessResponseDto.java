@@ -1,10 +1,10 @@
-package com.hcommerce.heecommerce.common;
+package com.hcommerce.heecommerce.common.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class CommandSuccessResponseDto {
     private final String message;
 }

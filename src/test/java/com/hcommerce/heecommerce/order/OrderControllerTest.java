@@ -2,7 +2,7 @@ package com.hcommerce.heecommerce.order;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcommerce.heecommerce.EnableMockMvc;
-import com.hcommerce.heecommerce.common.ErrorResponseDto;
+import com.hcommerce.heecommerce.common.dto.ErrorResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

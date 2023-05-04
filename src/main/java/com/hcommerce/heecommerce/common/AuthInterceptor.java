@@ -1,6 +1,7 @@
 package com.hcommerce.heecommerce.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hcommerce.heecommerce.common.dto.ErrorResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
