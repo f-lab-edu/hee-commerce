@@ -5,6 +5,6 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class SuccessMessageResponseDto {
+public class CommandSuccessResponseDto {
     private final String message;
 }
