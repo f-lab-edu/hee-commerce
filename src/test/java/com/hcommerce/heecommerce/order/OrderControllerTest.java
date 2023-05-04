@@ -39,9 +39,9 @@ class OrderControllerTest {
     }
 
     @Nested
-    @DisplayName("PATCH /admin/orders/{order_uuid}/order-receipt-complete ")
+    @DisplayName("PATCH /admin/orders/{orderUuid}/order-receipt-complete ")
     class Describe_OrderReceiptComplete_API {
-        private final String ORDER_RECEIPT_COMPLETE_URL = "/admin/orders/{order_uuid}/order-receipt-complete";
+        private final String ORDER_RECEIPT_COMPLETE_URL = "/admin/orders/{orderUuid}/order-receipt-complete";
         private final UUID ORDER_UUID = UUID.randomUUID();
 
         @Nested
@@ -53,7 +53,7 @@ class OrderControllerTest {
             }
 
             @Nested
-            @DisplayName("when `order_uuid` does not exist in DB")
+            @DisplayName("when `orderUuid` does not exist in DB")
             class Context_Without_Exited_OrderUuid {
                 @Test
                 @DisplayName("returns 404 error")
@@ -73,7 +73,7 @@ class OrderControllerTest {
             }
 
             @Nested
-            @DisplayName("when `order_uuid` exists in DB")
+            @DisplayName("when `orderUuid` exists in DB")
             class Context_With_Exited_OrderUuid {
                 @Nested
                 @DisplayName("when order quantity < stock quantity")

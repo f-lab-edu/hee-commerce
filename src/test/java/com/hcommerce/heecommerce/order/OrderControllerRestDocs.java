@@ -17,7 +17,7 @@ public class OrderControllerRestDocs {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 pathParameters(
-                        parameterWithName("order_uuid").description("주문 ID")
+                        parameterWithName("orderUuid").description("주문 ID")
                 ),
                 responseFields(
                         fieldWithPath("message").type(JsonFieldType.STRING).description("메시지")

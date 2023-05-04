@@ -19,10 +19,10 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @PatchMapping("/admin/orders/{order_uuid}/order-receipt-complete")
-    public ResponseEntity<SuccessMessageResponseDTO> completeOrderReceipt(@PathVariable("order_uuid") UUID order_uuid) {
+    @PatchMapping("/admin/orders/{orderUuid}/order-receipt-complete")
+    public ResponseEntity<SuccessMessageResponseDTO> completeOrderReceipt(@PathVariable("orderUuid") UUID orderUuid) {
 
-        orderService.completeOrderReceipt(order_uuid);
+        orderService.completeOrderReceipt(orderUuid);
 
         return ResponseEntity.ok()
                 .body(new SuccessMessageResponseDTO("주문 접수 완료가 처리되었습니다."));
