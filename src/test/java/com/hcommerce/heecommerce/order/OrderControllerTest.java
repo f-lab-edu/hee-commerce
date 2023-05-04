@@ -1,6 +1,8 @@
 package com.hcommerce.heecommerce.order;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcommerce.heecommerce.EnableMockMvc;
+import com.hcommerce.heecommerce.common.ErrorResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -9,6 +11,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -42,7 +45,10 @@ class OrderControllerTest {
     @DisplayName("PATCH /admin/orders/{orderUuid}/order-receipt-complete ")
     class Describe_OrderReceiptComplete_API {
         private final String ORDER_RECEIPT_COMPLETE_URL = "/admin/orders/{orderUuid}/order-receipt-complete";
+
         private final UUID ORDER_UUID = UUID.randomUUID();
+
+        private final ObjectMapper objectMapper = new ObjectMapper();
 
         @Nested
         @DisplayName("when login user is admin")
@@ -134,7 +140,10 @@ class OrderControllerTest {
                 );
 
                 // then
-                resultActions.andExpect(status().isForbidden());
+                ErrorResponseDto forbiddenErrorResponseDto = new ErrorResponseDto(HttpStatus.FORBIDDEN.name(), "관리자만 이용 가능합니다.");
+
+                resultActions.andExpect(status().isForbidden())
+                        .andExpect(content().json(objectMapper.writeValueAsString(forbiddenErrorResponseDto)));
             }
         }
 
@@ -150,7 +159,10 @@ class OrderControllerTest {
                 );
 
                 // then
-                resultActions.andExpect(status().isUnauthorized());
+                ErrorResponseDto unauthorizedErrorResponseDto = new ErrorResponseDto(HttpStatus.UNAUTHORIZED.name(), "로그인 후에 이용할 수 있습니다.");
+
+                resultActions.andExpect(status().isUnauthorized())
+                        .andExpect(content().json(objectMapper.writeValueAsString(unauthorizedErrorResponseDto)));
             }
         }
     }
