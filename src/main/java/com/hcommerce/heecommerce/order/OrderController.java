@@ -1,6 +1,6 @@
 package com.hcommerce.heecommerce.order;
 
-import com.hcommerce.heecommerce.common.SuccessMessageResponseDTO;
+import com.hcommerce.heecommerce.common.SuccessMessageResponseDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -20,11 +20,11 @@ public class OrderController {
     }
 
     @PatchMapping("/admin/orders/{orderUuid}/order-receipt-complete")
-    public ResponseEntity<SuccessMessageResponseDTO> completeOrderReceipt(@PathVariable("orderUuid") UUID orderUuid) {
+    public ResponseEntity<SuccessMessageResponseDto> completeOrderReceipt(@PathVariable("orderUuid") UUID orderUuid) {
 
         orderService.completeOrderReceipt(orderUuid);
 
         return ResponseEntity.ok()
-                .body(new SuccessMessageResponseDTO("주문 접수 완료가 처리되었습니다."));
+                .body(new SuccessMessageResponseDto("주문 접수 완료가 처리되었습니다."));
     }
 }
