@@ -1,6 +1,6 @@
 package com.hcommerce.heecommerce.order;
 
-import com.hcommerce.heecommerce.common.ErrorResponseDTO;
+import com.hcommerce.heecommerce.common.ErrorResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,19 +13,19 @@ public class OrderRestControllerAdvice {
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler
-    public ErrorResponseDTO orderNotFoundExceptionHandler(OrderNotFoundException e) {
-        return new ErrorResponseDTO(HttpStatus.NOT_FOUND.name(), e.getMessage());
+    public ErrorResponseDto orderNotFoundExceptionHandler(OrderNotFoundException e) {
+        return new ErrorResponseDto(HttpStatus.NOT_FOUND.name(), e.getMessage());
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler
-    public ErrorResponseDTO orderOverStockExceptionExceptionHandler(OrderOverStockException e) {
-        return new ErrorResponseDTO(HttpStatus.CONFLICT.name(), e.getMessage());
+    public ErrorResponseDto orderOverStockExceptionExceptionHandler(OrderOverStockException e) {
+        return new ErrorResponseDto(HttpStatus.CONFLICT.name(), e.getMessage());
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler
-    public ErrorResponseDTO fallbackExceptionHandler(Exception e) {
-        return new ErrorResponseDTO("INTERNAL_SERVER_ERROR", "내부 서버 오류가 발생했습니다.");
+    public ErrorResponseDto fallbackExceptionHandler(Exception e) {
+        return new ErrorResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.name(), "내부 서버 오류가 발생했습니다.");
     }
 }
