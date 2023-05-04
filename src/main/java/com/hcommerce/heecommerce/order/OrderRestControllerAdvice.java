@@ -11,11 +11,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class OrderRestControllerAdvice {
 
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler
     public ErrorResponseDTO orderNotFoundExceptionHandler(OrderNotFoundException e) {
         return new ErrorResponseDTO(HttpStatus.NOT_FOUND.name(), e.getMessage());
     }
 
+    @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler
     public ErrorResponseDTO orderOverStockExceptionExceptionHandler(OrderOverStockException e) {
         return new ErrorResponseDTO(HttpStatus.CONFLICT.name(), e.getMessage());

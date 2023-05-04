@@ -67,7 +67,7 @@ class OrderControllerTest {
                     );
 
                     // then
-                    resultActions.andExpect(status().isOk())
+                    resultActions.andExpect(status().isNotFound())
                             .andExpect(content().string(containsString("해당 주문을 찾을 수 없습니다.")));
                 }
             }
@@ -94,23 +94,25 @@ class OrderControllerTest {
                     }
                 }
 
-                // TODO : 테스트 실패! ->
+                // TODO : DB 연동 후 테스트 어떻게 수정할지 고민하기
                 @Nested
                 @DisplayName("when order quantity > stock quantity")
                 class Context_When_Order_Quantity_Is_More_than_Stock_quantity {
                     @Test
                     @DisplayName("returns 409 error")
                     void it_returns_409_Error() throws Exception {
+                        // given
+                        final String ORDER_UUID_OVER_STOCK = "27f43b31-e97f-11ed-93e5-0242ac110002";
+
                         // when
                         ResultActions resultActions = mockMvc.perform(
-                                patch(ORDER_RECEIPT_COMPLETE_URL, ORDER_UUID)
+                                patch(ORDER_RECEIPT_COMPLETE_URL, ORDER_UUID_OVER_STOCK)
                                         .session(session)
                         );
 
                         // then
                         resultActions.andExpect(status().isConflict())
-                                .andExpect(content().string(containsString("재고 수량 부족으로 주문 접수를 할 수 없습니다.")))
-                                .andDo(OrderControllerRestDocs.completeOrderReceipt());
+                                .andExpect(content().string(containsString("재고 수량 부족으로 주문 접수를 할 수 없습니다.")));
                     }
                 }
             }
