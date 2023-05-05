@@ -8,10 +8,10 @@ import java.util.UUID;
 @Service
 public class OrderService {
 
-    private OrderRepository orderRepository;
+    private OrderCommandRepository orderRepository;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderCommandRepository orderRepository) {
         this.orderRepository = orderRepository;
     }
 

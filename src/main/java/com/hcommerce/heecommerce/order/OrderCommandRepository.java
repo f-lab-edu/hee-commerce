@@ -5,7 +5,7 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public class OrderRepository {
+public class OrderCommandRepository {
 
     public UUID updateToCompleteOrderReceipt(UUID orderUuid) {
         String newOrderStatus = OrderStatus.ORDER_RECEIPT_COMPLETE.name();
