@@ -1,6 +1,7 @@
 package com.hcommerce.heecommerce.product;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hcommerce.heecommerce.common.dto.PageDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -34,14 +35,16 @@ class ProductControllerTest {
 
     private Product productFixture;
 
-    private GetProductsByCenterIdResponseDTO getProductsByCenterIdResponseDTOFixture;
+    private PageDto pageDtoFixture;
 
-    private final int CENTER_ID = 0;
+    private static final int CENTER_ID = 0;
 
-    private int DEFAULT_PAGE_NUMBER = 0;
+    private static final int PAGE_NUMBER = 0;
 
-    private int DEFAULT_PAGE_SIZE = 20;
+    private static final int PAGE_SIZE = 20;
 
+    private static final int TOTAL_COUNT = 999;
+    private static final ProductsSort SORT = ProductsSort.BASIC;
 
     @BeforeEach
     void setUp() {
@@ -52,35 +55,38 @@ class ProductControllerTest {
                 .name("상품1")
                 .mainImgUrl("/test.png")
                 .maxOrderQuantityPerOrder(10)
-                .price(3)
-                .inventoryQuantity(3000)
+                .price(3000)
+                .inventoryQuantity(3)
                 .build();
 
         List<Product> products = new ArrayList<>();
         products.add(productFixture);
 
-        getProductsByCenterIdResponseDTOFixture = GetProductsByCenterIdResponseDTO.builder()
-                .pageNumber(0)
-                .pageSize(20)
-                .totalElement(999)
-                .products(products)
+        pageDtoFixture = PageDto.<Product>builder()
+                .pageNumber(PAGE_NUMBER)
+                .pageSize(PAGE_SIZE)
+                .totalCount(TOTAL_COUNT)
+                .items(products)
                 .build();
     }
 
     @Nested
-    @DisplayName("GET /products/{centerId}?")
+    @DisplayName("GET /products/{centerId}?pageNumber={pageNumber}&pageSize={pageSize}")
     class Describe_GET_Products_By_Center_Id_API {
         @Test
         @DisplayName("returns 200 ok")
         void It_returns_200_OK() throws Exception {
             // when
             ResultActions resultActions = mockMvc.perform(
-                    get("/products/{centerId}?pageNumber={pageNumber}&pageSize={pageSize}", CENTER_ID, DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE)
+                    get("/products/{centerId}", CENTER_ID)
+                            .queryParam("pageNumber", String.valueOf(PAGE_NUMBER))
+                            .queryParam("pageSize", String.valueOf(PAGE_SIZE))
+                            .queryParam("sort", String.valueOf(SORT))
             );
 
             // then
             resultActions.andExpect(status().isOk())
-                    .andExpect(content().json(objectMapper.writeValueAsString(getProductsByCenterIdResponseDTOFixture)))
+                    .andExpect(content().json(objectMapper.writeValueAsString(pageDtoFixture)))
                     .andDo(ProductControllerRestDocs.getProductsByCenterId());
         }
     }

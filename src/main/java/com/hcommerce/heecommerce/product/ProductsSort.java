@@ -1,20 +1,29 @@
 package com.hcommerce.heecommerce.product;
 
-public enum ProductsSort {
-    BASIC,
-    PRICE_ASC,
-    PRICE_DESC;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+@Getter
+@AllArgsConstructor
+public enum ProductsSort {
+    BASIC("기본정렬순"),
+    PRICE_ASC("높은가격순"),
+    PRICE_DESC("낮은가격순");
+
+    private final String description;
     public static String getAllValuesAsString() {
         StringBuilder builder = new StringBuilder();
-        ProductsSort[] values = ProductsSort.values();
 
-        for (int i = 0; i < values.length; i++) {
-            builder.append(values[i].name());
+        for (ProductsSort sort : ProductsSort.values()) {
+            builder.append(sort.name());
+            builder.append(" : ");
+            builder.append(sort.getDescription());
+            builder.append(", ");
+        }
 
-            if (i < values.length - 1) {
-                builder.append(", ");
-            }
+        // 마지막 ", "를 제거하기 위해 길이가 2 이상인 경우에만 자르기
+        if (builder.length() >= 2) {
+            builder.setLength(builder.length() - 2);
         }
 
         return builder.toString();

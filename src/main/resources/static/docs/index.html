@@ -467,7 +467,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h5 id="_example"><a class="link" href="#_example">Example</a></h5>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /products/3?pageNumber=0&amp;pageSize=20 HTTP/1.1
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /products/0?pageNumber=0&amp;pageSize=20&amp;sort=BASIC HTTP/1.1
 Host: localhost:8080</code></pre>
 </div>
 </div>
@@ -522,6 +522,11 @@ Host: localhost:8080</code></pre>
 <td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">페이지당 개수</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sort</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">정렬 (BASIC : 기본정렬순, PRICE_ASC : 높은가격순, PRICE_DESC : 낮은가격순)</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -535,19 +540,19 @@ Host: localhost:8080</code></pre>
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 292
+Content-Length: 287
 
 {
   "pageNumber" : 0,
   "pageSize" : 20,
-  "totalElement" : 999,
-  "products" : [ {
+  "totalCount" : 999,
+  "items" : [ {
     "productUuid" : "01b8851c-d046-4635-83c1-eb0ca4342077",
     "name" : "상품1",
     "mainImgUrl" : "/test.png",
-    "price" : 3,
+    "price" : 3000,
     "maxOrderQuantityPerOrder" : 10,
-    "inventoryQuantity" : 3000
+    "inventoryQuantity" : 3
   } ]
 }</code></pre>
 </div>
@@ -580,42 +585,42 @@ Content-Length: 292
 <td class="tableblock halign-left valign-top"><p class="tableblock">페이지당 개수</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>totalElement</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>totalCount</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">총 아이템 수</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>products[]</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>items[]</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>Array</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">상품 목록</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>products[].productUuid</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>items[].productUuid</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">상품 UUID</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>products[].name</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>items[].name</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">상품 이름</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>products[].mainImgUrl</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>items[].mainImgUrl</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">상품 메인 이미지 URL</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>products[].maxOrderQuantityPerOrder</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>items[].maxOrderQuantityPerOrder</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">1회 주문당 최대 주문 가능한 수량</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>products[].price</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>items[].price</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">상품 가격</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>products[].inventoryQuantity</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>items[].inventoryQuantity</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">상품 재고 수량</p></td>
 </tr>
@@ -630,7 +635,7 @@ Content-Length: 292
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2023-05-05 01:24:18 +0900
+Last updated 2023-05-06 15:15:50 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
