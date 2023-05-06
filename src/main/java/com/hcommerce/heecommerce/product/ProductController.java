@@ -18,7 +18,8 @@ public class ProductController {
     public ResponseEntity<PageDto> getProductsByCenterId(
             @PathVariable("centerId") int centerId,
             @RequestParam("pageNumber") int pageNumber,
-            @RequestParam("pageSize") int pageSize
+            @RequestParam("pageSize") int pageSize,
+            @RequestParam("sort") ProductsSort sort
     ) {
 
         // TODO : 임시 데이터 사용하기
