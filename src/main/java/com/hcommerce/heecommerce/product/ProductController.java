@@ -1,5 +1,6 @@
 package com.hcommerce.heecommerce.product;
 
+import com.hcommerce.heecommerce.common.dto.PageDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,8 +13,9 @@ import java.util.UUID;
 
 @Controller
 public class ProductController {
+
     @GetMapping("/products/{centerId}")
-    public ResponseEntity<GetProductsByCenterIdResponseDTO> getProductsByCenterId(
+    public ResponseEntity<PageDto> getProductsByCenterId(
             @PathVariable("centerId") int centerId,
             @RequestParam("pageNumber") int pageNumber,
             @RequestParam("pageSize") int pageSize
@@ -26,16 +28,16 @@ public class ProductController {
                 .name("상품1")
                 .mainImgUrl("/test.png")
                 .maxOrderQuantityPerOrder(10)
-                .price(3)
-                .inventoryQuantity(3000)
+                .price(3000)
+                .inventoryQuantity(3)
                 .build());
 
         return ResponseEntity.ok()
-                .body(GetProductsByCenterIdResponseDTO.builder()
+                .body(PageDto.<Product>builder()
                         .pageNumber(pageNumber)
                         .pageSize(pageSize)
-                        .totalElement(999)
-                        .products(products)
+                        .totalCount(999)
+                        .items(products)
                         .build());
     }
 }
