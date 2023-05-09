@@ -3,11 +3,11 @@ package com.hcommerce.heecommerce.common.dto;
 import lombok.Getter;
 
 @Getter
-public class CommandSuccessResponseDto {
+public class MessageResponseDto {
 
     private final String message;
 
-    public CommandSuccessResponseDto(String message) {
+    public MessageResponseDto(String message) {
         this.message = message;
     }
 }
