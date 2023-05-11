@@ -4,12 +4,12 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class ErrorResponseDto {
+public class ResponseDto {
     private final String code;
     private final String message;
 
     @Builder
-    public ErrorResponseDto(String code, String message) {
+    public ResponseDto(String code, String message) {
         this.code = code;
         this.message = message;
     }
