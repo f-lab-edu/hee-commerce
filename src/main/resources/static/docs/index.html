@@ -647,7 +647,7 @@ Content-Length: 287
 <h5 id="_example_3"><a class="link" href="#_example_3">Example</a></h5>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">PATCH /admin/orders/af9202ab-da3b-4064-bbe7-feeb5778fe49/order-receipt-complete HTTP/1.1
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">PATCH /admin/orders/16772bb2-c4a7-4799-87b4-b993ddb053f5/order-receipt-complete HTTP/1.1
 Host: localhost:8080</code></pre>
 </div>
 </div>
@@ -683,9 +683,10 @@ Host: localhost:8080</code></pre>
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json;charset=UTF-8
-Content-Length: 66
+Content-Length: 83
 
 {
+  "code" : "OK",
   "message" : "주문 접수 완료가 처리되었습니다."
 }</code></pre>
 </div>
@@ -708,6 +709,11 @@ Content-Length: 66
 </thead>
 <tbody>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>code</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">코드</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>message</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">메시지</p></td>
@@ -723,7 +729,7 @@ Content-Length: 66
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2023-05-11 17:18:31 +0900
+Last updated 2023-05-15 15:00:11 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

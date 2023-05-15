@@ -1,7 +1,7 @@
 package com.hcommerce.heecommerce.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hcommerce.heecommerce.common.dto.ErrorResponseDto;
+import com.hcommerce.heecommerce.common.dto.ResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -23,8 +23,12 @@ public class AuthInterceptor implements HandlerInterceptor {
 
             response.setContentType("application/json; charset=UTF-8");
 
-            ErrorResponseDto unauthorizedErrorResponseDto = new ErrorResponseDto(HttpStatus.UNAUTHORIZED.name(), "로그인 후에 이용할 수 있습니다.");
-            response.getWriter().append(objectMapper.writeValueAsString(unauthorizedErrorResponseDto));
+            response.getWriter().append(
+                    objectMapper.writeValueAsString(ResponseDto.builder()
+                            .code(HttpStatus.UNAUTHORIZED.name())
+                            .message("로그인 후에 이용할 수 있습니다.")
+                            .build())
+            );
 
             return false;
         }
@@ -34,9 +38,12 @@ public class AuthInterceptor implements HandlerInterceptor {
 
             response.setContentType("application/json; charset=UTF-8");
 
-            ErrorResponseDto forbiddenErrorResponseDto = new ErrorResponseDto(HttpStatus.FORBIDDEN.name(), "관리자만 이용 가능합니다.");
-            response.getWriter().append(objectMapper.writeValueAsString(forbiddenErrorResponseDto));
-
+            response.getWriter().append(
+                    objectMapper.writeValueAsString(ResponseDto.builder()
+                            .code(HttpStatus.FORBIDDEN.name())
+                            .message("관리자만 이용 가능합니다.")
+                            .build())
+            );
             return false;
         }
 

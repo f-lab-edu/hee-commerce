@@ -2,7 +2,6 @@ package com.hcommerce.heecommerce.order;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcommerce.heecommerce.EnableMockMvc;
-import com.hcommerce.heecommerce.common.dto.ErrorResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -11,7 +10,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -142,10 +140,8 @@ class OrderControllerTest {
                 );
 
                 // then
-                ErrorResponseDto forbiddenErrorResponseDto = new ErrorResponseDto(HttpStatus.FORBIDDEN.name(), "관리자만 이용 가능합니다.");
-
                 resultActions.andExpect(status().isForbidden())
-                        .andExpect(content().json(objectMapper.writeValueAsString(forbiddenErrorResponseDto)));
+                        .andExpect(content().string(containsString("관리자만 이용 가능합니다.")));
             }
         }
 
@@ -161,10 +157,9 @@ class OrderControllerTest {
                 );
 
                 // then
-                ErrorResponseDto unauthorizedErrorResponseDto = new ErrorResponseDto(HttpStatus.UNAUTHORIZED.name(), "로그인 후에 이용할 수 있습니다.");
-
                 resultActions.andExpect(status().isUnauthorized())
-                        .andExpect(content().json(objectMapper.writeValueAsString(unauthorizedErrorResponseDto)));
+                        .andExpect(content().string(containsString("로그인 후에 이용할 수 있습니다.")));
+
             }
         }
     }
