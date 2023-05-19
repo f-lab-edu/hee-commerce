@@ -6,7 +6,6 @@ import lombok.Getter;
 import java.util.List;
 
 @Getter
-@Builder
 public class PageDto<T> {
 
     private final int pageNumber;
@@ -16,4 +15,12 @@ public class PageDto<T> {
     private final int totalCount;
 
     private final List<T> items;
+
+    @Builder
+    public PageDto(int pageNumber, int pageSize, int totalCount, List<T> items) {
+        this.pageNumber = pageNumber;
+        this.pageSize = pageSize;
+        this.totalCount = totalCount;
+        this.items = items;
+    }
 }
