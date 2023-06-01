@@ -1,7 +1,14 @@
 package com.hcommerce.heecommerce.order;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcommerce.heecommerce.EnableMockMvc;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -10,16 +17,10 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-
-import java.util.UUID;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @EnableMockMvc
 @SpringBootTest
@@ -30,6 +31,9 @@ class OrderControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     private MockHttpSession session;
 
     @BeforeEach
@@ -39,6 +43,7 @@ class OrderControllerTest {
         session = new MockHttpSession();
     }
 
+    // TODO : placeOrder 완성되면 삭제할 예정. 예외처리 참고용으로 남겨 둠
     @Nested
     @DisplayName("PATCH /admin/orders/{orderUuid}/order-receipt-complete ")
     class Describe_OrderReceiptComplete_API {
@@ -160,6 +165,66 @@ class OrderControllerTest {
                 resultActions.andExpect(status().isUnauthorized())
                         .andExpect(content().string(containsString("로그인 후에 이용할 수 있습니다.")));
 
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("POST /orders")
+    class Describe_PlaceOrder_API {
+        @Nested
+        @DisplayName("when order is successful")
+        class Context_When_Order_Is_Successful {
+            @Test
+            @DisplayName("returns 201")
+            void it_returns_201() throws Exception {
+                // when
+                OrderForm orderForm = OrderForm.builder()
+                    .ordererInfo(
+                        OrdererInfo.builder()
+                            .userId(1)
+                            .ordererName("kimcommerce")
+                            .ordererPhoneNumber("01012345678")
+                            .build()
+                    )
+                    .recipientInfo(
+                        RecipientInfo.builder()
+                            .recipientName("leecommerce")
+                            .recipientPhoneNumber("01087654321")
+                            .recipientAddress("서울시 ")
+                            .recipientDetailAddress("101호")
+                            .shippingRequest("빠른 배송 부탁드려요!")
+                            .build()
+                    )
+                    .paymentInfo(
+                        PaymentInfo.builder()
+                            .dealProductUuid(UUID.randomUUID())
+                            .dealProductTitle("[무료배송] 초특가 사과 1상자")
+                            .productUuid(UUID.randomUUID())
+                            .originPrice(10000)
+                            .discountAmount(2000)
+                            .orderQuantity(2)
+                            .totalDealProductAmount(20000)
+                            .totalDiscountAmount(4000)
+                            .shippingFee(0)
+                            .totalPaymentAmount(16000)
+                            .paymentType(PaymentType.CREDIT_CARD)
+                            .build()
+                    )
+                    .build();
+
+                String content = objectMapper.writeValueAsString(orderForm);
+
+                ResultActions resultActions = mockMvc.perform(
+                    post("/orders")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content)
+                );
+
+                // then
+                resultActions.andExpect(status().isCreated())
+                    .andDo(OrderControllerRestDocs.placeOrder());
             }
         }
     }
