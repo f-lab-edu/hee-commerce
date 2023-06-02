@@ -1,0 +1,38 @@
+name: Sync with Upstream
+
+on:
+  pull_request:
+    branches: [ "develop" ]
+
+
+jobs:
+  sync:
+    permissions:
+      actions: write
+      checks: write
+      contents: write
+      deployments: write
+      issues: write
+      packages: write
+      pull-requests: write
+      repository-projects: write
+      security-events: write
+      statuses: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Sync with Upstream
+        env:
+          GITHUB_TOKEN: ${{ secrets.SYNC_TOKEN }}
+        run: |
+          git config --global user.name "daadaadaah"
+          git config --global user.email "daadaadaah@gmail.com"
+          git remote add upstream https://github.com/f-lab-edu/hee-commerce.git
+          git fetch upstream
+          git checkout develop
+          git merge upstream/develop
+          git remote set-url --push origin "https://daadaadaah@github.com/daadaadaah/hee-commerce.git"
+          git remote -v
+          git push origin develop
