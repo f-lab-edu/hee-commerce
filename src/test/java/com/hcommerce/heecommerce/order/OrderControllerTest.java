@@ -180,15 +180,9 @@ class OrderControllerTest {
             void it_returns_201() throws Exception {
                 // when
                 OrderForm orderForm = OrderForm.builder()
-                    .ordererInfo(
-                        OrdererInfo.builder()
-                            .userId(1)
-                            .ordererName("kimcommerce")
-                            .ordererPhoneNumber("01012345678")
-                            .build()
-                    )
-                    .recipientInfo(
-                        RecipientInfo.builder()
+                    .userId(1)
+                    .recipientInfoForm(
+                        RecipientInfoForm.builder()
                             .recipientName("leecommerce")
                             .recipientPhoneNumber("01087654321")
                             .recipientAddress("서울시 ")
@@ -196,21 +190,9 @@ class OrderControllerTest {
                             .shippingRequest("빠른 배송 부탁드려요!")
                             .build()
                     )
-                    .paymentInfo(
-                        PaymentInfo.builder()
-                            .dealProductUuid(UUID.randomUUID())
-                            .dealProductTitle("[무료배송] 초특가 사과 1상자")
-                            .productUuid(UUID.randomUUID())
-                            .originPrice(10000)
-                            .discountAmount(2000)
-                            .orderQuantity(2)
-                            .totalDealProductAmount(20000)
-                            .totalDiscountAmount(4000)
-                            .shippingFee(0)
-                            .totalPaymentAmount(16000)
-                            .paymentType(PaymentType.CREDIT_CARD)
-                            .build()
-                    )
+                    .dealProductUuid(UUID.randomUUID())
+                    .orderQuantity(2)
+                    .paymentType(PaymentType.CREDIT_CARD)
                     .build();
 
                 String content = objectMapper.writeValueAsString(orderForm);
@@ -226,6 +208,44 @@ class OrderControllerTest {
                 resultActions.andExpect(status().isCreated())
                     .andDo(OrderControllerRestDocs.placeOrder());
             }
+        }
+
+        @Nested
+        @DisplayName("when order fails due to invalid orderForm with orderQuantity > maxOrderQuantityPerOrder")
+        class Context_When_Order_Fails {
+            @Test
+            @DisplayName("returns 400 error")
+            void it_returns_400() throws Exception {
+                // when
+                OrderForm orderForm = OrderForm.builder()
+                    .userId(1)
+                    .recipientInfoForm(
+                        RecipientInfoForm.builder()
+                            .recipientName("leecommerce")
+                            .recipientPhoneNumber("01087654321")
+                            .recipientAddress("서울시 ")
+                            .recipientDetailAddress("101호")
+                            .shippingRequest("빠른 배송 부탁드려요!")
+                            .build()
+                    )
+                    .dealProductUuid(UUID.randomUUID())
+                    .orderQuantity(12)
+                    .paymentType(PaymentType.CREDIT_CARD)
+                    .build();
+
+                String content = objectMapper.writeValueAsString(orderForm);
+
+                ResultActions resultActions = mockMvc.perform(
+                    post("/orders")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content)
+                );
+
+                // then
+                resultActions.andExpect(status().isBadRequest());
+            }
+
         }
     }
 }

@@ -35,30 +35,20 @@ public class OrderControllerRestDocs {
             preprocessResponse(prettyPrint()),
             requestFields(
                 // 주문자 정보
-                fieldWithPath("ordererInfo.userId").type(JsonFieldType.NUMBER).description("주문자 USER ID"),
-                fieldWithPath("ordererInfo.ordererName").type(JsonFieldType.STRING).description("주문자 이름"),
-                fieldWithPath("ordererInfo.ordererPhoneNumber").type(JsonFieldType.STRING).description("주문자 휴대폰 번호"),
+                fieldWithPath("userId").type(JsonFieldType.NUMBER).description("주문자 USER ID"),
 
                 // 받는 사람 정보
-                fieldWithPath("recipientInfo.recipientName").type(JsonFieldType.STRING).description("받는 사람 이름"),
-                fieldWithPath("recipientInfo.recipientPhoneNumber").type(JsonFieldType.STRING).description("받는 사람 휴대폰 번호"),
-                fieldWithPath("recipientInfo.recipientAddress").type(JsonFieldType.STRING).description("받는 사람 주소"),
-                fieldWithPath("recipientInfo.recipientDetailAddress").type(JsonFieldType.STRING).description("받는 사람 상세 주소"),
-                fieldWithPath("recipientInfo.shippingRequest").type(JsonFieldType.STRING).description("배송 요청 사항"),
+                fieldWithPath("recipientInfoForm.recipientName").type(JsonFieldType.STRING).description("받는 사람 이름"),
+                fieldWithPath("recipientInfoForm.recipientPhoneNumber").type(JsonFieldType.STRING).description("받는 사람 휴대폰 번호"),
+                fieldWithPath("recipientInfoForm.recipientAddress").type(JsonFieldType.STRING).description("받는 사람 주소"),
+                fieldWithPath("recipientInfoForm.recipientDetailAddress").type(JsonFieldType.STRING).optional().description("받는 사람 상세 주소"),
+                fieldWithPath("recipientInfoForm.shippingRequest").type(JsonFieldType.STRING).optional().description("배송 요청 사항"),
 
                 // 결제 정보
-                fieldWithPath("paymentInfo.dealProductUuid").type(JsonFieldType.STRING).description("딜 상품 UUID"),
-                fieldWithPath("paymentInfo.dealProductTitle").type(JsonFieldType.STRING).description("딜 상품 타이틀"),
-                fieldWithPath("paymentInfo.productUuid").type(JsonFieldType.STRING).description("상품 UUID"),
-                fieldWithPath("paymentInfo.originPrice").type(JsonFieldType.NUMBER).description("원가격"),
-                fieldWithPath("paymentInfo.discountAmount").type(JsonFieldType.NUMBER).description("할인 금액"),
-                fieldWithPath("paymentInfo.orderQuantity").type(JsonFieldType.NUMBER).description("주문 수량"),
-                fieldWithPath("paymentInfo.totalDealProductAmount").type(JsonFieldType.NUMBER).description("딜 상품 총 상품 금액"),
-                fieldWithPath("paymentInfo.totalDiscountAmount").type(JsonFieldType.NUMBER).description("딜 상품 총 할인 금액"),
-                fieldWithPath("paymentInfo.shippingFee").type(JsonFieldType.NUMBER).description("배송료"),
-                fieldWithPath("paymentInfo.totalPaymentAmount").type(JsonFieldType.NUMBER).description("총 결제 금액"),
-                fieldWithPath("paymentInfo.paymentType").type(JsonFieldType.STRING).description("결제 방법")
-                ),
+                fieldWithPath("dealProductUuid").type(JsonFieldType.STRING).description("딜 상품 UUID"),
+                fieldWithPath("orderQuantity").type(JsonFieldType.NUMBER).description("주문 수량"),
+                fieldWithPath("paymentType").type(JsonFieldType.STRING).description("결제 방법")
+            ),
             responseFields(
                 fieldWithPath("code").type(JsonFieldType.STRING).description("코드"),
                 fieldWithPath("message").type(JsonFieldType.STRING).description("메시지"),
