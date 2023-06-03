@@ -1,5 +1,6 @@
 package com.hcommerce.heecommerce.order;
 
+import java.beans.ConstructorProperties;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -11,6 +12,11 @@ public class OrderForm {
     private PaymentInfo paymentInfo;
 
     @Builder
+    @ConstructorProperties({
+        "ordererInfo",
+        "recipientInfo",
+        "paymentInfo"}
+    )
     public OrderForm(
         OrdererInfo ordererInfo,
         RecipientInfo recipientInfo,

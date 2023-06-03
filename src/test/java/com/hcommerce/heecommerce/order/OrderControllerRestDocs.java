@@ -23,7 +23,8 @@ public class OrderControllerRestDocs {
                 ),
                 responseFields(
                         fieldWithPath("code").type(JsonFieldType.STRING).description("코드"),
-                        fieldWithPath("message").type(JsonFieldType.STRING).description("메시지")
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("메시지"),
+                        fieldWithPath("data").type(JsonFieldType.NULL).description("데이터")
                 )
         );
     }
@@ -60,7 +61,8 @@ public class OrderControllerRestDocs {
                 ),
             responseFields(
                 fieldWithPath("code").type(JsonFieldType.STRING).description("코드"),
-                fieldWithPath("message").type(JsonFieldType.STRING).description("메시지")
+                fieldWithPath("message").type(JsonFieldType.STRING).description("메시지"),
+                fieldWithPath("data").type(JsonFieldType.NULL).description("데이터")
             )
         );
     }
