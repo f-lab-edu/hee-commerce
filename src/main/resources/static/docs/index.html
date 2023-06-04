@@ -720,7 +720,7 @@ Host: localhost:8080</code></pre>
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 524
+Content-Length: 567
 
 {
   "code" : "OK",
@@ -736,7 +736,8 @@ Content-Length: 524
       "productOriginPrice" : 3000,
       "dealProductDiscountType" : "FIXED_AMOUNT",
       "dealProductDiscountValue" : 1000,
-      "dealProductDealQuantity" : 3
+      "dealProductDealQuantity" : 3,
+      "dealProductStatus" : "BEFORE_OPEN"
     } ]
   }
 }</code></pre>
@@ -829,6 +830,11 @@ Content-Length: 524
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">딜 상품 재고 수량</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.items[].dealProductStatus</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">딜 상품 상태 (BEFORE_OPEN : 오픈 전, OPEN : 오픈, SOLD_OUT : 품절, CLOSE : 종료)</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -867,9 +873,9 @@ Host: localhost:8080
     "shippingRequest" : "빠른 배송 부탁드려요!"
   },
   "paymentInfo" : {
-    "dealProductUuid" : "de547358-91e7-411b-b434-7eaba37aad75",
+    "dealProductUuid" : "b048c042-4738-4eaf-ad4b-2acd3ad8e9e8",
     "dealProductTitle" : "[무료배송] 초특가 사과 1상자",
-    "productUuid" : "95ead5b2-49e6-41f2-8e8a-81c14121ffd8",
+    "productUuid" : "e8659bd8-0af7-4947-939e-e636f3072909",
     "originPrice" : 10000,
     "discountAmount" : 2000,
     "orderQuantity" : 2,
@@ -1058,7 +1064,7 @@ Content-Length: 98
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2023-06-02 03:14:11 +0900
+Last updated 2023-06-04 02:44:01 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

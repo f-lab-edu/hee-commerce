@@ -1,6 +1,5 @@
 package com.hcommerce.heecommerce.deal;
 
-
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,6 +14,7 @@ public class DealProductsItem {
     private final DiscountType dealProductDiscountType;
     private final int dealProductDiscountValue;
     private final int dealProductDealQuantity;
+    private final DealProductStatus dealProductStatus;
 
     @Builder
     public DealProductsItem(
@@ -24,7 +24,8 @@ public class DealProductsItem {
         int productOriginPrice,
         DiscountType dealProductDiscountType,
         int dealProductDiscountValue,
-        int dealProductDealQuantity
+        int dealProductDealQuantity,
+        DealProductStatus dealProductStatus
     ) {
         this.dealProductUuid = dealProductUuid;
         this.dealProductTile = dealProductTile;
@@ -33,5 +34,6 @@ public class DealProductsItem {
         this.dealProductDiscountType = dealProductDiscountType;
         this.dealProductDiscountValue = dealProductDiscountValue;
         this.dealProductDealQuantity = dealProductDealQuantity;
+        this.dealProductStatus = dealProductStatus;
     }
 }

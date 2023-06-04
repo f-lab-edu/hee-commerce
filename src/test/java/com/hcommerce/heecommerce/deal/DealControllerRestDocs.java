@@ -40,7 +40,8 @@ public class DealControllerRestDocs {
                         fieldWithPath("data.items[].productOriginPrice").type(JsonFieldType.NUMBER).description("상품 원가격"),
                         fieldWithPath("data.items[].dealProductDiscountType").type(JsonFieldType.STRING).description("딜 상품 할인 유형"),
                         fieldWithPath("data.items[].dealProductDiscountValue").type(JsonFieldType.NUMBER).description("딜 상품 할인가"),
-                        fieldWithPath("data.items[].dealProductDealQuantity").type(JsonFieldType.NUMBER).description("딜 상품 재고 수량")
+                        fieldWithPath("data.items[].dealProductDealQuantity").type(JsonFieldType.NUMBER).description("딜 상품 재고 수량"),
+                        fieldWithPath("data.items[].dealProductStatus").type(JsonFieldType.STRING).description("딜 상품 상태 ("+DealProductStatus.getAllValuesAsString()+")")
                     )
         );
     }
