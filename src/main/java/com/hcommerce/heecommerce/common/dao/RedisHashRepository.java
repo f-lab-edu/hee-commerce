@@ -19,19 +19,19 @@ public class RedisHashRepository<T> {
         this.hashOperations = redisTemplate.opsForHash();
     }
 
-    public T findAllByKey(String key, String hashKey, TypeReference<T> objectTypeReference) {
+    public T getAllByKey(String key, String hashKey, TypeReference<T> objectTypeReference) {
         String item = (String) hashOperations.get(key, hashKey);
 
         return convertObjectFromString(item, objectTypeReference);
     }
 
-    public void save(String key, String hashKey, T item) {
+    public void put(String key, String hashKey, T item) {
         String itemString = convertStringFromObject(item);
 
         hashOperations.put(key, hashKey, itemString);
     }
 
-    public void saveWithExpirationTime(String key, String hashKey, T item, long time, TimeUnit timeUnit) {
+    public void putWithExpirationTime(String key, String hashKey, T item, long time, TimeUnit timeUnit) {
         String itemString = convertStringFromObject(item);
 
         hashOperations.put(key, hashKey, itemString);
