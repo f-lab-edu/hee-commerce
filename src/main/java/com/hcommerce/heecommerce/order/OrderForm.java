@@ -17,7 +17,10 @@ public class OrderForm {
 
     @Valid
     @NotNull(message = "수령자 정보는 필수입니다.")
-    private RecipientInfoForm recipientInfoForm;
+    private final RecipientInfoForm recipientInfoForm;
+
+    @NotNull(message = "상품 품절시 처리 방법을 선택해주세요.")
+    private final OutOfStockHandlingOption outOfStockHandlingOption;
 
     @NotNull(message = "딜 상품 UUID를 입력해주세요.")
     private final UUID dealProductUuid;
@@ -32,6 +35,7 @@ public class OrderForm {
     @ConstructorProperties({
         "userId",
         "recipientInfoForm",
+        "outOfStockHandlingOption",
         "dealProductUuid",
         "orderQuantity",
         "paymentType"
@@ -39,12 +43,14 @@ public class OrderForm {
     public OrderForm(
         int userId,
         RecipientInfoForm recipientInfoForm,
+        OutOfStockHandlingOption outOfStockHandlingOption,
         UUID dealProductUuid,
         int orderQuantity,
         PaymentType paymentType
     ) {
         this.userId = userId;
         this.recipientInfoForm = recipientInfoForm;
+        this.outOfStockHandlingOption = outOfStockHandlingOption;
         this.dealProductUuid = dealProductUuid;
         this.orderQuantity = orderQuantity;
         this.paymentType = paymentType;
