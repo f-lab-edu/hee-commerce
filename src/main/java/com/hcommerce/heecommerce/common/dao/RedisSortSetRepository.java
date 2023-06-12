@@ -18,15 +18,15 @@ public class RedisSortSetRepository<T> {
         this.zSetOps = redisTemplate.opsForZSet();
     }
 
-    public Set<T> findAll(String key) {
+    public Set<T> getAll(String key) {
         return zSetOps.range(key, 0, -1);
     }
 
-    public void save(String key, T item, int score) {
+    public void add(String key, T item, int score) {
         zSetOps.add(key, item, score);
     }
 
-    public void saveWithExpirationTime(String key, T item, int score, long time, TimeUnit timeUnit) {
+    public void addWithExpirationTime(String key, T item, int score, long time, TimeUnit timeUnit) {
         zSetOps.add(key, item, score);
 
         redisTemplate.expire(key, time, timeUnit);
