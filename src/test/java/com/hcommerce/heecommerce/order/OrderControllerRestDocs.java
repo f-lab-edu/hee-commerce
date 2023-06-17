@@ -44,6 +44,9 @@ public class OrderControllerRestDocs {
                 fieldWithPath("recipientInfoForm.recipientDetailAddress").type(JsonFieldType.STRING).optional().description("받는 사람 상세 주소"),
                 fieldWithPath("recipientInfoForm.shippingRequest").type(JsonFieldType.STRING).optional().description("배송 요청 사항"),
 
+                // 품절시 상품 처리 옵션
+                fieldWithPath("outOfStockHandlingOption").type(JsonFieldType.STRING).description("품절시 상품 처리 옵션 ("+ OutOfStockHandlingOption.getAllValuesAsString()+")"),
+
                 // 결제 정보
                 fieldWithPath("dealProductUuid").type(JsonFieldType.STRING).description("딜 상품 UUID"),
                 fieldWithPath("orderQuantity").type(JsonFieldType.NUMBER).description("주문 수량"),

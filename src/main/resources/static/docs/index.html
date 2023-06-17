@@ -856,7 +856,7 @@ Content-Length: 567
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /orders HTTP/1.1
 Content-Type: application/json;charset=UTF-8
 Accept: application/json
-Content-Length: 385
+Content-Length: 430
 Host: localhost:8080
 
 {
@@ -868,7 +868,8 @@ Host: localhost:8080
     "recipientDetailAddress" : "101호",
     "shippingRequest" : "빠른 배송 부탁드려요!"
   },
-  "dealProductUuid" : "5f398551-e7fa-4685-912e-f8de480a3138",
+  "outOfStockHandlingOption" : "ALL_CANCEL",
+  "dealProductUuid" : "d896e3a5-79da-4339-9093-a3ad3732fd69",
   "orderQuantity" : 2,
   "paymentType" : "CREDIT_CARD"
 }</code></pre>
@@ -928,6 +929,12 @@ Host: localhost:8080
 <td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">배송 요청 사항</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">outOfStockHandlingOption</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">품절시 상품 처리 옵션 (ALL_CANCEL : 전체 취소, PARTIAL_ORDER : 주문 가능한 수량만큼 주문)</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">dealProductUuid</p></td>
@@ -1011,7 +1018,7 @@ Content-Length: 98
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2023-06-04 02:44:01 +0900
+Last updated 2023-06-11 14:07:34 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
