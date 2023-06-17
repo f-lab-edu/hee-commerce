@@ -1,5 +1,6 @@
 package com.hcommerce.heecommerce.deal;
 
+import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -33,13 +35,16 @@ class DealControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @MockBean
+    private DealService dealService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private DealProductsItem dealProductsItemFixture;
 
-    private PageDto pageDtoFixture;
+    private List<DealProductsItem> dealProductsFixture;
 
-    private ResponseDto  responseDtoFixture;
+    private PageDto pageDtoFixture;
 
     private static final int TIME_DEAL_ID = 1;
 
@@ -63,14 +68,14 @@ class DealControllerTest {
                 .dealProductStatus(DealProductStatus.BEFORE_OPEN)
                 .build();
 
-        List<DealProductsItem> dealProducts = new ArrayList<>();
-        dealProducts.add(dealProductsItemFixture);
+        dealProductsFixture = new ArrayList<>();
+        dealProductsFixture.add(dealProductsItemFixture);
 
         pageDtoFixture = PageDto.<DealProductsItem>builder()
                 .pageNumber(PAGE_NUMBER)
                 .pageSize(20)
-                .totalCount(dealProducts.size())
-                .items(dealProducts)
+                .totalCount(dealProductsFixture.size())
+                .items(dealProductsFixture)
                 .build();
     }
 
@@ -80,6 +85,9 @@ class DealControllerTest {
         @Test
         @DisplayName("returns 200 ok")
         void It_returns_200_OK() throws Exception {
+            // given
+            given(dealService.getDealProductsByDealId(TIME_DEAL_ID, PAGE_NUMBER, SORT)).willReturn(dealProductsFixture);
+
             // when
             ResultActions resultActions = mockMvc.perform(
                     get("/dealProducts/{dealId}", TIME_DEAL_ID)
@@ -88,14 +96,14 @@ class DealControllerTest {
             );
 
             // then
-            responseDtoFixture = ResponseDto.builder()
-                    .code(HttpStatus.OK.name())
-                    .message("딜 상품 목록 조회 성공하였습니다.")
-                    .data(pageDtoFixture)
-                    .build();
-
             resultActions.andExpect(status().isOk())
-                    .andExpect(content().json(objectMapper.writeValueAsString(responseDtoFixture)))
+                    .andExpect(content().json(objectMapper.writeValueAsString(
+                        ResponseDto.builder()
+                            .code(HttpStatus.OK.name())
+                            .message("딜 상품 목록 조회 성공하였습니다.")
+                            .data(pageDtoFixture)
+                            .build()
+                    )))
                     .andDo(DealControllerRestDocs.getDealProductsByDealId());
         }
     }
