@@ -1,7 +1,5 @@
 package com.hcommerce.heecommerce.order;
 
-import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
-import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,18 +42,22 @@ public class OrderService {
 
         int inventory = inventoryQueryRepository.get(key); // key에 해당 하는 값 없으면 Null 나옴 -> TODO : Null 처리 어떻게? Optional 활용?
 
-        if(inventory <= 0) {
+        int orderQuantity = orderForm.getOrderQuantity();
+
+        int realOrderQuantity = 0;
+
+        if(inventory <= 0 || (inventory < orderQuantity && orderForm.getOutOfStockHandlingOption() == OutOfStockHandlingOption.ALL_CANCEL)) {
             throw new OrderOverStockException();
         }
 
-        int orderQuantity = orderForm.getOrderQuantity();
-
-        if(orderQuantity > inventory) {
-            // TODO : OrderForm에 OutOfStockHandlingOption 추가 PR Merge 되면 로직 추가하기
+        if (inventory < orderQuantity && orderForm.getOutOfStockHandlingOption() == OutOfStockHandlingOption.PARTIAL_ORDER) {
+            realOrderQuantity = inventory; // 재고량 만큼만 주문
+        } else {
+            realOrderQuantity = orderQuantity;
         }
 
         // 2. 재고량 감소
-        int currentInventory = inventoryCommandRepository.decreaseByAmount(key, orderQuantity); // TODO : 결제가 실패하여 재고량 다시 원상복귀해야할 때도, 분산락 걸어줘야 되나?
+        int currentInventory = inventoryCommandRepository.decreaseByAmount(key, realOrderQuantity); // TODO : 결제가 실패하여 재고량 다시 원상복귀해야할 때도, 분산락 걸어줘야 되나?
 
         if(currentInventory == 0) {
             // TODO : [품절 처리] Redis에 저장된 dealproducts 목록에서 딜 상품 상태 오픈 -> 품절로 변경
@@ -68,10 +70,9 @@ public class OrderService {
         boolean isSuccessPayment = false; // TODO : 임시 데이터
 
         if(!isSuccessPayment) {
-            inventoryCommandRepository.increaseByAmount(key, orderQuantity);
+            inventoryCommandRepository.increaseByAmount(key, realOrderQuantity);
             return;
         }
-
 
         /**
          * 바로 MySQL을 사용한 것과 AWS SQS를 사용한 것과 어떤 차이가 있을까?
