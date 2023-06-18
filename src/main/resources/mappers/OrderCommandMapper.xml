@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hcommerce.heecommerce.order.OrderCommandMapper">
+
+  <insert id="save" >
+    INSERT INTO `order` (
+    uuid,
+    user_id,
+    recipient_name, recipient_phone_number, recipient_address, recipient_detail_address, shipping_request,
+    out_of_stock_handling_option, deal_product_uuid, order_quantity, payment_uuid, order_status
+    ) values (
+    #{uuid},
+    #{userId},
+    #{recipientName}, #{recipientPhoneNumber}, #{recipientAddress}, #{recipientDetailAddress}, #{shippingRequest},
+    #{outOfStockHandlingOption}, #{dealProductUuid}, #{orderQuantity}, #{paymentUuid}, #{orderStatus})
+  </insert>
+
+</mapper>

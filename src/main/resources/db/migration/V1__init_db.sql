@@ -18,7 +18,7 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `order` (
-  `uuid` binary PRIMARY KEY NOT NULL,
+  `uuid` binary(16) PRIMARY KEY NOT NULL,
   `user_id` bigint NOT NULL,
   `order_name` varchar(255) NOT NULL,
   `order_phone_number` varchar(255) NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE `order` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `product` (
-  `uuid` binary PRIMARY KEY NOT NULL,
+  `uuid` binary(16) PRIMARY KEY NOT NULL,
   `name` varchar(255) NOT NULL,
   `main_img_url` varchar(255) NOT NULL,
   `price` integer NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE `product` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `product_detail_img` (
-  `uuid` binary PRIMARY KEY NOT NULL,
+  `uuid` binary(16) PRIMARY KEY NOT NULL,
   `product_uuid` binary NOT NULL,
   `url` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL,
@@ -61,9 +61,9 @@ CREATE TABLE `deal` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `deal_product` (
-  `uuid` binary PRIMARY KEY NOT NULL,
+  `uuid` binary(16) PRIMARY KEY NOT NULL,
   `deal_id` int NOT NULL,
-  `product_uuid` binary NOT NULL,
+  `product_uuid` binary(16) NOT NULL,
   `deal_product_title` varchar(255) NOT NULL,
   `inventory` int NOT NULL,
   `discount_type` varchar(255) NOT NULL,
@@ -76,7 +76,7 @@ CREATE TABLE `deal_product` (
 
 CREATE TABLE `inventory_event_history` (
   `inventory_event_history_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `deal_product_uuid` binary NOT NULL,
+  `deal_product_uuid` binary(16) NOT NULL,
   `user_id` bigint NOT NULL,
   `uuid` binary NOT NULL,
   `order_quantity` int NOT NULL,

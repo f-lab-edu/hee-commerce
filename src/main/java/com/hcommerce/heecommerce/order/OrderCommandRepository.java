@@ -1,5 +1,6 @@
 package com.hcommerce.heecommerce.order;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
@@ -7,8 +8,15 @@ import java.util.UUID;
 @Repository
 public class OrderCommandRepository {
 
+    private final OrderCommandMapper orderCommandMapper;
+
+    @Autowired
+    public OrderCommandRepository(OrderCommandMapper orderCommandMapper) {
+        this.orderCommandMapper = orderCommandMapper;
+    }
+
     public UUID updateToCompleteOrderReceipt(UUID orderUuid) {
-        String newOrderStatus = OrderStatus.ORDER_RECEIPT_COMPLETE.name();
+        String newOrderStatus = OrderStatus.ORDER_COMPLETE.name();
 
         // TODO : DB 연동 후 수정 예정
         String TEMP_NOT_EXIST_UUID = "8b455042-e709-11ed-93e5-0242ac110002";
@@ -43,5 +51,8 @@ public class OrderCommandRepository {
 
         return orderUuid;
     }
-}
 
+    public void save(OrderEntity order) {
+        orderCommandMapper.save(order);
+    }
+}

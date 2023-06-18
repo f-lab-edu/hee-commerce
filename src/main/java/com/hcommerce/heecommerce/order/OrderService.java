@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcommerce.heecommerce.common.AWSSQSProducer;
 import com.hcommerce.heecommerce.inventory.InventoryHistoryItem;
+import java.nio.ByteBuffer;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -87,31 +88,35 @@ public class OrderService {
         /**
          * 일단 바로 MySQL에 저장하는 걸로 구현하기
          * 추후에 이슈가 있으면, AWS SQS로 보내서 Lambda에서 MySQL에 저장하는 걸로 구현하기
-         *
-         * 결제, 주문, 배송이 각각 다른 Table 또는 다른 DB에 있을 때 이 작업 단위를 원자 단위로 하고 싶거나 또는
-         * MySQL에 바로 저장하는 것이 너무 오래 걸려 비동기 처리로 그 시간을 단축시키고 싶을 때, AWS SQS가 의미 있지 않을까?
-         *
          */
         // 4. 결제, 주문 데이터 MySQL로 보내기 vs AWS SQS로 보내기?
         // 결제 -> TODO : 결제 API 검토 후 추가해야할 데이터 추가
+        byte[] paymentUuid = convertUuidToBinary(UUID.randomUUID());
+
         // 총 결제 금액
         // 결제 유형
         // 결제 날짜
         // 카드 정보 등등
 
-
-
         // 주문
-        UUID orderUuid = UUID.randomUUID();
+        byte[] orderUuid = convertUuidToBinary(UUID.randomUUID());
 
-        // user_id
-        // order_name
-        // order_phone_number
-        //
-        // 주문한 딜 상품 UUID
-        // 결제 UUID
-        // 주문 수량
-        // 상품 품절시 처리 옵션
+        orderCommandRepository.save(
+            OrderEntity.builder()
+                .uuid(orderUuid)
+                .userId(orderForm.getUserId())
+                .recipientName(orderForm.getRecipientInfoForm().getRecipientName())
+                .recipientPhoneNumber(orderForm.getRecipientInfoForm().getRecipientPhoneNumber())
+                .recipientAddress(orderForm.getRecipientInfoForm().getRecipientAddress())
+                .recipientDetailAddress(orderForm.getRecipientInfoForm().getRecipientDetailAddress())
+                .shippingRequest(orderForm.getRecipientInfoForm().getShippingRequest())
+                .outOfStockHandlingOption(orderForm.getOutOfStockHandlingOption())
+                .dealProductUuid(convertUuidToBinary(orderForm.getDealProductUuid()))
+                .orderQuantity(orderForm.getOrderQuantity())
+                .paymentUuid(paymentUuid)
+                .orderStatus(OrderStatus.ORDER_COMPLETE)
+                .build()
+        );
 
         // 배송
         // 수령자 정보 : 수령자 이름, 연락처, 주소, 상세주소, 배송 요청사항
@@ -123,9 +128,9 @@ public class OrderService {
                 InventoryHistoryItem.builder()
                     .dealProductUuid(orderForm.getDealProductUuid())
                     .userId(orderForm.getUserId())
-                    .orderUuid(orderUuid)
-                    .orderQuantity(realOrderQuantity)
-                    .previousDealQuantity(inventory)
+                    .orderUuid(UUID.randomUUID())
+                    .orderQuantity(3)
+                    .previousDealQuantity(4)
                     .build()
             );
 
@@ -138,5 +143,12 @@ public class OrderService {
         }
 
         // ------ 주문 끝
+    }
+
+    private byte[] convertUuidToBinary(UUID uuid) {
+        ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[16]);
+        byteBuffer.putLong(uuid.getMostSignificantBits());
+        byteBuffer.putLong(uuid.getLeastSignificantBits());
+        return byteBuffer.array();
     }
 }
