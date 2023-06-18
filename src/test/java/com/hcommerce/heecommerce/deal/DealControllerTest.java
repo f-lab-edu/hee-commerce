@@ -1,6 +1,5 @@
 package com.hcommerce.heecommerce.deal;
 
-import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -21,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -35,9 +33,6 @@ class DealControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
-    private DealService dealService;
-
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private DealProductsItem dealProductsItemFixture;
@@ -46,7 +41,11 @@ class DealControllerTest {
 
     private PageDto pageDtoFixture;
 
-    private static final int TIME_DEAL_ID = 1;
+    private ResponseDto  responseDtoFixture;
+
+    private static final DealType DEAL_TYPE_TIME_DEAL = DealType.TIME_DEAL;
+
+    private static final UUID DEAL_PRODUCT_UUID = UUID.fromString("01b8851c-d046-4635-83c1-eb0ca4342077");
 
     private static final int PAGE_NUMBER = 0;
 
@@ -80,31 +79,66 @@ class DealControllerTest {
     }
 
     @Nested
-    @DisplayName("GET /dealProducts/{dealId}?pageNumber={pageNumber}&sort={sort}")
-    class Describe_GET_Deal_Products_By_Deal_Id_API {
+    @DisplayName("GET /deals/{dealType}/dealProducts?pageNumber={pageNumber}&sort={sort}")
+    class Describe_GET_Deal_Products_By_Deal_Type_API {
         @Test
         @DisplayName("returns 200 ok")
         void It_returns_200_OK() throws Exception {
             // given
-            given(dealService.getDealProductsByDealId(TIME_DEAL_ID, PAGE_NUMBER, SORT)).willReturn(dealProductsFixture);
+//            given(dealService.getDealProductsByDealId(TIME_DEAL_ID, PAGE_NUMBER, SORT)).willReturn(dealProductsFixture);
 
             // when
             ResultActions resultActions = mockMvc.perform(
-                    get("/dealProducts/{dealId}", TIME_DEAL_ID)
+                    get("/deals/{dealType}/dealProducts", DEAL_TYPE_TIME_DEAL)
                             .queryParam("pageNumber", String.valueOf(PAGE_NUMBER))
                             .queryParam("sort", String.valueOf(SORT))
             );
 
             // then
+            responseDtoFixture = ResponseDto.builder()
+                    .code(HttpStatus.OK.name())
+                    .message("딜 상품 목록 조회 성공하였습니다.")
+                    .data(pageDtoFixture)
+                    .build();
+
             resultActions.andExpect(status().isOk())
-                    .andExpect(content().json(objectMapper.writeValueAsString(
-                        ResponseDto.builder()
-                            .code(HttpStatus.OK.name())
-                            .message("딜 상품 목록 조회 성공하였습니다.")
-                            .data(pageDtoFixture)
-                            .build()
-                    )))
-                    .andDo(DealControllerRestDocs.getDealProductsByDealId());
+                    .andExpect(content().json(objectMapper.writeValueAsString(responseDtoFixture)))
+                    .andDo(DealControllerRestDocs.getDealProductsByDealType());
+        }
+    }
+
+    @Nested
+    @DisplayName("GET /dealProducts/{dealProductUuid}")
+    class Describe_GET_Deal_Product_Detail_By_Deal_Product_Uuid_API {
+        @Test
+        @DisplayName("returns 200 ok")
+        void It_returns_200_OK() throws Exception {
+            // when
+            ResultActions resultActions = mockMvc.perform(
+                get("/dealProducts/{dealProductUuid}", DEAL_PRODUCT_UUID)
+            );
+
+            DealProductDetail dealProductDetailFixture = DealProductDetail.builder()
+                .dealProductUuid(UUID.fromString("01b8851c-d046-4635-83c1-eb0ca4342077"))
+                .dealProductTile("1000원 할인 상품 1")
+                .productMainImgUrl("/test.png")
+                .productDetailImgUrls(new String[]{"/detail_test1.png", "/detail_test2.png", "/detail_test3.png", "/detail_test4.png", "/detail_test5.png"})
+                .productOriginPrice(3000)
+                .dealProductDiscountType(DiscountType.FIXED_AMOUNT)
+                .dealProductDiscountValue(1000)
+                .dealProductDealQuantity(3)
+                .build();
+
+            // then
+            responseDtoFixture = ResponseDto.builder()
+                .code(HttpStatus.OK.name())
+                .message("딜 상품 상세보기 조회 성공하였습니다.")
+                .data(dealProductDetailFixture)
+                .build();
+
+            resultActions.andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(responseDtoFixture)))
+                .andDo(DealControllerRestDocs.getDealProductDetailByDealProductUuid());
         }
     }
 }
