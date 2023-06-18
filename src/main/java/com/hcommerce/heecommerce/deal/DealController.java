@@ -49,7 +49,7 @@ public class DealController {
         @PathVariable("dealProductUuid") UUID dealProductUuid
     ) {
 
-        DealProductDetail dealProductDetail = DealProductDetail.builder()
+        TimeDealProductDetail timeDealProductDetail = TimeDealProductDetail.builder()
             .dealProductUuid(dealProductUuid)
             .dealProductTile("1000원 할인 상품 1")
             .productMainImgUrl("/test.png")
@@ -64,7 +64,7 @@ public class DealController {
         return ResponseDto.builder()
             .code(HttpStatus.OK.name())
             .message("딜 상품 상세보기 조회 성공하였습니다.")
-            .data(dealProductDetail)
+            .data(timeDealProductDetail)
             .build();
     }
 }

@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class DealProductDetail {
+public class TimeDealProductDetail {
 
     private final UUID dealProductUuid;
     private final String dealProductTile;
@@ -17,7 +17,7 @@ public class DealProductDetail {
     private final int dealProductDealQuantity;
 
     @Builder
-    public DealProductDetail(
+    public TimeDealProductDetail(
         UUID dealProductUuid,
         String dealProductTile,
         String productMainImgUrl,

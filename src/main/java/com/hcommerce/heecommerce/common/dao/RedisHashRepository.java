@@ -19,7 +19,7 @@ public class RedisHashRepository<T> {
         this.hashOperations = redisTemplate.opsForHash();
     }
 
-    public T getAllByKey(String key, String hashKey, TypeReference<T> objectTypeReference) {
+    public T getByKeyAndHashKey(String key, String hashKey, TypeReference<T> objectTypeReference) {
         String item = (String) hashOperations.get(key, hashKey);
 
         return convertObjectFromString(item, objectTypeReference);
