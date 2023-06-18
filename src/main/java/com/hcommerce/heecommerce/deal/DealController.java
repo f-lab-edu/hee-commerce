@@ -23,13 +23,12 @@ public class DealController {
     }
 
     @GetMapping("/deals/{dealType}/dealProducts")
-    public ResponseDto getDealProductsByDealId(
+    public ResponseDto getDealProductsByDealType(
             @PathVariable("dealType") DealType dealType,
             @RequestParam int pageNumber,
             @RequestParam ProductsSort sort
     ) {
 
-        // TODO : 임시 데이터 사용하기
         List<TimeDealProductSummary> dealProducts = dealService.getDealProductsByDealType(dealType, pageNumber, sort);
 
         return ResponseDto.builder()

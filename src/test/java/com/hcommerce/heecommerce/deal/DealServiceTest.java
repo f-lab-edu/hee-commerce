@@ -1,6 +1,7 @@
 package com.hcommerce.heecommerce.deal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.BDDMockito.given;
 
 import com.hcommerce.heecommerce.product.ProductsSort;
 import java.util.ArrayList;
@@ -12,11 +13,15 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @DisplayName("DealService")
 @ExtendWith(MockitoExtension.class)
 class DealServiceTest {
+
+    @Mock
+    private DealQueryRepository dealQueryRepository;
 
     @InjectMocks
     private DealService dealService;
@@ -51,7 +56,7 @@ class DealServiceTest {
         @DisplayName("return dealProducts")
         void It_return_dealProducts() {
             // given
-//            given(dealQueryRepository.findDealProductsByDealId(DEAL_TYPE_TIME_DEAL, PAGE_NUMBER, SORT)).willReturn(dealProductsFixture);
+            given(dealQueryRepository.getDealProductsByDealType(DEAL_TYPE_TIME_DEAL, PAGE_NUMBER, SORT)).willReturn(dealProductsFixture);
 
             // when
             List<TimeDealProductSummary> dealProducts = dealService.getDealProductsByDealType(DEAL_TYPE_TIME_DEAL, PAGE_NUMBER, SORT);
