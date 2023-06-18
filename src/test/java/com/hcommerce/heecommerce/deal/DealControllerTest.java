@@ -118,7 +118,7 @@ class DealControllerTest {
                 get("/dealProducts/{dealProductUuid}", DEAL_PRODUCT_UUID)
             );
 
-            DealProductDetail dealProductDetailFixture = DealProductDetail.builder()
+            TimeDealProductDetail timeDealProductDetailFixture = TimeDealProductDetail.builder()
                 .dealProductUuid(UUID.fromString("01b8851c-d046-4635-83c1-eb0ca4342077"))
                 .dealProductTile("1000원 할인 상품 1")
                 .productMainImgUrl("/test.png")
@@ -133,7 +133,7 @@ class DealControllerTest {
             responseDtoFixture = ResponseDto.builder()
                 .code(HttpStatus.OK.name())
                 .message("딜 상품 상세보기 조회 성공하였습니다.")
-                .data(dealProductDetailFixture)
+                .data(timeDealProductDetailFixture)
                 .build();
 
             resultActions.andExpect(status().isOk())
