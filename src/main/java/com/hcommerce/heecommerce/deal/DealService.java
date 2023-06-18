@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class DealService {
 
-    public List<DealProductsItem> getDealProductsByDealType(DealType dealType, int pageNumber, ProductsSort sort) {
+    public List<TimeDealProductSummary> getDealProductsByDealType(DealType dealType, int pageNumber, ProductsSort sort) {
 
-        List<DealProductsItem> dealProducts = new ArrayList<>();
-        dealProducts.add(DealProductsItem.builder()
+        List<TimeDealProductSummary> dealProducts = new ArrayList<>();
+        dealProducts.add(TimeDealProductSummary.builder()
             .dealProductUuid(UUID.fromString("01b8851c-d046-4635-83c1-eb0ca4342077"))
             .dealProductTile("1000원 할인 상품 1")
             .productMainImgThumbnailUrl("/test.png")

@@ -30,12 +30,12 @@ public class DealController {
     ) {
 
         // TODO : 임시 데이터 사용하기
-        List<DealProductsItem> dealProducts = dealService.getDealProductsByDealType(dealType, pageNumber, sort);
+        List<TimeDealProductSummary> dealProducts = dealService.getDealProductsByDealType(dealType, pageNumber, sort);
 
         return ResponseDto.builder()
                 .code(HttpStatus.OK.name())
                 .message("딜 상품 목록 조회 성공하였습니다.")
-                .data(PageDto.<DealProductsItem>builder()
+                .data(PageDto.<TimeDealProductSummary>builder()
                         .pageNumber(0)
                         .pageSize(20)
                         .totalCount(dealProducts.size())
