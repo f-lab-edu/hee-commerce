@@ -35,9 +35,9 @@ class DealControllerTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private DealProductsItem dealProductsItemFixture;
+    private TimeDealProductSummary timeDealProductSummaryFixture;
 
-    private List<DealProductsItem> dealProductsFixture;
+    private List<TimeDealProductSummary> dealProductsFixture;
 
     private PageDto pageDtoFixture;
 
@@ -56,7 +56,7 @@ class DealControllerTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        dealProductsItemFixture = DealProductsItem.builder()
+        timeDealProductSummaryFixture = TimeDealProductSummary.builder()
                 .dealProductUuid(UUID.fromString("01b8851c-d046-4635-83c1-eb0ca4342077"))
                 .dealProductTile("1000원 할인 상품 1")
                 .productMainImgThumbnailUrl("/test.png")
@@ -68,9 +68,9 @@ class DealControllerTest {
                 .build();
 
         dealProductsFixture = new ArrayList<>();
-        dealProductsFixture.add(dealProductsItemFixture);
+        dealProductsFixture.add(timeDealProductSummaryFixture);
 
-        pageDtoFixture = PageDto.<DealProductsItem>builder()
+        pageDtoFixture = PageDto.<TimeDealProductSummary>builder()
                 .pageNumber(PAGE_NUMBER)
                 .pageSize(20)
                 .totalCount(dealProductsFixture.size())
