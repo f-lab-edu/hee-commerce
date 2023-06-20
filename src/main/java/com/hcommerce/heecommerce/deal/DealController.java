@@ -48,18 +48,8 @@ public class DealController {
         @PathVariable("dealProductUuid") UUID dealProductUuid
     ) {
 
-        TimeDealProductDetail timeDealProductDetail = TimeDealProductDetail.builder()
-            .dealProductUuid(dealProductUuid)
-            .dealProductTile("1000원 할인 상품 1")
-            .productMainImgUrl("/test.png")
-            .productDetailImgUrls(new String[]{"/detail_test1.png", "/detail_test2.png", "/detail_test3.png", "/detail_test4.png", "/detail_test5.png"})
-            .productOriginPrice(3000)
-            .dealProductDiscountType(DiscountType.FIXED_AMOUNT)
-            .dealProductDiscountValue(1000)
-            .dealProductDealQuantity(3)
-            .build();
+        TimeDealProductDetail timeDealProductDetail = dealService.getTimeDealProductDetailByDealProductUuid(dealProductUuid);
 
-        // TODO : 임시 데이터 사용하기
         return ResponseDto.builder()
             .code(HttpStatus.OK.name())
             .message("딜 상품 상세보기 조회 성공하였습니다.")

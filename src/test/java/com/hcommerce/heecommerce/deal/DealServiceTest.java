@@ -65,4 +65,34 @@ class DealServiceTest {
             assertEquals(dealProducts.size(), dealProductsFixture.size());
         }
     }
+
+    @Nested
+    @DisplayName("getTimeDealProductDetailByDealProductUuid")
+    class Describe_GetTimeDealProductDetailByDealProductUuid {
+        @Test
+        @DisplayName("return dealProducts")
+        void It_return_dealProducts() {
+            // given
+            UUID dealProductUuid = UUID.randomUUID();
+
+            TimeDealProductDetail timeDealProductDetailFixture = TimeDealProductDetail.builder()
+                .dealProductUuid(dealProductUuid)
+                .dealProductTile("1000원 할인 상품 1")
+                .productMainImgUrl("/test.png")
+                .productDetailImgUrls(new String[]{"/detail_test1.png", "/detail_test2.png", "/detail_test3.png", "/detail_test4.png", "/detail_test5.png"})
+                .productOriginPrice(3000)
+                .dealProductDiscountType(DiscountType.FIXED_AMOUNT)
+                .dealProductDiscountValue(1000)
+                .dealProductDealQuantity(3)
+                .build();
+
+            given(dealQueryRepository.getTimeDealProductDetailByDealProductUuid(dealProductUuid)).willReturn(timeDealProductDetailFixture);
+
+            // when
+            TimeDealProductDetail timeDealProductDetail = dealService.getTimeDealProductDetailByDealProductUuid(dealProductUuid);
+
+            // then
+            assertEquals(timeDealProductDetail, timeDealProductDetailFixture);
+        }
+    }
 }
