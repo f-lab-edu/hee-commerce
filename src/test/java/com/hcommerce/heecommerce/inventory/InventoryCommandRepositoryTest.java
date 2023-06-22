@@ -98,7 +98,9 @@ public class InventoryCommandRepositoryTest {
 
                 String value = redisStringsRepository.get(key);
 
-                assertNotEquals(0, Integer.valueOf(value));
+
+                assertNotEquals(0, Integer.valueOf(value)); // 테스트 실패
+//                assertEquals(0, Integer.valueOf(value)); // 테스트 성공
             }
         }
     }
