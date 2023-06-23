@@ -49,6 +49,21 @@ public class DealQueryRepository {
         return sortedDealProducts;
     }
 
+    public TimeDealProductDetail getTimeDealProductDetailByDealProductUuid(UUID dealProductUuid) {
+
+        String dealOpenDate = getDateForCurrentDealProducts();
+
+        String key = "timeDealProducts:"+dealOpenDate;
+
+        String hashKey = dealProductUuid.toString();
+
+        TimeDealProduct timeDealProduct = redisHashRepository.getOneByKeyAndHashKey(key, hashKey, new TypeReference<TimeDealProduct>() {});
+
+        TimeDealProductDetail timeDealProductDetail = convertTimeDealProductToTimeDealProductDetail(timeDealProduct);
+
+        return timeDealProductDetail;
+    }
+
     private List<TimeDealProductSummary> convertTimeDealProductToTimeDealProductSummary(List<TimeDealProduct> timeDealProducts) {
 
         List<TimeDealProductSummary> timeDealProductSummaries = new ArrayList<>();
@@ -73,6 +88,20 @@ public class DealQueryRepository {
         return timeDealProductSummaries;
     }
 
+    private TimeDealProductDetail convertTimeDealProductToTimeDealProductDetail(TimeDealProduct timeDealProduct) {
+
+        return TimeDealProductDetail.builder()
+            .dealProductUuid(timeDealProduct.getDealProductUuid())
+            .dealProductTile(timeDealProduct.getDealProductTile())
+            .productOriginPrice(timeDealProduct.getProductOriginPrice())
+            .dealProductDiscountType(timeDealProduct.getDealProductDiscountType())
+            .dealProductDiscountValue(timeDealProduct.getDealProductDiscountValue())
+            .dealProductDealQuantity(timeDealProduct.getDealProductDealQuantity())
+            .productMainImgUrl(timeDealProduct.getProductMainImgUrl())
+            .productDetailImgUrls(timeDealProduct.getProductDetailImgUrls())
+            .build();
+    }
+
     // TODO : 삭제 예정 -> 테스트용 데이터 추가로 만듬
     private void init() {
         for (int i = 0; i < 50; i++) {
@@ -80,42 +109,44 @@ public class DealQueryRepository {
 
             DealType dealType = DealType.TIME_DEAL;
 
-            String dealOpenDate = "20230619";
+            for (int k = 0; k < 9; k++) {
+                String dealOpenDate = "2023062"+k;
 
-            int pageNumber = 0;
+                int pageNumber = 0;
 
-            String dealProductIdsSetKey = dealType+":"+dealOpenDate+":"+pageNumber;
+                String dealProductIdsSetKey = dealType+":"+dealOpenDate+":"+pageNumber;
 
-            int expirationInSeconds = 86_400; // TODO : 일단 임시로 24시간으로 설정, 유효시간을 설정해서 관리할 것인가? 아니면 따로 lambda나 batch 서버를 두어서 삭제시킬 것인가?
+                int expirationInSeconds = 86_400; // TODO : 일단 임시로 24시간으로 설정, 유효시간을 설정해서 관리할 것인가? 아니면 따로 lambda나 batch 서버를 두어서 삭제시킬 것인가?
 
-            redisSortSetRepository.addWithExpirationTime(
-                dealProductIdsSetKey, dealProductUuid, i,
-                expirationInSeconds, TimeUnit.SECONDS
-            ); // 일단, 등록된 순서대로 정렬되도록 저장
-
-            TimeDealProduct timeDealProduct = TimeDealProduct.builder()
-                .dealProductUuid(UUID.fromString(dealProductUuid))
-                .dealProductTile("1000원 할인 상품 "+i)
-                .productMainImgThumbnailUrl("/main_thumbnail_test.png")
-                .productOriginPrice(1000*(i+1))
-                .dealProductDiscountType(DiscountType.FIXED_AMOUNT)
-                .dealProductDiscountValue(1000)
-                .dealProductDealQuantity(3)
-                .productDetailImgUrls(new String[]{"/detail_test1.png", "/detail_test2.png", "/detail_test3.png", "/detail_test4.png", "/detail_test5.png"})
-                .productMainImgUrl("/main_test.png")
-                .dealProductStatus(DealProductStatus.BEFORE_OPEN)
-                .build();
-            try {
-
-                String redisKey = "timeDealProducts:"+dealOpenDate;
-
-                redisHashRepository.putWithExpirationTime(
-                    redisKey, dealProductUuid, timeDealProduct,
+                redisSortSetRepository.addWithExpirationTime(
+                    dealProductIdsSetKey, dealProductUuid, i,
                     expirationInSeconds, TimeUnit.SECONDS
-                );
+                ); // 일단, 등록된 순서대로 정렬되도록 저장
 
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
+                TimeDealProduct timeDealProduct = TimeDealProduct.builder()
+                    .dealProductUuid(UUID.fromString(dealProductUuid))
+                    .dealProductTile("1000원 할인 상품 "+i)
+                    .productMainImgThumbnailUrl("/main_thumbnail_test.png")
+                    .productOriginPrice(1000*(i+1))
+                    .dealProductDiscountType(DiscountType.FIXED_AMOUNT)
+                    .dealProductDiscountValue(1000)
+                    .dealProductDealQuantity(3)
+                    .productDetailImgUrls(new String[]{"/detail_test1.png", "/detail_test2.png", "/detail_test3.png", "/detail_test4.png", "/detail_test5.png"})
+                    .productMainImgUrl("/main_test.png")
+                    .dealProductStatus(DealProductStatus.BEFORE_OPEN)
+                    .build();
+                try {
+
+                    String redisKey = "timeDealProducts:"+dealOpenDate;
+
+                    redisHashRepository.putWithExpirationTime(
+                        redisKey, dealProductUuid, timeDealProduct,
+                        expirationInSeconds, TimeUnit.SECONDS
+                    );
+
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
             }
         }
     }

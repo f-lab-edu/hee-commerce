@@ -1,5 +1,6 @@
 package com.hcommerce.heecommerce.deal;
 
+import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
@@ -32,6 +34,9 @@ class DealControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Mock
+    private DealService dealService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -113,13 +118,9 @@ class DealControllerTest {
         @Test
         @DisplayName("returns 200 ok")
         void It_returns_200_OK() throws Exception {
-            // when
-            ResultActions resultActions = mockMvc.perform(
-                get("/dealProducts/{dealProductUuid}", DEAL_PRODUCT_UUID)
-            );
-
+            // given
             TimeDealProductDetail timeDealProductDetailFixture = TimeDealProductDetail.builder()
-                .dealProductUuid(UUID.fromString("01b8851c-d046-4635-83c1-eb0ca4342077"))
+                .dealProductUuid(DEAL_PRODUCT_UUID)
                 .dealProductTile("1000원 할인 상품 1")
                 .productMainImgUrl("/test.png")
                 .productDetailImgUrls(new String[]{"/detail_test1.png", "/detail_test2.png", "/detail_test3.png", "/detail_test4.png", "/detail_test5.png"})
@@ -128,6 +129,13 @@ class DealControllerTest {
                 .dealProductDiscountValue(1000)
                 .dealProductDealQuantity(3)
                 .build();
+
+            given(dealService.getTimeDealProductDetailByDealProductUuid(DEAL_PRODUCT_UUID)).willReturn(timeDealProductDetailFixture);
+
+            // when
+            ResultActions resultActions = mockMvc.perform(
+                get("/dealProducts/{dealProductUuid}", DEAL_PRODUCT_UUID)
+            );
 
             // then
             responseDtoFixture = ResponseDto.builder()

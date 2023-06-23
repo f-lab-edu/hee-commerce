@@ -2,6 +2,7 @@ package com.hcommerce.heecommerce.deal;
 
 import com.hcommerce.heecommerce.product.ProductsSort;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,5 +21,12 @@ public class DealService {
         List<TimeDealProductSummary> dealProducts = dealQueryRepository.getDealProductsByDealType(dealType, pageNumber, sort);
 
         return dealProducts;
+    }
+
+    public TimeDealProductDetail getTimeDealProductDetailByDealProductUuid(UUID dealProductUuid) {
+
+        TimeDealProductDetail timeDealProductDetail = dealQueryRepository.getTimeDealProductDetailByDealProductUuid(dealProductUuid);
+
+        return timeDealProductDetail;
     }
 }
