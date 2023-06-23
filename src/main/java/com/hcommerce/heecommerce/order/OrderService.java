@@ -38,7 +38,7 @@ public class OrderService {
         // (2) dealProductUuid 유효성 검사 : Redis
 
         // 1. 재고량 확인
-        String key = "dealProduct:"+orderForm.getDealProductUuid().toString();
+        String key = "dealProductInventory:"+orderForm.getDealProductUuid().toString();
 
         int inventory = inventoryQueryRepository.get(key); // key에 해당 하는 값 없으면 Null 나옴 -> TODO : Null 처리 어떻게? Optional 활용?
 
@@ -74,29 +74,18 @@ public class OrderService {
             return;
         }
 
-        /**
-         * 바로 MySQL을 사용한 것과 AWS SQS를 사용한 것과 어떤 차이가 있을까?
-         * 주문, 배송, 결제 가 각각 다른 Table 또는 다른 DB에 있을 때 이 작업 단위를 원자 단위로 하고 싶거나 또는
-         * MySQL에 바로 저장하는 것이 너무 오래 걸려 비동기 처리로 그 시간을 단축시키고 싶을 때, AWS SQS가 의미 있지 않을까?
-         * 그러면, 상황을 그런 상황으로 기획해야하지 않을까?
-         */
-        // 4. AWS SQS로 재고, 주문 및 결제 보내기
-        // 재고 - 이벤트 소싱 기법
-        //
-
-        // 주문
-        // 주문자
-        // 주문한 딜 상품 UUID
-        // 주문 수량
-
-        // 배송
-        // 수령자 정보 : 수령자 이름, 연락처, 주소, 상세주소, 배송 요청사항
-
+        // 4. 결제 : TODO : 결제 API 검토 후 추가해야할 데이터 추가
         // 결제 -> TODO : 결제 API 검토 후 추가해야할 데이터 추가
+        byte[] paymentUuid = convertUuidToBinary(UUID.randomUUID());
+
         // 총 결제 금액
         // 결제 유형
         // 결제 날짜
         // 카드 정보 등등
+
+        // 5. 주문 데이터 MySQL에 저장하기
+
+        // 6. 재고 : AWS SQS로 보내기
 
         // ------ 주문 끝
     }
