@@ -1,5 +1,14 @@
 package com.hcommerce.heecommerce.order;
 
+import static com.hcommerce.heecommerce.order.OutOfStockHandlingOption.ALL_CANCEL;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.verify;
+import static org.mockito.Mockito.times;
+
+import com.hcommerce.heecommerce.deal.DealQueryRepository;
+import com.hcommerce.heecommerce.deal.TimeDealProductNotFoundException;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -8,13 +17,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.verify;
-import static org.mockito.Mockito.times;
-
 @DisplayName("OrderService")
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
@@ -22,10 +24,16 @@ class OrderServiceTest {
     @Mock
     private OrderCommandRepository orderCommandRepository;
 
+    @Mock
+    private DealQueryRepository dealQueryRepository;
+
     @InjectMocks
     private OrderService orderService;
 
     private static final UUID TEMP_NOT_EXIST_UUID = UUID.fromString("8b455042-e709-11ed-93e5-0242ac110002");
+
+
+    private static final UUID NOT_EXIST_DEAL_PRODUCTUUID = UUID.fromString("8b455042-e709-11ed-93e5-0242ac110001");
 
     @Nested
     @DisplayName("completeOrderReceipt")
@@ -61,6 +69,44 @@ class OrderServiceTest {
                 // then
                 assertThrows(OrderNotFoundException.class, () -> {
                     orderService.completeOrderReceipt(TEMP_NOT_EXIST_UUID);
+                });
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("placeOrder")
+    class Describe_PlaceOrder {
+
+        @Nested
+        @DisplayName("with invalid OrderForm's DealProductUuid")
+        class Context_With_Invalid_DealProductUuid {
+            @Test
+            @DisplayName("throws TimeDealProductNotFoundException")
+            void It_throws_TimeDealProductNotFoundException() {
+                // given
+                given(dealQueryRepository.hasDealProductUuid(NOT_EXIST_DEAL_PRODUCTUUID)).willReturn(false);
+
+                OrderForm orderForm = OrderForm.builder()
+                    .userId(1)
+                    .recipientInfoForm(
+                        RecipientInfoForm.builder()
+                            .recipientName("leecommerce")
+                            .recipientPhoneNumber("01087654321")
+                            .recipientAddress("서울시 ")
+                            .recipientDetailAddress("101호")
+                            .shippingRequest("빠른 배송 부탁드려요!")
+                            .build()
+                    )
+                    .outOfStockHandlingOption(ALL_CANCEL)
+                    .dealProductUuid(NOT_EXIST_DEAL_PRODUCTUUID)
+                    .orderQuantity(1)
+                    .paymentType(PaymentType.CREDIT_CARD)
+                    .build();
+
+                // then
+                assertThrows(TimeDealProductNotFoundException.class, () -> {
+                    orderService.placeOrder(orderForm);
                 });
             }
         }
