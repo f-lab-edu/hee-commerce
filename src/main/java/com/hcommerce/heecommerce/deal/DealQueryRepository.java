@@ -49,6 +49,19 @@ public class DealQueryRepository {
         return sortedDealProducts;
     }
 
+    public int getMaxOrderQuantityPerOrderByDealProductUuid(UUID dealProductUuid) {
+
+        String dealOpenDate = getDateForCurrentDealProducts();
+
+        String key = "timeDealProducts:"+dealOpenDate;
+
+        String hashKey = dealProductUuid.toString();
+
+        TimeDealProduct timeDealProduct = redisHashRepository.getOneByKeyAndHashKey(key, hashKey, new TypeReference<TimeDealProduct>() {});
+
+        return timeDealProduct.getMaxOrderQuantityPerOrder();
+    }
+
     public TimeDealProductDetail getTimeDealProductDetailByDealProductUuid(UUID dealProductUuid) {
 
         String dealOpenDate = getDateForCurrentDealProducts();

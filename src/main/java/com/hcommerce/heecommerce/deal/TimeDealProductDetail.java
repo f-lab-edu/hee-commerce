@@ -15,6 +15,7 @@ public class TimeDealProductDetail {
     private final DiscountType dealProductDiscountType;
     private final int dealProductDiscountValue;
     private final int dealProductDealQuantity;
+    private final int maxOrderQuantityPerOrder;
 
     @Builder
     public TimeDealProductDetail(
@@ -25,7 +26,8 @@ public class TimeDealProductDetail {
         int productOriginPrice,
         DiscountType dealProductDiscountType,
         int dealProductDiscountValue,
-        int dealProductDealQuantity
+        int dealProductDealQuantity,
+        int maxOrderQuantityPerOrder
     ) {
         this.dealProductUuid = dealProductUuid;
         this.dealProductTile = dealProductTile;
@@ -35,5 +37,6 @@ public class TimeDealProductDetail {
         this.dealProductDiscountType = dealProductDiscountType;
         this.dealProductDiscountValue = dealProductDiscountValue;
         this.dealProductDealQuantity = dealProductDealQuantity;
+        this.maxOrderQuantityPerOrder = maxOrderQuantityPerOrder;
     }
 }

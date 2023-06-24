@@ -35,6 +35,10 @@ class OrderServiceTest {
 
     private static final UUID NOT_EXIST_DEAL_PRODUCTUUID = UUID.fromString("8b455042-e709-11ed-93e5-0242ac110001");
 
+    private static final UUID EXIST_DEAL_PRODUCTUUID = UUID.fromString("8b455042-e709-11ed-93e5-0242ac110000");
+
+    private static final int ORDER_QUANTITY_EXCEEDING_MAX_ORDER_QUANTITY = 9999;
+
     @Nested
     @DisplayName("completeOrderReceipt")
     class Describe_CompleteOrderReceipt {
@@ -106,6 +110,40 @@ class OrderServiceTest {
 
                 // then
                 assertThrows(TimeDealProductNotFoundException.class, () -> {
+                    orderService.placeOrder(orderForm);
+                });
+            }
+        }
+
+        @Nested
+        @DisplayName("with invalid OrderForm's OrderQuantity exceeding maxOrderQuantity")
+        class Context_With_Invalid_OrderQuantity_Exceeding_MaxOrderQuantity {
+            @Test
+            @DisplayName("throws MaxOrderQuantityExceededException")
+            void It_throws_MaxOrderQuantityExceededException() {
+                // given
+                given(dealQueryRepository.hasDealProductUuid(EXIST_DEAL_PRODUCTUUID)).willReturn(true);
+                given(dealQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(EXIST_DEAL_PRODUCTUUID)).willReturn(10);
+
+                OrderForm orderForm = OrderForm.builder()
+                    .userId(1)
+                    .recipientInfoForm(
+                        RecipientInfoForm.builder()
+                            .recipientName("leecommerce")
+                            .recipientPhoneNumber("01087654321")
+                            .recipientAddress("서울시 ")
+                            .recipientDetailAddress("101호")
+                            .shippingRequest("빠른 배송 부탁드려요!")
+                            .build()
+                    )
+                    .outOfStockHandlingOption(ALL_CANCEL)
+                    .dealProductUuid(EXIST_DEAL_PRODUCTUUID)
+                    .orderQuantity(ORDER_QUANTITY_EXCEEDING_MAX_ORDER_QUANTITY)
+                    .paymentType(PaymentType.CREDIT_CARD)
+                    .build();
+
+                // then
+                assertThrows(MaxOrderQuantityExceededException.class, () -> {
                     orderService.placeOrder(orderForm);
                 });
             }

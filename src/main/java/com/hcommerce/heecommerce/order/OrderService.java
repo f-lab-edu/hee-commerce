@@ -35,13 +35,14 @@ public class OrderService {
     }
 
     private void validateOrderForm(OrderForm orderForm) {
-        validateHasDealProductUuid(orderForm.getDealProductUuid());
+        UUID orderUuid = orderForm.getDealProductUuid();
+
+        validateHasDealProductUuid(orderUuid);
 
         // TODO : Mybatis 연동이 필요하므로, 다른 PR에서 작업할 예정
         validateHasUserId(orderForm.getUserId());
 
-        // TODO : RedisRepository에 추가적인 함수 필요하므로, 다른 PR에서 작업할 예정
-        validateOrderQuantityInMaxOrderQuantityPerOrder(orderForm.getOrderQuantity());
+        validateOrderQuantityInMaxOrderQuantityPerOrder(orderUuid, orderForm.getOrderQuantity());
     }
 
     private void validateHasDealProductUuid(UUID dealProductUuid) {
@@ -56,7 +57,11 @@ public class OrderService {
 
     }
 
-    private void validateOrderQuantityInMaxOrderQuantityPerOrder(int orderQuantity) {
+    private void validateOrderQuantityInMaxOrderQuantityPerOrder(UUID orderUuid, int orderQuantity) {
+        int maxOrderQuantity = dealQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(orderUuid);
 
+        if(maxOrderQuantity < orderQuantity) {
+            throw new MaxOrderQuantityExceededException(maxOrderQuantity);
+        }
     }
 }
