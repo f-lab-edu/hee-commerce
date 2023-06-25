@@ -99,6 +99,7 @@ public class DealQueryRepository {
             .dealProductDealQuantity(timeDealProduct.getDealProductDealQuantity())
             .productMainImgUrl(timeDealProduct.getProductMainImgUrl())
             .productDetailImgUrls(timeDealProduct.getProductDetailImgUrls())
+            .maxOrderQuantityPerOrder(timeDealProduct.getMaxOrderQuantityPerOrder())
             .build();
     }
 
