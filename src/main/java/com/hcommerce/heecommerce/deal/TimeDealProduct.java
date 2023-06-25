@@ -21,6 +21,7 @@ public class TimeDealProduct {
 
     private final String productMainImgThumbnailUrl;
     private final DealProductStatus dealProductStatus;
+    private final int maxOrderQuantityPerOrder;
 
     @Builder
     @ConstructorProperties({
@@ -33,7 +34,8 @@ public class TimeDealProduct {
         "dealProductDealQuantity",
         "productDetailImgUrls",
         "productMainImgThumbnailUrl",
-        "dealProductStatus"
+        "dealProductStatus",
+        "maxOrderQuantityPerOrder"
     })
     public TimeDealProduct(
         UUID dealProductUuid,
@@ -45,7 +47,8 @@ public class TimeDealProduct {
         int dealProductDealQuantity,
         String[] productDetailImgUrls,
         String productMainImgThumbnailUrl,
-        DealProductStatus dealProductStatus
+        DealProductStatus dealProductStatus,
+        int maxOrderQuantityPerOrder
     ) {
         this.dealProductUuid = dealProductUuid;
         this.dealProductTile = dealProductTile;
@@ -57,5 +60,6 @@ public class TimeDealProduct {
         this.productDetailImgUrls = productDetailImgUrls;
         this.productMainImgThumbnailUrl = productMainImgThumbnailUrl;
         this.dealProductStatus = dealProductStatus;
+        this.maxOrderQuantityPerOrder = maxOrderQuantityPerOrder;
     }
 }

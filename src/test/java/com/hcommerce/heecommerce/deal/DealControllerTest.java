@@ -128,6 +128,7 @@ class DealControllerTest {
                 .dealProductDiscountType(DiscountType.FIXED_AMOUNT)
                 .dealProductDiscountValue(1000)
                 .dealProductDealQuantity(3)
+                .maxOrderQuantityPerOrder(10)
                 .build();
 
             given(dealService.getTimeDealProductDetailByDealProductUuid(DEAL_PRODUCT_UUID)).willReturn(timeDealProductDetailFixture);
