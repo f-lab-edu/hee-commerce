@@ -29,12 +29,12 @@ public class DealController {
             @RequestParam ProductsSort sort
     ) {
 
-        List<TimeDealProductSummary> dealProducts = dealService.getDealProductsByDealType(dealType, pageNumber, sort);
+        List<DealProductSummary> dealProducts = dealService.getDealProductsByDealType(dealType, pageNumber, sort);
 
         return ResponseDto.builder()
                 .code(HttpStatus.OK.name())
                 .message("딜 상품 목록 조회 성공하였습니다.")
-                .data(PageDto.<TimeDealProductSummary>builder()
+                .data(PageDto.<DealProductSummary>builder()
                         .pageNumber(0)
                         .pageSize(20)
                         .totalCount(dealProducts.size())

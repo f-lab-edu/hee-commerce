@@ -10,7 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class TimeDealProductSummary {
+public class DealProductSummary {
 
     private final UUID dealProductUuid;
     private final String dealProductTile;
@@ -22,7 +22,7 @@ public class TimeDealProductSummary {
     private final DealProductStatus dealProductStatus;
 
     @Builder
-    public TimeDealProductSummary(
+    public DealProductSummary(
         UUID dealProductUuid,
         String dealProductTile,
         String productMainImgThumbnailUrl,
@@ -42,8 +42,8 @@ public class TimeDealProductSummary {
         this.dealProductStatus = dealProductStatus;
     }
 
-    public static List<TimeDealProductSummary> sortDealProducts(List<TimeDealProductSummary> dealProducts, ProductsSort sort) {
-        List<TimeDealProductSummary> newDealProducts = new ArrayList<>(dealProducts);
+    public static List<DealProductSummary> sortDealProducts(List<DealProductSummary> dealProducts, ProductsSort sort) {
+        List<DealProductSummary> newDealProducts = new ArrayList<>(dealProducts);
 
         if(sort == ProductsSort.PRICE_ASC) {
             Collections.sort(newDealProducts, originPriceAscComparator);
@@ -58,9 +58,9 @@ public class TimeDealProductSummary {
         }
     }
 
-    private static Comparator<TimeDealProductSummary> originPriceAscComparator = new Comparator<TimeDealProductSummary>() {
+    private static Comparator<DealProductSummary> originPriceAscComparator = new Comparator<DealProductSummary>() {
         @Override
-        public int compare(TimeDealProductSummary o1, TimeDealProductSummary o2) {
+        public int compare(DealProductSummary o1, DealProductSummary o2) {
             return o1.getProductOriginPrice() - o2.getProductOriginPrice();
         }
     };
