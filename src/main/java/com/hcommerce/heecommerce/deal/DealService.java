@@ -16,9 +16,9 @@ public class DealService {
         this.dealQueryRepository = dealQueryRepository;
     }
 
-    public List<TimeDealProductSummary> getDealProductsByDealType(DealType dealType, int pageNumber, ProductsSort sort) {
+    public List<DealProductSummary> getDealProductsByDealType(DealType dealType, int pageNumber, ProductsSort sort) {
 
-        List<TimeDealProductSummary> dealProducts = dealQueryRepository.getDealProductsByDealType(dealType, pageNumber, sort);
+        List<DealProductSummary> dealProducts = dealQueryRepository.getDealProductsByDealType(dealType, pageNumber, sort);
 
         return dealProducts;
     }

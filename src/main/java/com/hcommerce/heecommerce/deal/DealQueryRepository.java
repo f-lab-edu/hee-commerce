@@ -32,7 +32,7 @@ public class DealQueryRepository {
         this.redisHashRepository = redisHashRepository;
     }
 
-    public List<TimeDealProductSummary> getDealProductsByDealType(DealType dealType, int pageNumber, ProductsSort sort) {
+    public List<DealProductSummary> getDealProductsByDealType(DealType dealType, int pageNumber, ProductsSort sort) {
         // TODO : 삭제 예정 -> 테스트용 데이터 추가로 만듬
 //        init();
 
@@ -42,9 +42,9 @@ public class DealQueryRepository {
 
         List<TimeDealProduct> timeDealProducts = getDealProducts(dateForCurrentDealProducts, dealProductIds);
 
-        List<TimeDealProductSummary> timeDealProductSummaries = convertTimeDealProductToTimeDealProductSummary(timeDealProducts);
+        List<DealProductSummary> timeDealProductSummaries = convertTimeDealProductToTimeDealProductSummary(timeDealProducts);
 
-        List<TimeDealProductSummary> sortedDealProducts = TimeDealProductSummary.sortDealProducts(timeDealProductSummaries, sort);
+        List<DealProductSummary> sortedDealProducts = DealProductSummary.sortDealProducts(timeDealProductSummaries, sort);
 
         return sortedDealProducts;
     }
@@ -64,14 +64,14 @@ public class DealQueryRepository {
         return timeDealProductDetail;
     }
 
-    private List<TimeDealProductSummary> convertTimeDealProductToTimeDealProductSummary(List<TimeDealProduct> timeDealProducts) {
+    private List<DealProductSummary> convertTimeDealProductToTimeDealProductSummary(List<TimeDealProduct> timeDealProducts) {
 
-        List<TimeDealProductSummary> timeDealProductSummaries = new ArrayList<>();
+        List<DealProductSummary> timeDealProductSummaries = new ArrayList<>();
 
         for (int i = 0; i < timeDealProducts.size(); i++) {
             TimeDealProduct timeDealProduct = timeDealProducts.get(i);
 
-            TimeDealProductSummary timeDealProductSummary = TimeDealProductSummary.builder()
+            DealProductSummary dealProductSummary = DealProductSummary.builder()
                 .dealProductUuid(timeDealProduct.getDealProductUuid())
                 .dealProductTile(timeDealProduct.getDealProductTile())
                 .productMainImgThumbnailUrl(timeDealProduct.getProductMainImgThumbnailUrl())
@@ -82,7 +82,7 @@ public class DealQueryRepository {
                 .dealProductStatus(timeDealProduct.getDealProductStatus())
                 .build();
 
-            timeDealProductSummaries.add(timeDealProductSummary);
+            timeDealProductSummaries.add(dealProductSummary);
         }
 
         return timeDealProductSummaries;

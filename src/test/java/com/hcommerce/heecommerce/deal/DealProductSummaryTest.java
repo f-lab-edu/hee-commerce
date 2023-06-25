@@ -12,9 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 
 @DisplayName("TimeDealProductSummary")
-class TimeDealProductSummaryTest {
+class DealProductSummaryTest {
 
-    private List<TimeDealProductSummary> dealProductsFixture;
+    private List<DealProductSummary> dealProductsFixture;
 
     @BeforeEach
     void setUp() {
@@ -22,7 +22,7 @@ class TimeDealProductSummaryTest {
 
         dealProductsFixture = new ArrayList<>();
 
-        dealProductsFixture.add(TimeDealProductSummary.builder()
+        dealProductsFixture.add(DealProductSummary.builder()
             .dealProductUuid(UUID.fromString("01b8851c-d046-4635-83c1-eb0ca4342077"))
             .dealProductTile("1000원 할인 상품 1")
             .productMainImgThumbnailUrl("/test.png")
@@ -33,7 +33,7 @@ class TimeDealProductSummaryTest {
             .dealProductStatus(DealProductStatus.BEFORE_OPEN)
             .build());
 
-        dealProductsFixture.add(TimeDealProductSummary.builder()
+        dealProductsFixture.add(DealProductSummary.builder()
             .dealProductUuid(UUID.fromString("01b8851c-d046-4635-83c1-eb0ca4342075"))
             .dealProductTile("1000원 할인 상품 1")
             .productMainImgThumbnailUrl("/test.png")
@@ -44,7 +44,7 @@ class TimeDealProductSummaryTest {
             .dealProductStatus(DealProductStatus.BEFORE_OPEN)
             .build());
 
-        dealProductsFixture.add(TimeDealProductSummary.builder()
+        dealProductsFixture.add(DealProductSummary.builder()
             .dealProductUuid(UUID.fromString("01b8851c-d046-4635-83c1-eb0ca4342073"))
             .dealProductTile("1000원 할인 상품 1")
             .productMainImgThumbnailUrl("/test.png")
@@ -65,9 +65,9 @@ class TimeDealProductSummaryTest {
     @DisplayName("sorted in ascending order of price")
     void It_Sorted_In_Ascending_Order_Of_Price() {
         // given
-        List<TimeDealProductSummary> expectedDealProducts = new ArrayList<>();
+        List<DealProductSummary> expectedDealProducts = new ArrayList<>();
 
-        expectedDealProducts.add(TimeDealProductSummary.builder()
+        expectedDealProducts.add(DealProductSummary.builder()
             .dealProductUuid(UUID.fromString("01b8851c-d046-4635-83c1-eb0ca4342073"))
             .dealProductTile("1000원 할인 상품 1")
             .productMainImgThumbnailUrl("/test.png")
@@ -78,7 +78,7 @@ class TimeDealProductSummaryTest {
             .dealProductStatus(DealProductStatus.BEFORE_OPEN)
             .build());
 
-        expectedDealProducts.add(TimeDealProductSummary.builder()
+        expectedDealProducts.add(DealProductSummary.builder()
             .dealProductUuid(UUID.fromString("01b8851c-d046-4635-83c1-eb0ca4342075"))
             .dealProductTile("1000원 할인 상품 1")
             .productMainImgThumbnailUrl("/test.png")
@@ -89,7 +89,7 @@ class TimeDealProductSummaryTest {
             .dealProductStatus(DealProductStatus.BEFORE_OPEN)
             .build());
 
-        expectedDealProducts.add(TimeDealProductSummary.builder()
+        expectedDealProducts.add(DealProductSummary.builder()
             .dealProductUuid(UUID.fromString("01b8851c-d046-4635-83c1-eb0ca4342077"))
             .dealProductTile("1000원 할인 상품 1")
             .productMainImgThumbnailUrl("/test.png")
@@ -101,7 +101,7 @@ class TimeDealProductSummaryTest {
             .build());
 
         // when
-        List<TimeDealProductSummary> resultDealProducts = TimeDealProductSummary.sortDealProducts(dealProductsFixture, ProductsSort.PRICE_ASC);
+        List<DealProductSummary> resultDealProducts = DealProductSummary.sortDealProducts(dealProductsFixture, ProductsSort.PRICE_ASC);
 
         // given
         for (int i = 0; i < expectedDealProducts.size(); i++) {
@@ -113,9 +113,9 @@ class TimeDealProductSummaryTest {
     @Test
     void It_Sorted_In_Descending_Order_Of_Price() {
         // given
-        List<TimeDealProductSummary> expectedDealProducts = new ArrayList<>();
+        List<DealProductSummary> expectedDealProducts = new ArrayList<>();
 
-        expectedDealProducts.add(TimeDealProductSummary.builder()
+        expectedDealProducts.add(DealProductSummary.builder()
             .dealProductUuid(UUID.fromString("01b8851c-d046-4635-83c1-eb0ca4342073"))
             .dealProductTile("1000원 할인 상품 1")
             .productMainImgThumbnailUrl("/test.png")
@@ -126,7 +126,7 @@ class TimeDealProductSummaryTest {
             .dealProductStatus(DealProductStatus.BEFORE_OPEN)
             .build());
 
-        expectedDealProducts.add(TimeDealProductSummary.builder()
+        expectedDealProducts.add(DealProductSummary.builder()
             .dealProductUuid(UUID.fromString("01b8851c-d046-4635-83c1-eb0ca4342075"))
             .dealProductTile("1000원 할인 상품 1")
             .productMainImgThumbnailUrl("/test.png")
@@ -137,7 +137,7 @@ class TimeDealProductSummaryTest {
             .dealProductStatus(DealProductStatus.BEFORE_OPEN)
             .build());
 
-        expectedDealProducts.add(TimeDealProductSummary.builder()
+        expectedDealProducts.add(DealProductSummary.builder()
             .dealProductUuid(UUID.fromString("01b8851c-d046-4635-83c1-eb0ca4342077"))
             .dealProductTile("1000원 할인 상품 1")
             .productMainImgThumbnailUrl("/test.png")
@@ -149,7 +149,7 @@ class TimeDealProductSummaryTest {
             .build());
 
         // when
-        List<TimeDealProductSummary> resultDealProducts = TimeDealProductSummary.sortDealProducts(dealProductsFixture, ProductsSort.PRICE_DESC);
+        List<DealProductSummary> resultDealProducts = DealProductSummary.sortDealProducts(dealProductsFixture, ProductsSort.PRICE_DESC);
 
         // given
         for (int i = 0; i < expectedDealProducts.size(); i++) {
