@@ -134,6 +134,7 @@ public class DealQueryRepository {
                     .productDetailImgUrls(new String[]{"/detail_test1.png", "/detail_test2.png", "/detail_test3.png", "/detail_test4.png", "/detail_test5.png"})
                     .productMainImgUrl("/main_test.png")
                     .dealProductStatus(DealProductStatus.BEFORE_OPEN)
+                    .maxOrderQuantityPerOrder(10)
                     .build();
                 try {
 
