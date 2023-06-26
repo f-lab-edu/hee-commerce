@@ -2,7 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.0.5'
 	id 'io.spring.dependency-management' version '1.1.0'
-	id "org.asciidoctor.jvm.convert" version "3.3.2"
+	id "org.asciidoctor.jvm.convert" version "3.3.2" // restdocs
 }
 
 group = 'com.hcommerce'
@@ -10,7 +10,7 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 
 configurations {
-	asciidoctorExt
+	asciidoctorExt // restdocs
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
@@ -21,42 +21,62 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	// [spring boot starter] web
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// [spring boot starter] validation
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'mysql:mysql-connector-java:8.0.22'
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-	implementation 'org.redisson:redisson-spring-boot-starter:3.21.3'
+
+	// flyway
 	implementation 'org.flywaydb:flyway-core'
 	implementation 'org.flywaydb:flyway-mysql'
+
+	// redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.redisson:redisson-spring-boot-starter:3.21.3'
+
+	// devtools
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	compileOnly 'org.projectlombok:lombok'
+
+	// mysql
+	implementation 'mysql:mysql-connector-java:8.0.22'
 	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	// lombok
+	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+
+	// [spring boot starter] test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	// restdocs
 	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 	asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
 }
 
+// restdocs
 ext {
 	snippetsDir = file('build/generated-snippets')
 }
 
 test {
 	useJUnitPlatform()
-	outputs.dir snippetsDir
+	outputs.dir snippetsDir // restdocs
 }
 
+// restdocs
 asciidoctor {
 	inputs.dir snippetsDir
 	configurations 'asciidoctorExt'
 	dependsOn test
 }
 
+// restdocs
 asciidoctor.doFirst {
 	delete file('src/main/resources/static/docs')
 }
 
+// restdocs
 asciidoctor.doLast {
 	copy {
 		from file("build/docs/asciidoc")
@@ -70,3 +90,4 @@ asciidoctor.doLast {
 		}
 	}
 }
+
