@@ -1,6 +1,6 @@
 package com.hcommerce.heecommerce.order;
 
-import com.hcommerce.heecommerce.deal.DealQueryRepository;
+import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,6 +135,6 @@ public class OrderService {
      * @param amount : 원상복귀해야 하는 재고량
      */
     private void rollbackReducedInventory(String key, int amount) {
-        return inventoryCommandRepository.increaseByAmount(key, amount);
+        inventoryCommandRepository.increaseByAmount(key, amount);
     }
 }
