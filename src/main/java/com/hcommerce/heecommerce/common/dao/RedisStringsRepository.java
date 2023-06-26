@@ -43,4 +43,8 @@ public class RedisStringsRepository {
     public long increaseByAmount(String key, long amount) {
         return redisTemplate.opsForValue().increment(key, amount); // 증가시킨 후의 결과값이 return된다.
     }
+
+    public void delete(String key) {
+        redisTemplate.delete(key);
+    }
 }
