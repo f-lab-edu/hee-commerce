@@ -57,10 +57,6 @@ public class OrderService {
 
         int inventoryAfterDecrease = inventoryCommandRepository.decreaseByAmount(key, orderQuantity);
 
-        if(inventoryAfterDecrease == 0) {
-            // TODO : [품절 처리] Redis에 저장된 dealproducts 목록에서 딜 상품 상태 오픈 -> 품절로 변경
-        }
-
         // 3. 실제 주문량 계산
         int realOrderQuantity = calculateRealOrderQuantity(inventoryAfterDecrease, orderQuantity, orderForm.getOutOfStockHandlingOption());
 
