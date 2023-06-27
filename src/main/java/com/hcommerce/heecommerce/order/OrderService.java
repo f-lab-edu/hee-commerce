@@ -1,10 +1,13 @@
 package com.hcommerce.heecommerce.order;
 
+import com.hcommerce.heecommerce.deal.DealQueryRepository;
+import com.hcommerce.heecommerce.deal.TimeDealProductNotFoundException;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
-import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 public class OrderService {
@@ -15,15 +18,20 @@ public class OrderService {
 
     private final InventoryCommandRepository inventoryCommandRepository;
 
+    private final DealQueryRepository dealQueryRepository;
+
     @Autowired
     public OrderService(
         OrderCommandRepository orderCommandRepository,
         InventoryQueryRepository inventoryQueryRepository,
-        InventoryCommandRepository inventoryCommandRepository
+        InventoryCommandRepository inventoryCommandRepository,
+        DealQueryRepository dealQueryRepository
+
     ) {
         this.orderCommandRepository = orderCommandRepository;
         this.inventoryQueryRepository = inventoryQueryRepository;
         this.inventoryCommandRepository = inventoryCommandRepository;
+        this.dealQueryRepository = dealQueryRepository;
     }
 
     public void completeOrderReceipt(UUID orderUuid) {
@@ -49,6 +57,7 @@ public class OrderService {
         UUID dealProductUuid = orderForm.getDealProductUuid();
 
         // 1. 유효성 검사
+        validateOrderForm(orderForm);
 
         // 2. 재고량 감소
         String key = "dealProductInventory:"+dealProductUuid.toString();
@@ -72,6 +81,32 @@ public class OrderService {
 
         // 5. MySQL 주문 내역 저장
         saveOrder(); // TODO : 구체적인 건 다른 PR에서 정해지면 완성할 에정
+    }
+
+    private void validateOrderForm(OrderForm orderForm) {
+        validateHasDealProductUuid(orderForm.getDealProductUuid());
+
+        // TODO : Mybatis 연동이 필요하므로, 다른 PR에서 작업할 예정
+        validateHasUserId(orderForm.getUserId());
+
+        // TODO : RedisRepository에 추가적인 함수 필요하므로, 다른 PR에서 작업할 예정
+        validateOrderQuantityInMaxOrderQuantityPerOrder(orderForm.getOrderQuantity());
+    }
+
+    private void validateHasDealProductUuid(UUID dealProductUuid) {
+        boolean hasDealProductUuid = dealQueryRepository.hasDealProductUuid(dealProductUuid);
+
+        if(!hasDealProductUuid) {
+            throw new TimeDealProductNotFoundException(dealProductUuid);
+        }
+    }
+
+    private void validateHasUserId(int userId) {
+
+    }
+
+    private void validateOrderQuantityInMaxOrderQuantityPerOrder(int orderQuantity) {
+
     }
 
     /**

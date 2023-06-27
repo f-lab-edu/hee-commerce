@@ -28,6 +28,10 @@ public class RedisHashRepository<T> {
         return convertObjectFromString(item, objectTypeReference);
     }
 
+    public boolean hasKey(String key, String hashKey) {
+        return hashOperations.hasKey(key, hashKey);
+    }
+
     public List<T> getAllByKey(String key, TypeReference<T> objectTypeReference) {
         List<T> list = new ArrayList<>();
 

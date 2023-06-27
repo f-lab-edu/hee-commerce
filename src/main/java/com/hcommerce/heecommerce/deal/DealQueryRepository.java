@@ -64,6 +64,16 @@ public class DealQueryRepository {
         return timeDealProductDetail;
     }
 
+    public boolean hasDealProductUuid(UUID dealProductUuid) {
+        String dealOpenDate = getDateForCurrentDealProducts();
+
+        String key = "timeDealProducts:"+dealOpenDate;
+
+        String hashKey = dealProductUuid.toString();
+
+        return redisHashRepository.hasKey(key, hashKey);
+    }
+
     private List<DealProductSummary> convertTimeDealProductToTimeDealProductSummary(List<TimeDealProduct> timeDealProducts) {
 
         List<DealProductSummary> timeDealProductSummaries = new ArrayList<>();
