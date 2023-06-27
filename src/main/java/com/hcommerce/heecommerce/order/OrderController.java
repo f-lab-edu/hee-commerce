@@ -55,6 +55,8 @@ public class OrderController {
          * - 재고 부족으로 주문이 불가능한 경우 409 error 예외 : 재고가 0이어서 불가능한 경우가 있을 수 있고, 재고는 2개인데, 주문량이 3개여서 주문이 불가능한 경우도 있을 수 있는데, 이 경우는 어떻게 처리할 것인가?
          */
 
+        orderService.placeOrder(orderForm);
+
         return ResponseDto.builder()
                 .code(HttpStatus.CREATED.name())
                 .message("주문 접수가 완료되었습니다.")
