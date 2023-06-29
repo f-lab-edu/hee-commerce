@@ -68,7 +68,7 @@ class DealServiceTest {
 
     @Nested
     @DisplayName("getTimeDealProductDetailByDealProductUuid")
-    class Describe_GetTimeDealProductDetailByDealProductUuid {
+    class Describe_GetTimeDealProductDetailByDealProductEntityUuid {
         @Test
         @DisplayName("return dealProducts")
         void It_return_dealProducts() {

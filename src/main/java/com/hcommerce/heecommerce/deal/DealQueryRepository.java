@@ -21,12 +21,12 @@ public class DealQueryRepository {
 
     private final RedisSortSetRepository<String> redisSortSetRepository;
 
-    private final RedisHashRepository<TimeDealProduct> redisHashRepository;
+    private final RedisHashRepository<TimeDealProductEntity> redisHashRepository;
 
     @Autowired
     public DealQueryRepository(
         RedisSortSetRepository<String> redisSortSetRepository,
-        RedisHashRepository<TimeDealProduct> redisHashRepository
+        RedisHashRepository<TimeDealProductEntity> redisHashRepository
     ) {
         this.redisSortSetRepository = redisSortSetRepository;
         this.redisHashRepository = redisHashRepository;
@@ -40,9 +40,9 @@ public class DealQueryRepository {
 
         Set<String> dealProductIds = getDealProductIds(dealType, dateForCurrentDealProducts, pageNumber);
 
-        List<TimeDealProduct> timeDealProducts = getDealProducts(dateForCurrentDealProducts, dealProductIds);
+        List<TimeDealProductEntity> timeDealProductEntities = getDealProducts(dateForCurrentDealProducts, dealProductIds);
 
-        List<DealProductSummary> timeDealProductSummaries = convertTimeDealProductToTimeDealProductSummary(timeDealProducts);
+        List<DealProductSummary> timeDealProductSummaries = convertTimeDealProductToTimeDealProductSummary(timeDealProductEntities);
 
         List<DealProductSummary> sortedDealProducts = DealProductSummary.sortDealProducts(timeDealProductSummaries, sort);
 
@@ -57,29 +57,29 @@ public class DealQueryRepository {
 
         String hashKey = dealProductUuid.toString();
 
-        TimeDealProduct timeDealProduct = redisHashRepository.getOneByKeyAndHashKey(key, hashKey, new TypeReference<TimeDealProduct>() {});
+        TimeDealProductEntity timeDealProductEntity = redisHashRepository.getOneByKeyAndHashKey(key, hashKey, new TypeReference<TimeDealProductEntity>() {});
 
-        TimeDealProductDetail timeDealProductDetail = convertTimeDealProductToTimeDealProductDetail(timeDealProduct);
+        TimeDealProductDetail timeDealProductDetail = convertTimeDealProductToTimeDealProductDetail(timeDealProductEntity);
 
         return timeDealProductDetail;
     }
 
-    private List<DealProductSummary> convertTimeDealProductToTimeDealProductSummary(List<TimeDealProduct> timeDealProducts) {
+    private List<DealProductSummary> convertTimeDealProductToTimeDealProductSummary(List<TimeDealProductEntity> timeDealProductEntities) {
 
         List<DealProductSummary> timeDealProductSummaries = new ArrayList<>();
 
-        for (int i = 0; i < timeDealProducts.size(); i++) {
-            TimeDealProduct timeDealProduct = timeDealProducts.get(i);
+        for (int i = 0; i < timeDealProductEntities.size(); i++) {
+            TimeDealProductEntity timeDealProductEntity = timeDealProductEntities.get(i);
 
             DealProductSummary dealProductSummary = DealProductSummary.builder()
-                .dealProductUuid(timeDealProduct.getDealProductUuid())
-                .dealProductTile(timeDealProduct.getDealProductTile())
-                .productMainImgThumbnailUrl(timeDealProduct.getProductMainImgThumbnailUrl())
-                .productOriginPrice(timeDealProduct.getProductOriginPrice())
-                .dealProductDiscountType(timeDealProduct.getDealProductDiscountType())
-                .dealProductDiscountValue(timeDealProduct.getDealProductDiscountValue())
-                .dealProductDealQuantity(timeDealProduct.getDealProductDealQuantity())
-                .dealProductStatus(timeDealProduct.getDealProductStatus())
+                .dealProductUuid(timeDealProductEntity.getDealProductUuid())
+                .dealProductTile(timeDealProductEntity.getDealProductTile())
+                .productMainImgThumbnailUrl(timeDealProductEntity.getProductMainImgThumbnailUrl())
+                .productOriginPrice(timeDealProductEntity.getProductOriginPrice())
+                .dealProductDiscountType(timeDealProductEntity.getDealProductDiscountType())
+                .dealProductDiscountValue(timeDealProductEntity.getDealProductDiscountValue())
+                .dealProductDealQuantity(timeDealProductEntity.getDealProductDealQuantity())
+                .dealProductStatus(timeDealProductEntity.getDealProductStatus())
                 .build();
 
             timeDealProductSummaries.add(dealProductSummary);
@@ -88,18 +88,18 @@ public class DealQueryRepository {
         return timeDealProductSummaries;
     }
 
-    private TimeDealProductDetail convertTimeDealProductToTimeDealProductDetail(TimeDealProduct timeDealProduct) {
+    private TimeDealProductDetail convertTimeDealProductToTimeDealProductDetail(TimeDealProductEntity timeDealProductEntity) {
 
         return TimeDealProductDetail.builder()
-            .dealProductUuid(timeDealProduct.getDealProductUuid())
-            .dealProductTile(timeDealProduct.getDealProductTile())
-            .productOriginPrice(timeDealProduct.getProductOriginPrice())
-            .dealProductDiscountType(timeDealProduct.getDealProductDiscountType())
-            .dealProductDiscountValue(timeDealProduct.getDealProductDiscountValue())
-            .dealProductDealQuantity(timeDealProduct.getDealProductDealQuantity())
-            .productMainImgUrl(timeDealProduct.getProductMainImgUrl())
-            .productDetailImgUrls(timeDealProduct.getProductDetailImgUrls())
-            .maxOrderQuantityPerOrder(timeDealProduct.getMaxOrderQuantityPerOrder())
+            .dealProductUuid(timeDealProductEntity.getDealProductUuid())
+            .dealProductTile(timeDealProductEntity.getDealProductTile())
+            .productOriginPrice(timeDealProductEntity.getProductOriginPrice())
+            .dealProductDiscountType(timeDealProductEntity.getDealProductDiscountType())
+            .dealProductDiscountValue(timeDealProductEntity.getDealProductDiscountValue())
+            .dealProductDealQuantity(timeDealProductEntity.getDealProductDealQuantity())
+            .productMainImgUrl(timeDealProductEntity.getProductMainImgUrl())
+            .productDetailImgUrls(timeDealProductEntity.getProductDetailImgUrls())
+            .maxOrderQuantityPerOrder(timeDealProductEntity.getMaxOrderQuantityPerOrder())
             .build();
     }
 
@@ -124,7 +124,7 @@ public class DealQueryRepository {
                     expirationInSeconds, TimeUnit.SECONDS
                 ); // 일단, 등록된 순서대로 정렬되도록 저장
 
-                TimeDealProduct timeDealProduct = TimeDealProduct.builder()
+                TimeDealProductEntity timeDealProductEntity = TimeDealProductEntity.builder()
                     .dealProductUuid(UUID.fromString(dealProductUuid))
                     .dealProductTile("1000원 할인 상품 "+i)
                     .productMainImgThumbnailUrl("/main_thumbnail_test.png")
@@ -142,7 +142,7 @@ public class DealQueryRepository {
                     String redisKey = "timeDealProducts:"+dealOpenDate;
 
                     redisHashRepository.putWithExpirationTime(
-                        redisKey, dealProductUuid, timeDealProduct,
+                        redisKey, dealProductUuid, timeDealProductEntity,
                         expirationInSeconds, TimeUnit.SECONDS
                     );
 
@@ -153,11 +153,11 @@ public class DealQueryRepository {
         }
     }
 
-    private List<TimeDealProduct> getDealProducts(String dealOpenDate, Set<String> dealProductIds) {
+    private List<TimeDealProductEntity> getDealProducts(String dealOpenDate, Set<String> dealProductIds) {
 
         String redisKey = "timeDealProducts:"+dealOpenDate;
 
-        List<TimeDealProduct> dealProducts = redisHashRepository.getAllByKey(redisKey, new TypeReference<TimeDealProduct>() {});
+        List<TimeDealProductEntity> dealProducts = redisHashRepository.getAllByKey(redisKey, new TypeReference<TimeDealProductEntity>() {});
 
         return dealProducts;
     }
