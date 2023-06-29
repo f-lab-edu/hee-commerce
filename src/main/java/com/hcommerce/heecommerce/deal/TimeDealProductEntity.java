@@ -7,7 +7,7 @@ import lombok.Getter;
 
 
 @Getter
-public class TimeDealProduct {
+public class TimeDealProductEntity {
 
     private final UUID dealProductUuid;
     private final String dealProductTile;
@@ -37,7 +37,7 @@ public class TimeDealProduct {
         "dealProductStatus",
         "maxOrderQuantityPerOrder"
     })
-    public TimeDealProduct(
+    public TimeDealProductEntity(
         UUID dealProductUuid,
         String dealProductTile,
         String productMainImgUrl,
