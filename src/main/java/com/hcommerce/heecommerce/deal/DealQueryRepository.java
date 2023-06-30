@@ -81,7 +81,6 @@ public class DealQueryRepository {
                 .dealProductDiscountType(timeDealProductEntity.getDealProductDiscountType())
                 .dealProductDiscountValue(timeDealProductEntity.getDealProductDiscountValue())
                 .dealProductDealQuantity(timeDealProductEntity.getDealProductDealQuantity())
-                .dealProductStatus(timeDealProductEntity.getDealProductStatus())
                 .startedAt(timeDealProductEntity.getStartedAt())
                 .finishedAt(timeDealProductEntity.getFinishedAt())
                 .build();
@@ -161,7 +160,6 @@ public class DealQueryRepository {
                     .dealProductDealQuantity(3)
                     .productDetailImgUrls(new String[]{"/detail_test1.png", "/detail_test2.png", "/detail_test3.png", "/detail_test4.png", "/detail_test5.png"})
                     .productMainImgUrl("/main_test.png")
-                    .dealProductStatus(DealProductStatus.BEFORE_OPEN)
                     .maxOrderQuantityPerOrder(10)
                     .startedAt(startedAt)
                     .finishedAt(finishedAt)

@@ -20,7 +20,6 @@ public class DealProductSummary {
     private final DiscountType dealProductDiscountType;
     private final int dealProductDiscountValue;
     private final int dealProductDealQuantity;
-    private final DealProductStatus dealProductStatus;
     private final Instant startedAt;
     private final Instant finishedAt;
 
@@ -33,7 +32,6 @@ public class DealProductSummary {
         DiscountType dealProductDiscountType,
         int dealProductDiscountValue,
         int dealProductDealQuantity,
-        DealProductStatus dealProductStatus,
         Instant startedAt,
         Instant finishedAt
     ) {
@@ -44,7 +42,6 @@ public class DealProductSummary {
         this.dealProductDiscountType = dealProductDiscountType;
         this.dealProductDiscountValue = dealProductDiscountValue;
         this.dealProductDealQuantity = dealProductDealQuantity;
-        this.dealProductStatus = dealProductStatus;
         this.startedAt = startedAt;
         this.finishedAt = finishedAt;
     }
