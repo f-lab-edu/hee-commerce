@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.hcommerce.heecommerce.common.dao.RedisHashRepository;
 import com.hcommerce.heecommerce.common.dao.RedisSortSetRepository;
 import com.hcommerce.heecommerce.product.ProductsSort;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -105,13 +107,34 @@ public class DealQueryRepository {
 
     // TODO : 삭제 예정 -> 테스트용 데이터 추가로 만듬
     private void init() {
-        for (int i = 0; i < 50; i++) {
-            String dealProductUuid = UUID.randomUUID().toString();
+        // 서울을 기준으로 매일 오전 10시에 시작해서 오전 11시에 끝나는 딜 상품 추가하기
+        ZoneId seoulZoneId = ZoneId.of("Asia/Seoul");
 
-            DealType dealType = DealType.TIME_DEAL;
+        int YEAR = 2023;
+        int MONTH = 7;
+        int LAST_DAY = 31;
 
-            for (int k = 0; k < 9; k++) {
-                String dealOpenDate = "2023062"+k;
+        ZonedDateTime firstZonedDateTime = ZonedDateTime.of(
+            LocalDateTime.of(YEAR, MONTH, 1, 10, 0, 0),
+            seoulZoneId
+        );
+
+        ZonedDateTime lastZonedDateTime = ZonedDateTime.of(
+            LocalDateTime.of(YEAR, MONTH, LAST_DAY, 10, 0, 0),
+            seoulZoneId
+        );
+
+        while (firstZonedDateTime.isBefore(lastZonedDateTime.plusDays(1))) {
+
+            Instant startedAt = firstZonedDateTime.toInstant();
+            Instant finishedAt = firstZonedDateTime.plusHours(1).toInstant();
+
+            String dealOpenDate = firstZonedDateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+            for (int i = 0; i < 50; i++) {
+                String dealProductUuid = UUID.randomUUID().toString();
+
+                DealType dealType = DealType.TIME_DEAL;
 
                 int pageNumber = 0;
 
@@ -136,6 +159,8 @@ public class DealQueryRepository {
                     .productMainImgUrl("/main_test.png")
                     .dealProductStatus(DealProductStatus.BEFORE_OPEN)
                     .maxOrderQuantityPerOrder(10)
+                    .startedAt(startedAt)
+                    .finishedAt(finishedAt)
                     .build();
                 try {
 
@@ -150,6 +175,8 @@ public class DealQueryRepository {
                     System.out.println(e.getMessage());
                 }
             }
+
+            firstZonedDateTime = firstZonedDateTime.plusDays(1);
         }
     }
 

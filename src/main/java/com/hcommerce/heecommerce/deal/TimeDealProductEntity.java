@@ -1,6 +1,7 @@
 package com.hcommerce.heecommerce.deal;
 
 import java.beans.ConstructorProperties;
+import java.time.Instant;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,12 +17,12 @@ public class TimeDealProductEntity {
     private final DiscountType dealProductDiscountType;
     private final int dealProductDiscountValue;
     private final int dealProductDealQuantity;
-
     private final String[] productDetailImgUrls;
-
     private final String productMainImgThumbnailUrl;
     private final DealProductStatus dealProductStatus;
     private final int maxOrderQuantityPerOrder;
+    private final Instant startedAt;
+    private final Instant finishedAt;
 
     @Builder
     @ConstructorProperties({
@@ -35,7 +36,9 @@ public class TimeDealProductEntity {
         "productDetailImgUrls",
         "productMainImgThumbnailUrl",
         "dealProductStatus",
-        "maxOrderQuantityPerOrder"
+        "maxOrderQuantityPerOrder",
+        "startedAt",
+        "finishedAt"
     })
     public TimeDealProductEntity(
         UUID dealProductUuid,
@@ -48,7 +51,9 @@ public class TimeDealProductEntity {
         String[] productDetailImgUrls,
         String productMainImgThumbnailUrl,
         DealProductStatus dealProductStatus,
-        int maxOrderQuantityPerOrder
+        int maxOrderQuantityPerOrder,
+        Instant startedAt,
+        Instant finishedAt
     ) {
         this.dealProductUuid = dealProductUuid;
         this.dealProductTile = dealProductTile;
@@ -61,5 +66,7 @@ public class TimeDealProductEntity {
         this.productMainImgThumbnailUrl = productMainImgThumbnailUrl;
         this.dealProductStatus = dealProductStatus;
         this.maxOrderQuantityPerOrder = maxOrderQuantityPerOrder;
+        this.startedAt = startedAt;
+        this.finishedAt = finishedAt;
     }
 }
