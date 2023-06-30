@@ -93,6 +93,8 @@ class DealServiceTest {
                 .dealProductDiscountValue(1000)
                 .dealProductDealQuantity(3)
                 .maxOrderQuantityPerOrder(10)
+                .startedAt(STARTED_AT)
+                .finishedAt(FINISHED_AT)
                 .build();
 
             given(dealQueryRepository.getTimeDealProductDetailByDealProductUuid(dealProductUuid)).willReturn(timeDealProductDetailFixture);
