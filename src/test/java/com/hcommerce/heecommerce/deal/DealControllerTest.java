@@ -146,6 +146,8 @@ class DealControllerTest {
                 .dealProductDiscountValue(1000)
                 .dealProductDealQuantity(3)
                 .maxOrderQuantityPerOrder(10)
+                .startedAt(STARTED_AT)
+                .finishedAt(FINISHED_AT)
                 .build();
 
             given(dealService.getTimeDealProductDetailByDealProductUuid(DEAL_PRODUCT_UUID)).willReturn(timeDealProductDetailFixture);

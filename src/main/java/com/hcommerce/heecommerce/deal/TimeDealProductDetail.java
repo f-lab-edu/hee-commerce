@@ -1,5 +1,6 @@
 package com.hcommerce.heecommerce.deal;
 
+import java.time.Instant;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,6 +17,9 @@ public class TimeDealProductDetail {
     private final int dealProductDiscountValue;
     private final int dealProductDealQuantity;
     private final int maxOrderQuantityPerOrder;
+    private final Instant startedAt;
+    private final Instant finishedAt;
+
     @Builder
     public TimeDealProductDetail(
         UUID dealProductUuid,
@@ -26,7 +30,9 @@ public class TimeDealProductDetail {
         DiscountType dealProductDiscountType,
         int dealProductDiscountValue,
         int dealProductDealQuantity,
-        int maxOrderQuantityPerOrder
+        int maxOrderQuantityPerOrder,
+        Instant startedAt,
+        Instant finishedAt
     ) {
         this.dealProductUuid = dealProductUuid;
         this.dealProductTile = dealProductTile;
@@ -37,5 +43,7 @@ public class TimeDealProductDetail {
         this.dealProductDiscountValue = dealProductDiscountValue;
         this.dealProductDealQuantity = dealProductDealQuantity;
         this.maxOrderQuantityPerOrder = maxOrderQuantityPerOrder;
+        this.startedAt = startedAt;
+        this.finishedAt = finishedAt;
     }
 }

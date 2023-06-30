@@ -104,6 +104,8 @@ public class DealQueryRepository {
             .productMainImgUrl(timeDealProductEntity.getProductMainImgUrl())
             .productDetailImgUrls(timeDealProductEntity.getProductDetailImgUrls())
             .maxOrderQuantityPerOrder(timeDealProductEntity.getMaxOrderQuantityPerOrder())
+            .startedAt(timeDealProductEntity.getStartedAt())
+            .finishedAt(timeDealProductEntity.getFinishedAt())
             .build();
     }
 
