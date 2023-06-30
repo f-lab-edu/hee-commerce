@@ -6,9 +6,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hcommerce.heecommerce.common.dto.PageDto;
 import com.hcommerce.heecommerce.common.dto.ResponseDto;
 import com.hcommerce.heecommerce.product.ProductsSort;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -16,12 +20,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -35,7 +39,7 @@ class DealControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockBean
     private DealService dealService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -55,11 +59,21 @@ class DealControllerTest {
     private static final int PAGE_NUMBER = 0;
 
     private static final int TOTAL_COUNT = 999;
+
     private static final ProductsSort SORT = ProductsSort.BASIC;
+
+    private Instant STARTED_AT = Instant.now();
+
+    private Instant FINISHED_AT = Instant.now().plus(1, ChronoUnit.HOURS);
+
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
+        objectMapper.registerModule(new JavaTimeModule());
+
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         dealProductSummaryFixture = DealProductSummary.builder()
                 .dealProductUuid(UUID.fromString("01b8851c-d046-4635-83c1-eb0ca4342077"))
@@ -70,9 +84,12 @@ class DealControllerTest {
                 .dealProductDiscountValue(1000)
                 .dealProductDealQuantity(3)
                 .dealProductStatus(DealProductStatus.BEFORE_OPEN)
+                .startedAt(STARTED_AT)
+                .finishedAt(FINISHED_AT)
                 .build();
 
         dealProductsFixture = new ArrayList<>();
+
         dealProductsFixture.add(dealProductSummaryFixture);
 
         pageDtoFixture = PageDto.<DealProductSummary>builder()
@@ -90,7 +107,7 @@ class DealControllerTest {
         @DisplayName("returns 200 ok")
         void It_returns_200_OK() throws Exception {
             // given
-//            given(dealService.getDealProductsByDealId(TIME_DEAL_ID, PAGE_NUMBER, SORT)).willReturn(dealProductsFixture);
+            given(dealService.getDealProductsByDealType(DEAL_TYPE_TIME_DEAL, PAGE_NUMBER, SORT)).willReturn(dealProductsFixture);
 
             // when
             ResultActions resultActions = mockMvc.perform(

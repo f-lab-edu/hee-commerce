@@ -1,6 +1,7 @@
 package com.hcommerce.heecommerce.deal;
 
 import com.hcommerce.heecommerce.product.ProductsSort;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -20,6 +21,8 @@ public class DealProductSummary {
     private final int dealProductDiscountValue;
     private final int dealProductDealQuantity;
     private final DealProductStatus dealProductStatus;
+    private final Instant startedAt;
+    private final Instant finishedAt;
 
     @Builder
     public DealProductSummary(
@@ -30,7 +33,9 @@ public class DealProductSummary {
         DiscountType dealProductDiscountType,
         int dealProductDiscountValue,
         int dealProductDealQuantity,
-        DealProductStatus dealProductStatus
+        DealProductStatus dealProductStatus,
+        Instant startedAt,
+        Instant finishedAt
     ) {
         this.dealProductUuid = dealProductUuid;
         this.dealProductTile = dealProductTile;
@@ -40,6 +45,8 @@ public class DealProductSummary {
         this.dealProductDiscountValue = dealProductDiscountValue;
         this.dealProductDealQuantity = dealProductDealQuantity;
         this.dealProductStatus = dealProductStatus;
+        this.startedAt = startedAt;
+        this.finishedAt = finishedAt;
     }
 
     public static List<DealProductSummary> sortDealProducts(List<DealProductSummary> dealProducts, ProductsSort sort) {
