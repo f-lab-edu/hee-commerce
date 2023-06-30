@@ -1,6 +1,8 @@
 package com.hcommerce.heecommerce.deal;
 
 import com.hcommerce.heecommerce.product.ProductsSort;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -15,6 +17,10 @@ import org.mockito.MockitoAnnotations;
 class DealProductSummaryTest {
 
     private List<DealProductSummary> dealProductsFixture;
+
+    private Instant STARTED_AT = Instant.now();
+
+    private Instant FINISHED_AT = Instant.now().plus(1, ChronoUnit.HOURS);
 
     @BeforeEach
     void setUp() {
@@ -31,6 +37,8 @@ class DealProductSummaryTest {
             .dealProductDiscountValue(1000)
             .dealProductDealQuantity(3)
             .dealProductStatus(DealProductStatus.BEFORE_OPEN)
+            .startedAt(STARTED_AT)
+            .finishedAt(FINISHED_AT)
             .build());
 
         dealProductsFixture.add(DealProductSummary.builder()
@@ -42,6 +50,8 @@ class DealProductSummaryTest {
             .dealProductDiscountValue(1000)
             .dealProductDealQuantity(3)
             .dealProductStatus(DealProductStatus.BEFORE_OPEN)
+            .startedAt(STARTED_AT)
+            .finishedAt(FINISHED_AT)
             .build());
 
         dealProductsFixture.add(DealProductSummary.builder()
@@ -53,6 +63,8 @@ class DealProductSummaryTest {
             .dealProductDiscountValue(1000)
             .dealProductDealQuantity(3)
             .dealProductStatus(DealProductStatus.BEFORE_OPEN)
+            .startedAt(STARTED_AT)
+            .finishedAt(FINISHED_AT)
             .build());
     }
 
@@ -76,6 +88,8 @@ class DealProductSummaryTest {
             .dealProductDiscountValue(1000)
             .dealProductDealQuantity(3)
             .dealProductStatus(DealProductStatus.BEFORE_OPEN)
+            .startedAt(STARTED_AT)
+            .finishedAt(FINISHED_AT)
             .build());
 
         expectedDealProducts.add(DealProductSummary.builder()
@@ -87,6 +101,8 @@ class DealProductSummaryTest {
             .dealProductDiscountValue(1000)
             .dealProductDealQuantity(3)
             .dealProductStatus(DealProductStatus.BEFORE_OPEN)
+            .startedAt(STARTED_AT)
+            .finishedAt(FINISHED_AT)
             .build());
 
         expectedDealProducts.add(DealProductSummary.builder()
@@ -98,6 +114,8 @@ class DealProductSummaryTest {
             .dealProductDiscountValue(1000)
             .dealProductDealQuantity(3)
             .dealProductStatus(DealProductStatus.BEFORE_OPEN)
+            .startedAt(STARTED_AT)
+            .finishedAt(FINISHED_AT)
             .build());
 
         // when
@@ -124,6 +142,8 @@ class DealProductSummaryTest {
             .dealProductDiscountValue(1000)
             .dealProductDealQuantity(3)
             .dealProductStatus(DealProductStatus.BEFORE_OPEN)
+            .startedAt(STARTED_AT)
+            .finishedAt(FINISHED_AT)
             .build());
 
         expectedDealProducts.add(DealProductSummary.builder()
@@ -135,6 +155,8 @@ class DealProductSummaryTest {
             .dealProductDiscountValue(1000)
             .dealProductDealQuantity(3)
             .dealProductStatus(DealProductStatus.BEFORE_OPEN)
+            .startedAt(STARTED_AT)
+            .finishedAt(FINISHED_AT)
             .build());
 
         expectedDealProducts.add(DealProductSummary.builder()
@@ -146,6 +168,8 @@ class DealProductSummaryTest {
             .dealProductDiscountValue(1000)
             .dealProductDealQuantity(3)
             .dealProductStatus(DealProductStatus.BEFORE_OPEN)
+            .startedAt(STARTED_AT)
+            .finishedAt(FINISHED_AT)
             .build());
 
         // when

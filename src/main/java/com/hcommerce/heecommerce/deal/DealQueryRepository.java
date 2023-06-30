@@ -82,6 +82,8 @@ public class DealQueryRepository {
                 .dealProductDiscountValue(timeDealProductEntity.getDealProductDiscountValue())
                 .dealProductDealQuantity(timeDealProductEntity.getDealProductDealQuantity())
                 .dealProductStatus(timeDealProductEntity.getDealProductStatus())
+                .startedAt(timeDealProductEntity.getStartedAt())
+                .finishedAt(timeDealProductEntity.getFinishedAt())
                 .build();
 
             timeDealProductSummaries.add(dealProductSummary);
