@@ -73,6 +73,8 @@ public class DealQueryRepository {
         for (int i = 0; i < timeDealProductEntities.size(); i++) {
             TimeDealProductEntity timeDealProductEntity = timeDealProductEntities.get(i);
 
+            int TEMP_INVENTORY = 999;
+
             DealProductSummary dealProductSummary = DealProductSummary.builder()
                 .dealProductUuid(timeDealProductEntity.getDealProductUuid())
                 .dealProductTile(timeDealProductEntity.getDealProductTile())
@@ -80,7 +82,7 @@ public class DealQueryRepository {
                 .productOriginPrice(timeDealProductEntity.getProductOriginPrice())
                 .dealProductDiscountType(timeDealProductEntity.getDealProductDiscountType())
                 .dealProductDiscountValue(timeDealProductEntity.getDealProductDiscountValue())
-                .dealProductDealQuantity(timeDealProductEntity.getDealProductDealQuantity())
+                .dealProductDealQuantity(TEMP_INVENTORY)
                 .startedAt(timeDealProductEntity.getStartedAt())
                 .finishedAt(timeDealProductEntity.getFinishedAt())
                 .build();
@@ -93,13 +95,15 @@ public class DealQueryRepository {
 
     private TimeDealProductDetail convertTimeDealProductToTimeDealProductDetail(TimeDealProductEntity timeDealProductEntity) {
 
+        int TEMP_INVENTORY = 999;
+
         return TimeDealProductDetail.builder()
             .dealProductUuid(timeDealProductEntity.getDealProductUuid())
             .dealProductTile(timeDealProductEntity.getDealProductTile())
             .productOriginPrice(timeDealProductEntity.getProductOriginPrice())
             .dealProductDiscountType(timeDealProductEntity.getDealProductDiscountType())
             .dealProductDiscountValue(timeDealProductEntity.getDealProductDiscountValue())
-            .dealProductDealQuantity(timeDealProductEntity.getDealProductDealQuantity())
+            .dealProductDealQuantity(TEMP_INVENTORY)
             .productMainImgUrl(timeDealProductEntity.getProductMainImgUrl())
             .productDetailImgUrls(timeDealProductEntity.getProductDetailImgUrls())
             .maxOrderQuantityPerOrder(timeDealProductEntity.getMaxOrderQuantityPerOrder())
@@ -157,7 +161,6 @@ public class DealQueryRepository {
                     .productOriginPrice(1000*(i+1))
                     .dealProductDiscountType(DiscountType.FIXED_AMOUNT)
                     .dealProductDiscountValue(1000)
-                    .dealProductDealQuantity(3)
                     .productDetailImgUrls(new String[]{"/detail_test1.png", "/detail_test2.png", "/detail_test3.png", "/detail_test4.png", "/detail_test5.png"})
                     .productMainImgUrl("/main_test.png")
                     .maxOrderQuantityPerOrder(10)
