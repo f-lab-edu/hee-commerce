@@ -7,15 +7,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.experimental.SuperBuilder;
 
-/**
- *
- * @SuperBuilder 를 사용한 이유 : https://github.com/f-lab-edu/hee-commerce/issues/85 참조
- */
 @Getter
-@SuperBuilder
 public class DealProductSummary {
 
     private final UUID dealProductUuid;
@@ -28,6 +23,7 @@ public class DealProductSummary {
     private final Instant startedAt;
     private final Instant finishedAt;
 
+    @Builder
     public DealProductSummary(
         UUID dealProductUuid,
         String dealProductTile,
