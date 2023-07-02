@@ -25,7 +25,6 @@ public class TimeDealProductEntity {
     private final int productOriginPrice;
     private final DiscountType dealProductDiscountType;
     private final int dealProductDiscountValue;
-    private final int dealProductDealQuantity;
     private final String[] productDetailImgUrls;
     private final String productMainImgThumbnailUrl;
     private final int maxOrderQuantityPerOrder;
@@ -40,7 +39,6 @@ public class TimeDealProductEntity {
         "productOriginPrice",
         "dealProductDiscountType",
         "dealProductDiscountValue",
-        "dealProductDealQuantity",
         "productDetailImgUrls",
         "productMainImgThumbnailUrl",
         "maxOrderQuantityPerOrder",
@@ -54,7 +52,6 @@ public class TimeDealProductEntity {
         int productOriginPrice,
         DiscountType dealProductDiscountType,
         int dealProductDiscountValue,
-        int dealProductDealQuantity,
         String[] productDetailImgUrls,
         String productMainImgThumbnailUrl,
         int maxOrderQuantityPerOrder,
@@ -67,7 +64,6 @@ public class TimeDealProductEntity {
         this.productOriginPrice = productOriginPrice;
         this.dealProductDiscountType = dealProductDiscountType;
         this.dealProductDiscountValue = dealProductDiscountValue;
-        this.dealProductDealQuantity = dealProductDealQuantity;
         this.productDetailImgUrls = productDetailImgUrls;
         this.productMainImgThumbnailUrl = productMainImgThumbnailUrl;
         this.maxOrderQuantityPerOrder = maxOrderQuantityPerOrder;
