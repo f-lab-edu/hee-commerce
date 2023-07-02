@@ -1,6 +1,8 @@
-package com.hcommerce.heecommerce.order;
+package com.hcommerce.heecommerce.common;
 
 import com.hcommerce.heecommerce.common.dto.ResponseDto;
+import com.hcommerce.heecommerce.order.OrderNotFoundException;
+import com.hcommerce.heecommerce.order.OrderOverStockException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -10,7 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
 @RestControllerAdvice
-public class OrderControllerAdvice {
+public class GlobalControllerAdvice {
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler
@@ -42,7 +44,9 @@ public class OrderControllerAdvice {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler
     public ResponseDto fallbackExceptionHandler(Exception e) {
-        log.error("[{}] message = {} ", e.getClass(), e.getMessage());
+        log.error("class = {}, message = {}, cause = {}", e.getClass(), e.getMessage(), e.getCause());
+        log.debug("stackTrace = {}", e.getStackTrace());
+
         return ResponseDto.builder()
                 .code(HttpStatus.INTERNAL_SERVER_ERROR.name())
                 .message("내부 서버 오류가 발생했습니다.")
