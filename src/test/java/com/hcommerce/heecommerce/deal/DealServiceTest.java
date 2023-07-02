@@ -50,7 +50,6 @@ class DealServiceTest {
             .dealProductDiscountType(DiscountType.FIXED_AMOUNT)
             .dealProductDiscountValue(1000)
             .dealProductDealQuantity(3)
-            .dealProductStatus(DealProductStatus.BEFORE_OPEN)
             .startedAt(STARTED_AT)
             .finishedAt(FINISHED_AT)
             .build()
