@@ -8,15 +8,19 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import lombok.Builder;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
+/**
+ *
+ * @SuperBuilder 를 사용한 이유 : https://github.com/f-lab-edu/hee-commerce/issues/85 참조
+ */
 @Getter
+@SuperBuilder
 public class DealProductSummaryForUI extends DealProductSummary {
 
     private final DealProductStatus dealProductStatus;
 
-    @Builder
     public DealProductSummaryForUI(
         UUID dealProductUuid,
         String dealProductTile,
