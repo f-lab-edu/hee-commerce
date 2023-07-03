@@ -1,11 +1,19 @@
 package com.hcommerce.heecommerce.order;
 
-import org.springframework.stereotype.Repository;
-
+import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class OrderCommandRepository {
+
+    private final OrderCommandMapper orderCommandMapper;
+
+    @Autowired
+    public OrderCommandRepository(OrderCommandMapper orderCommandMapper) {
+        this.orderCommandMapper = orderCommandMapper;
+    }
 
     public UUID updateToCompleteOrderReceipt(UUID orderUuid) {
         String newOrderStatus = OrderStatus.ORDER_RECEIPT_COMPLETE.name();
@@ -42,6 +50,13 @@ public class OrderCommandRepository {
          */
 
         return orderUuid;
+    }
+
+    public UUID saveOrderInAdvance(OrderFormSavedInAdvanceEntity orderFormSavedInAdvanceEntity) {
+
+        orderCommandMapper.saveOrderInAdvance(orderFormSavedInAdvanceEntity);
+
+        return TypeConversionUtils.convertBinaryToUuid(orderFormSavedInAdvanceEntity.getUuid());
     }
 }
 
