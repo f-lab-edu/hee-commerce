@@ -193,7 +193,7 @@ class OrderControllerTest {
                     .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
                     .dealProductUuid(UUID.randomUUID())
                     .orderQuantity(2)
-                    .paymentType(PaymentType.CREDIT_CARD)
+                    .paymentMethod(PaymentMethod.CREDIT_CARD)
                     .build();
 
                 String content = objectMapper.writeValueAsString(orderForm);
@@ -239,7 +239,7 @@ class OrderControllerTest {
                     .outOfStockHandlingOption(PARTIAL_ORDER)
                     .dealProductUuid(UUID_WITH_ORDER_QUANTITY_EXCEEDING_INVENTORY)
                     .orderQuantity(ORDER_QUANTITY_EXCEEDING_INVENTORY)
-                    .paymentType(PaymentType.CREDIT_CARD)
+                    .paymentMethod(PaymentMethod.CREDIT_CARD)
                     .build();
 
                 String content = objectMapper.writeValueAsString(orderForm);
@@ -284,7 +284,7 @@ class OrderControllerTest {
                     .outOfStockHandlingOption(ALL_CANCEL)
                     .dealProductUuid(UUID_WITH_ORDER_QUANTITY_EXCEEDING_INVENTORY)
                     .orderQuantity(ORDER_QUANTITY_EXCEEDING_INVENTORY)
-                    .paymentType(PaymentType.CREDIT_CARD)
+                    .paymentMethod(PaymentMethod.CREDIT_CARD)
                     .build();
 
                 String content = objectMapper.writeValueAsString(orderForm);
@@ -327,7 +327,7 @@ class OrderControllerTest {
                     .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
                     .dealProductUuid(UUID_WITH_MAX_ORDER_QUANTITY_PER_ORDER_OF_10)
                     .orderQuantity(ORDER_QUANTITY_EXCEEDING_MAX_ORDER_QUANTITY_PER_ORDER)
-                    .paymentType(PaymentType.CREDIT_CARD)
+                    .paymentMethod(PaymentMethod.CREDIT_CARD)
                     .build();
 
                 String content = objectMapper.writeValueAsString(orderForm);
