@@ -29,7 +29,7 @@ public class OrderForm {
     private final int orderQuantity;
 
     @NotNull(message = "결제 유형을 입력해주세요.")
-    private final PaymentType paymentType;
+    private final PaymentMethod paymentMethod;
 
     @Builder
     @ConstructorProperties({
@@ -46,13 +46,13 @@ public class OrderForm {
         OutOfStockHandlingOption outOfStockHandlingOption,
         UUID dealProductUuid,
         int orderQuantity,
-        PaymentType paymentType
+        PaymentMethod paymentMethod
     ) {
         this.userId = userId;
         this.recipientInfoForm = recipientInfoForm;
         this.outOfStockHandlingOption = outOfStockHandlingOption;
         this.dealProductUuid = dealProductUuid;
         this.orderQuantity = orderQuantity;
-        this.paymentType = paymentType;
+        this.paymentMethod = paymentMethod;
     }
 }
