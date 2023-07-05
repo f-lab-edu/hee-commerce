@@ -34,8 +34,7 @@ public class DealQueryRepository {
     @Autowired
     public DealQueryRepository(
         RedisSortSetRepository<String> redisSortSetRepository,
-        RedisHashRepository<TimeDealProductEntity> redisHashRepository,
-        InventoryQueryRepository inventoryQueryRepository
+        RedisHashRepository<TimeDealProductEntity> redisHashRepository
     ) {
         this.redisSortSetRepository = redisSortSetRepository;
         this.redisHashRepository = redisHashRepository;
@@ -54,9 +53,6 @@ public class DealQueryRepository {
      * @return List<DealProductSummary>
      */
     public List<DealProductSummary> getDealProductsByDealType(DealType dealType, int pageNumber, ProductsSort sort) {
-        // TODO : 삭제 예정 -> 테스트용 데이터 추가로 만듬
-//        init();
-
         List<DealProductSummary> dealProductSummaries = getTimeDealProductSummaries(pageNumber);
 
         List<DealProductSummary> sortedDealProducts = DealProductSummary.sortDealProducts(dealProductSummaries, sort);
@@ -225,79 +221,6 @@ public class DealQueryRepository {
             .startedAt(timeDealProductEntity.getStartedAt())
             .finishedAt(timeDealProductEntity.getFinishedAt())
             .build();
-    }
-
-    // TODO : 삭제 예정 -> 테스트용 데이터 추가로 만듬
-    private void init() {
-        // 서울을 기준으로 매일 오전 10시에 시작해서 오전 11시에 끝나는 딜 상품 추가하기
-        ZoneId seoulZoneId = ZoneId.of("Asia/Seoul");
-
-        int YEAR = 2023;
-        int MONTH = 7;
-        int LAST_DAY = 31;
-
-        ZonedDateTime firstZonedDateTime = ZonedDateTime.of(
-            LocalDateTime.of(YEAR, MONTH, 1, 10, 0, 0),
-            seoulZoneId
-        );
-
-        ZonedDateTime lastZonedDateTime = ZonedDateTime.of(
-            LocalDateTime.of(YEAR, MONTH, LAST_DAY, 10, 0, 0),
-            seoulZoneId
-        );
-
-        while (firstZonedDateTime.isBefore(lastZonedDateTime.plusDays(1))) {
-
-            Instant startedAt = firstZonedDateTime.toInstant();
-            Instant finishedAt = firstZonedDateTime.plusHours(1).toInstant();
-
-            String dealOpenDate = firstZonedDateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-
-            for (int i = 0; i < 50; i++) {
-                String dealProductUuid = UUID.randomUUID().toString();
-
-                DealType dealType = DealType.TIME_DEAL;
-
-                int pageNumber = 0;
-
-                String dealProductIdsSetKey = dealType+":"+dealOpenDate+":"+pageNumber;
-
-                int expirationInSeconds = 86_400; // TODO : 일단 임시로 24시간으로 설정, 유효시간을 설정해서 관리할 것인가? 아니면 따로 lambda나 batch 서버를 두어서 삭제시킬 것인가?
-
-                redisSortSetRepository.addWithExpirationTime(
-                    dealProductIdsSetKey, dealProductUuid, i,
-                    expirationInSeconds, TimeUnit.SECONDS
-                ); // 일단, 등록된 순서대로 정렬되도록 저장
-
-                TimeDealProductEntity timeDealProductEntity = TimeDealProductEntity.builder()
-                    .dealProductUuid(UUID.fromString(dealProductUuid))
-                    .dealProductTile("1000원 할인 상품 "+i)
-                    .productMainImgThumbnailUrl("/main_thumbnail_test.png")
-                    .productOriginPrice(1000*(i+1))
-                    .dealProductDiscountType(DiscountType.FIXED_AMOUNT)
-                    .dealProductDiscountValue(1000)
-                    .productDetailImgUrls(new String[]{"/detail_test1.png", "/detail_test2.png", "/detail_test3.png", "/detail_test4.png", "/detail_test5.png"})
-                    .productMainImgUrl("/main_test.png")
-                    .maxOrderQuantityPerOrder(10)
-                    .startedAt(startedAt)
-                    .finishedAt(finishedAt)
-                    .build();
-                try {
-
-                    String redisKey = "timeDealProducts:"+dealOpenDate;
-
-                    redisHashRepository.putWithExpirationTime(
-                        redisKey, dealProductUuid, timeDealProductEntity,
-                        expirationInSeconds, TimeUnit.SECONDS
-                    );
-
-                } catch (Exception e) {
-                    System.out.println(e.getMessage());
-                }
-            }
-
-            firstZonedDateTime = firstZonedDateTime.plusDays(1);
-        }
     }
 
     /**
