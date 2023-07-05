@@ -3,6 +3,8 @@ package com.hcommerce.heecommerce.deal;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.hcommerce.heecommerce.common.dao.RedisHashRepository;
 import com.hcommerce.heecommerce.common.dao.RedisSortSetRepository;
+import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
+import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import com.hcommerce.heecommerce.product.ProductsSort;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -11,7 +13,9 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -25,55 +29,131 @@ public class DealQueryRepository {
 
     private final RedisHashRepository<TimeDealProductEntity> redisHashRepository;
 
+    private final InventoryQueryRepository inventoryQueryRepository;
+
     @Autowired
     public DealQueryRepository(
         RedisSortSetRepository<String> redisSortSetRepository,
-        RedisHashRepository<TimeDealProductEntity> redisHashRepository
+        RedisHashRepository<TimeDealProductEntity> redisHashRepository,
+        InventoryQueryRepository inventoryQueryRepository
     ) {
         this.redisSortSetRepository = redisSortSetRepository;
         this.redisHashRepository = redisHashRepository;
+        this.inventoryQueryRepository = inventoryQueryRepository;
     }
 
+    /**
+     * getDealProductsByDealType 함수의 원래 의도는 DealType 별로 딜 상풍 목록을 가져오는 함수이다.
+     * TODO : 그런데, 현재 형태는 확장성 있는 형태가 아니다. 왜냐하면, DealType 별로 가져오는 구조가 아니기 때문이다. 추후에 시간이 남으면, 확장성 있는 형태로 수정하자.
+     *
+     * @param dealType
+     * @param pageNumber
+     * -> TODO : 현재는 필요 없지만, 추후에 타임딜 상품 자체가 많아지거나 다양한 유형의 딜 상품을 필요할 수 있는 상황 등 확장성을 고려해서 추가한 것.
+     *           현재 0으로 고정된 값인데, 이것도 클라이언트에서 받을지 아니면, 노출시킬지 말지 추후에 결정하기
+     * @param sort
+     * @return List<DealProductSummary>
+     */
     public List<DealProductSummary> getDealProductsByDealType(DealType dealType, int pageNumber, ProductsSort sort) {
         // TODO : 삭제 예정 -> 테스트용 데이터 추가로 만듬
 //        init();
 
-        String dateForCurrentDealProducts = getDateForCurrentDealProducts();
+        List<DealProductSummary> dealProductSummaries = getTimeDealProductSummaries(pageNumber);
 
-        Set<String> dealProductIds = getDealProductIds(dealType, dateForCurrentDealProducts, pageNumber);
-
-        List<TimeDealProductEntity> timeDealProductEntities = getDealProducts(dateForCurrentDealProducts, dealProductIds);
-
-        List<DealProductSummary> timeDealProductSummaries = convertTimeDealProductToTimeDealProductSummary(timeDealProductEntities);
-
-        List<DealProductSummary> sortedDealProducts = DealProductSummary.sortDealProducts(timeDealProductSummaries, sort);
+        List<DealProductSummary> sortedDealProducts = DealProductSummary.sortDealProducts(dealProductSummaries, sort);
 
         return sortedDealProducts;
     }
 
-    public TimeDealProductDetail getTimeDealProductDetailByDealProductUuid(UUID dealProductUuid) {
+    /**
+     * getTimeDealProductSummaries 는 타임 딜 상품 목록을 가져오는 함수이다.
+     */
+    private List<DealProductSummary> getTimeDealProductSummaries(int pageNumber) {
+        String dateForCurrentDealProducts = getDateForCurrentDealProducts();
 
-        String dealOpenDate = getDateForCurrentDealProducts();
+        Set<String> timeDealProductUuidSets = getTimeDealProductUuids(dateForCurrentDealProducts, pageNumber);
 
-        String key = "timeDealProducts:"+dealOpenDate;
+        List<TimeDealProductEntity> timeDealProductEntities = getTimeDealProductEntities(dateForCurrentDealProducts);
 
-        String hashKey = dealProductUuid.toString();
+        Map<String, Integer> timeDealProductInventoryMap = createTimeDealProductInventoryMap(timeDealProductUuidSets);
 
-        TimeDealProductEntity timeDealProductEntity = redisHashRepository.getOneByKeyAndHashKey(key, hashKey, new TypeReference<TimeDealProductEntity>() {});
-
-        TimeDealProductDetail timeDealProductDetail = convertTimeDealProductToTimeDealProductDetail(timeDealProductEntity);
-
-        return timeDealProductDetail;
+        return createDealProductSummaries(timeDealProductEntities, timeDealProductInventoryMap);
     }
 
-    private List<DealProductSummary> convertTimeDealProductToTimeDealProductSummary(List<TimeDealProductEntity> timeDealProductEntities) {
+    /**
+     * getTimeDealProductUuids 는 Redis에 다음과 같이 저장된 TimeDealProductUuid 목록을 가져오는 함수이다.
+     *
+     * @dataType SortSet
+     * @key TIME_DEAL:{dealOpenDate}:{pageNumber}
+     * @value {dealProductUuid}
+     *
+     * 따로 DealProductUuid 목록을 저장하는 이유는 딜 상품 목록의 확장성 때문이다.
+     * TODO : 기재하기
+     */
+    private Set<String> getTimeDealProductUuids(String dealOpenDate, int pageNumber) {
+        String timeDealProductIdsSetKey = DealType.TIME_DEAL + ":" + dealOpenDate + ":" + pageNumber;
 
+        return redisSortSetRepository.getAll(timeDealProductIdsSetKey); // 해당 key에 해당하는 데이터가 없으면? Null로 됨
+    }
+
+    /**
+     * getTimeDealProductEntities 는 특정 날짜에 해당하는 timeDealProductEntity 목록을 가져오는 함수이다.
+     */
+    private List<TimeDealProductEntity> getTimeDealProductEntities(String dealOpenDate) {
+        String redisKey = "timeDealProducts:"+dealOpenDate;
+
+        return redisHashRepository.getAllByKey(redisKey, new TypeReference<TimeDealProductEntity>() {});
+    }
+
+    /**
+     * getTimeDealProductInventoryMap 는 다음과 같은 구조를 갖는 TimeDealProductInventoryMap 을 만드는 함수이다.
+     *
+     * @key {dealProductUuid}
+     * @value {timeDealProductInventory}
+     *
+     * TimeDealProductInventoryMap는 createDealProductSummary 에서 필요한 Map 이다.
+     * 이 Map이 필요한 이유는 현재 Redis 에 저장된 구조가 `딜 상품`과 `딜 상품의 재고량`을 분리시켜 저장해놓은 구조라서,
+     * 이 둘을 합쳐줄 때 dealProductUuid 에 해당 재고량을 매핑시켜주기 위해서이다.
+     */
+    private Map<String, Integer> createTimeDealProductInventoryMap(Set<String> timeDealProductUuidSets) {
+        List<String> timeDealProductUuids = List.copyOf(timeDealProductUuidSets);
+
+        List<Integer> timeDealProductInventories = getTimeDealProductInventories(timeDealProductUuidSets);
+
+        return TypeConversionUtils.convertTwoListToMap(timeDealProductUuids, timeDealProductInventories);
+    }
+
+    /**
+     * getTimeDealProductInventories 는 Redis에서 딜상품의 재고량을 가져오는 함수이다.
+     */
+    private List<Integer> getTimeDealProductInventories(Set<String> timeDealProductUuidSets) {
+        Set<String> timeDealProductInventoryKeySets = createTimeDealProductInventoryKeys(timeDealProductUuidSets);
+
+        List<Integer> integers = inventoryQueryRepository.getMany(timeDealProductInventoryKeySets);
+
+        return integers;
+    }
+
+    /**
+     * createTimeDealProductInventoryKeys 는 Redis에서 딜상품의 재고량을 가져오기 위한 key들의 목록을 만드는 함수이다.
+     */
+    private Set<String> createTimeDealProductInventoryKeys(Set<String> timeDealProductUuids) {
+        Set<String> timeDealProductInventoryKeys = new HashSet<>();
+
+        for(String timeDealProductUuid: timeDealProductUuids) {
+            timeDealProductInventoryKeys.add("timeDealProductInventory:"+timeDealProductUuid);
+        }
+
+        return timeDealProductInventoryKeys;
+    }
+
+    /**
+     * createDealProductSummaries 는 DealProductSummary 목록을 만드는 함수이다.
+     */
+    private List<DealProductSummary> createDealProductSummaries(List<TimeDealProductEntity> timeDealProductEntities, Map<String, Integer> inventoryMap) {
         List<DealProductSummary> timeDealProductSummaries = new ArrayList<>();
 
         for (int i = 0; i < timeDealProductEntities.size(); i++) {
             TimeDealProductEntity timeDealProductEntity = timeDealProductEntities.get(i);
-
-            int TEMP_INVENTORY = 999;
 
             DealProductSummary dealProductSummary = DealProductSummary.builder()
                 .dealProductUuid(timeDealProductEntity.getDealProductUuid())
@@ -82,7 +162,7 @@ public class DealQueryRepository {
                 .productOriginPrice(timeDealProductEntity.getProductOriginPrice())
                 .dealProductDiscountType(timeDealProductEntity.getDealProductDiscountType())
                 .dealProductDiscountValue(timeDealProductEntity.getDealProductDiscountValue())
-                .dealProductDealQuantity(TEMP_INVENTORY)
+                .dealProductDealQuantity(inventoryMap.get(timeDealProductEntity.getDealProductUuid().toString()))
                 .startedAt(timeDealProductEntity.getStartedAt())
                 .finishedAt(timeDealProductEntity.getFinishedAt())
                 .build();
@@ -93,9 +173,44 @@ public class DealQueryRepository {
         return timeDealProductSummaries;
     }
 
-    private TimeDealProductDetail convertTimeDealProductToTimeDealProductDetail(TimeDealProductEntity timeDealProductEntity) {
+    /**
+     * getTimeDealProductDetailByDealProductUuid 는 딜 상품 상세 정보를 가져오는 함수이다.
+     */
+    public TimeDealProductDetail getTimeDealProductDetailByDealProductUuid(UUID dealProductUuid) {
 
-        int TEMP_INVENTORY = 999;
+        TimeDealProductEntity timeDealProductEntity = getTimeDealProductEntity(dealProductUuid);
+
+        int inventory = getTimeDealProductInventory(timeDealProductEntity.getDealProductUuid());
+
+        return createTimeDealProductDetail(timeDealProductEntity, inventory);
+    }
+
+    /**
+     * getTimeDealProductEntity 는 Redis에서 TimeDealProductEntity 을 가져오는 함수이다.
+     */
+    private TimeDealProductEntity getTimeDealProductEntity(UUID dealProductUuid) {
+        String dealOpenDate = getDateForCurrentDealProducts();
+
+        String key = "timeDealProducts:"+dealOpenDate;
+
+        String hashKey = dealProductUuid.toString();
+
+        return redisHashRepository.getOneByKeyAndHashKey(key, hashKey, new TypeReference<TimeDealProductEntity>() {});
+    }
+
+    /**
+     * getTimeDealProductInventory 는 Redis에서 TimeDealProductInventory 을 가져오는 함수이다.
+     */
+    private int getTimeDealProductInventory(UUID timeDealProductUuid) {
+        String redisKey = "timeDealProductInventory:"+timeDealProductUuid.toString();
+
+        return inventoryQueryRepository.get(redisKey);
+    }
+
+    /**
+     * createTimeDealProductDetail 는 딜 상품 상세 정보을 담는 TimeDealProductDetail 를 만드는 함수이다.
+     */
+    private TimeDealProductDetail createTimeDealProductDetail(TimeDealProductEntity timeDealProductEntity, int inventory) {
 
         return TimeDealProductDetail.builder()
             .dealProductUuid(timeDealProductEntity.getDealProductUuid())
@@ -103,10 +218,10 @@ public class DealQueryRepository {
             .productOriginPrice(timeDealProductEntity.getProductOriginPrice())
             .dealProductDiscountType(timeDealProductEntity.getDealProductDiscountType())
             .dealProductDiscountValue(timeDealProductEntity.getDealProductDiscountValue())
-            .dealProductDealQuantity(TEMP_INVENTORY)
             .productMainImgUrl(timeDealProductEntity.getProductMainImgUrl())
             .productDetailImgUrls(timeDealProductEntity.getProductDetailImgUrls())
             .maxOrderQuantityPerOrder(timeDealProductEntity.getMaxOrderQuantityPerOrder())
+            .dealProductDealQuantity(inventory)
             .startedAt(timeDealProductEntity.getStartedAt())
             .finishedAt(timeDealProductEntity.getFinishedAt())
             .build();
@@ -183,22 +298,6 @@ public class DealQueryRepository {
 
             firstZonedDateTime = firstZonedDateTime.plusDays(1);
         }
-    }
-
-    private List<TimeDealProductEntity> getDealProducts(String dealOpenDate, Set<String> dealProductIds) {
-
-        String redisKey = "timeDealProducts:"+dealOpenDate;
-
-        List<TimeDealProductEntity> dealProducts = redisHashRepository.getAllByKey(redisKey, new TypeReference<TimeDealProductEntity>() {});
-
-        return dealProducts;
-    }
-
-    private Set<String> getDealProductIds(DealType dealType, String dealOpenDate, int pageNumber) {
-
-        String dealProductIdsSetKey = dealType + ":" + dealOpenDate + ":" + pageNumber;
-
-        return redisSortSetRepository.getAll(dealProductIdsSetKey); // 해당 key에 해당하는 데이터가 없으면? Null로 됨
     }
 
     /**

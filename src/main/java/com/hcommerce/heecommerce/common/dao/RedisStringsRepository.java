@@ -1,5 +1,7 @@
 package com.hcommerce.heecommerce.common.dao;
 
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -34,6 +36,26 @@ public class RedisStringsRepository {
 
     public String get(String key) {
         return redisTemplate.opsForValue().get(key);
+    }
+
+    /**
+     * getMany 는 요청된 key의 순서대로 Redis에 Strings 데이터 타입으로 저장된 여러 데이터들을 얻는 함수이다.
+     * 만약, 존재하지 않는 key 가 있으면, 그 key 순서의 결과값은 null 이다.
+     * <예시1>
+     * redis> MGET key1 key2 nonExistingKey
+     * 1) "Hello"
+     * 2) "World"
+     * 3) (nil)
+     * <예시2>
+     * redis> MGET key1 nonExistingKey key2
+     * 1) "Hello"
+     * 2) (nil)
+     * 3) "World"
+     *
+     * Set 으로 한 이유는 중복된 key 검색을 방지를 하기 위해서이다.
+     */
+    public List<String> getMany(Set<String> keys) {
+        return redisTemplate.opsForValue().multiGet(keys);
     }
 
     public long decreaseByAmount(String key, long amount) {
