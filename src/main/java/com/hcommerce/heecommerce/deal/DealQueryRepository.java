@@ -6,8 +6,6 @@ import com.hcommerce.heecommerce.common.dao.RedisSortSetRepository;
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import com.hcommerce.heecommerce.product.ProductsSort;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -18,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -34,7 +31,8 @@ public class DealQueryRepository {
     @Autowired
     public DealQueryRepository(
         RedisSortSetRepository<String> redisSortSetRepository,
-        RedisHashRepository<TimeDealProductEntity> redisHashRepository
+        RedisHashRepository<TimeDealProductEntity> redisHashRepository,
+        InventoryQueryRepository inventoryQueryRepository
     ) {
         this.redisSortSetRepository = redisSortSetRepository;
         this.redisHashRepository = redisHashRepository;
