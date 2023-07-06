@@ -180,6 +180,15 @@ public class DealQueryRepository {
     }
 
     /**
+     * getMaxOrderQuantityPerOrderByDealProductUuid 는 딜 상품의 주문당 최대 주문 수량을 가져오는 함수이다.
+     */
+    public int getMaxOrderQuantityPerOrderByDealProductUuid(UUID dealProductUuid) {
+        TimeDealProductEntity timeDealProductEntity = getTimeDealProductEntity(dealProductUuid);
+
+        return timeDealProductEntity.getMaxOrderQuantityPerOrder();
+    }
+
+    /**
      * getTimeDealProductEntity 는 Redis에서 TimeDealProductEntity 을 가져오는 함수이다.
      */
     private TimeDealProductEntity getTimeDealProductEntity(UUID dealProductUuid) {

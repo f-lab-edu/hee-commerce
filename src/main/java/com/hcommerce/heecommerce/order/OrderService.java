@@ -184,6 +184,8 @@ public class OrderService {
 
     private void validateOrderQuantity(UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
         validateOrderQuantityInInventory(dealProductUuid, orderQuantity, outOfStockHandlingOption);
+
+        validateOrderQuantityInMaxOrderQuantityPerOrder(dealProductUuid, orderQuantity);
     }
 
     private void validateOrderQuantityInInventory(UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
@@ -193,6 +195,14 @@ public class OrderService {
 
         if(orderQuantity > inventory && outOfStockHandlingOption == OutOfStockHandlingOption.ALL_CANCEL) {
             throw new OrderOverStockException();
+        }
+    }
+
+    private void validateOrderQuantityInMaxOrderQuantityPerOrder(UUID dealProductUuid, int orderQuantity) {
+        int maxOrderQuantityPerOrder = dealQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(dealProductUuid);
+
+        if(orderQuantity > maxOrderQuantityPerOrder) {
+            throw new MaxOrderQuantityExceededException(maxOrderQuantityPerOrder);
         }
     }
 

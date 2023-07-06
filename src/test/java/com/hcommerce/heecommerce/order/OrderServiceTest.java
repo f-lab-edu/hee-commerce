@@ -118,6 +118,7 @@ class OrderServiceTest {
 
                 given(inventoryQueryRepository.get(any())).willReturn(3);
 
+                given(dealQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
 
                 // when
                 UUID uuid = orderService.placeOrderInAdvance(orderForm);
@@ -230,11 +231,50 @@ class OrderServiceTest {
 
                     given(inventoryQueryRepository.get(any())).willReturn(1);
 
+                    given(dealQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
+
                     // when + then
                     assertDoesNotThrow(() -> {
                         orderService.placeOrderInAdvance(orderForm);
                     });
                 }
+            }
+        }
+
+        @Nested
+        @DisplayName("with orderQuantity > maxOrderQuantityPerOrder")
+        class Context_With_OrderQuantity_Exceeds_MaxOrderQuantityPerOrder {
+            @Test
+            @DisplayName("throws MaxOrderQuantityExceededException")
+            void It_throws_MaxOrderQuantityExceededException() {
+                // given
+                OrderForm orderForm = OrderForm.builder()
+                    .userId(1)
+                    .recipientInfoForm(
+                        RecipientInfoForm.builder()
+                            .recipientName("leecommerce")
+                            .recipientPhoneNumber("01087654321")
+                            .recipientAddress("서울시 ")
+                            .recipientDetailAddress("101호")
+                            .shippingRequest("빠른 배송 부탁드려요!")
+                            .build()
+                    )
+                    .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
+                    .dealProductUuid(UUID.randomUUID())
+                    .orderQuantity(2)
+                    .paymentMethod(PaymentMethod.CREDIT_CARD)
+                    .build();
+
+                given(dealQueryRepository.hasDealProductUuid(any())).willReturn(true);
+
+                given(inventoryQueryRepository.get(any())).willReturn(3);
+
+                given(dealQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(1);
+
+                // when + then
+                assertThrows(MaxOrderQuantityExceededException.class, () -> {
+                    orderService.placeOrderInAdvance(orderForm);
+                });
             }
         }
     }
