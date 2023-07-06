@@ -1,5 +1,6 @@
 package com.hcommerce.heecommerce.order;
 
+import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import java.util.UUID;
@@ -132,5 +133,35 @@ public class OrderService {
      */
     private void rollbackReducedInventory(String key, int amount) {
         inventoryCommandRepository.increaseByAmount(key, amount);
+    }
+
+    /**
+     * placeOrderInAdvance 는 주문 승인 전에 검증을 위해 미리 주문 내역을 저장하는 함수이다.
+     */
+    public UUID placeOrderInAdvance(OrderForm orderForm) {
+        // TODO : 검증 로직
+
+        OrderFormSavedInAdvanceEntity orderFormSavedInAdvanceEntity = convertOrderFormToOrderFormSavedInAdvanceEntity(orderForm);
+
+        UUID orderUuidSavedInAdvance = orderCommandRepository.saveOrderInAdvance(orderFormSavedInAdvanceEntity);
+
+        return orderUuidSavedInAdvance;
+    }
+
+    /**
+     * convertOrderFormToOrderFormSavedInAdvanceEntity 가 필요한 이유는 UUID 때문이다.
+     * UUID 는 DB에 저장될 때 byte[] 로 저장되기 때문에, UUID -> byte[] 타입 변환이 필요하다.
+     */
+    private OrderFormSavedInAdvanceEntity convertOrderFormToOrderFormSavedInAdvanceEntity(OrderForm orderForm) {
+        return OrderFormSavedInAdvanceEntity.builder()
+            .uuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
+            .orderStatus(OrderStatus.PAYMENT_PENDING)
+            .userId(orderForm.getUserId())
+            .recipientInfoForm(orderForm.getRecipientInfoForm())
+            .outOfStockHandlingOption(orderForm.getOutOfStockHandlingOption())
+            .dealProductUuid(TypeConversionUtils.convertUuidToBinary(orderForm.getDealProductUuid()))
+            .orderQuantity(orderForm.getOrderQuantity())
+            .paymentMethod(orderForm.getPaymentMethod())
+            .build();
     }
 }

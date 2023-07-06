@@ -1,5 +1,13 @@
 package com.hcommerce.heecommerce.order;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.verify;
+import static org.mockito.Mockito.times;
+
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -7,13 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.verify;
-import static org.mockito.Mockito.times;
 
 @DisplayName("OrderService")
 @ExtendWith(MockitoExtension.class)
@@ -63,6 +64,45 @@ class OrderServiceTest {
                     orderService.completeOrderReceipt(TEMP_NOT_EXIST_UUID);
                 });
             }
+        }
+    }
+
+    /**
+     * any()를 사용하는 이유 : https://github.com/f-lab-edu/hee-commerce/issues/102 참고
+     */
+    @Nested
+    @DisplayName("placeOrderInAdvance")
+    class Describe_PlaceOrderInAdvance {
+        @Test
+        @DisplayName("return OrderUuid")
+        void It_returns_OrderUuid() {
+            // given
+            OrderForm orderForm = OrderForm.builder()
+                .userId(1)
+                .recipientInfoForm(
+                    RecipientInfoForm.builder()
+                        .recipientName("leecommerce")
+                        .recipientPhoneNumber("01087654321")
+                        .recipientAddress("서울시 ")
+                        .recipientDetailAddress("101호")
+                        .shippingRequest("빠른 배송 부탁드려요!")
+                        .build()
+                )
+                .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
+                .dealProductUuid(UUID.randomUUID())
+                .orderQuantity(2)
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .build();
+
+            UUID expectedOrderUuid = UUID.randomUUID();
+
+            given(orderCommandRepository.saveOrderInAdvance(any())).willReturn(expectedOrderUuid);
+
+            // when
+            UUID uuid = orderService.placeOrderInAdvance(orderForm);
+
+            // then
+            assertEquals(expectedOrderUuid, uuid);
         }
     }
 }
