@@ -19,12 +19,12 @@ public class DealController {
 
     private final DealService dealService;
 
-    private final DealCommandRepository dealCommandRepository;
+    private final DealProductCommandRepository dealProductCommandRepository;
 
     @Autowired
-    public DealController(DealService dealService, DealCommandRepository dealCommandRepository) {
+    public DealController(DealService dealService, DealProductCommandRepository dealProductCommandRepository) {
         this.dealService = dealService;
-        this.dealCommandRepository = dealCommandRepository;
+        this.dealProductCommandRepository = dealProductCommandRepository;
     }
 
     /**
@@ -38,7 +38,7 @@ public class DealController {
 
         int month = initTestDealPrdouctsDto.getMonth();
 
-        dealCommandRepository.initDealProducts(month);
+        dealProductCommandRepository.initDealProducts(month);
 
         return ResponseDto.builder()
             .code(HttpStatus.OK.name())
