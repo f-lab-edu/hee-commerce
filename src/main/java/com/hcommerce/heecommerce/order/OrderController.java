@@ -5,8 +5,6 @@ import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,11 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class OrderController {
-
-    @InitBinder
-    protected void initBinder(WebDataBinder binder) {
-        binder.addValidators(new OrderFormValidator());
-    }
 
     private final OrderService orderService;
 
@@ -62,5 +55,23 @@ public class OrderController {
                 .message("주문 접수가 완료되었습니다.")
                 .data(null)
                 .build();
+    }
+
+    /**
+     * 검증을 위한 주문 데이터 사전 저장
+     * @param orderForm
+     * @return
+     */
+    @PostMapping("/orders/place-in-advance")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseDto placeOrderInAdvance(@Valid @RequestBody OrderForm orderForm) {
+
+        UUID orderUuid = orderService.placeOrderInAdvance(orderForm);
+
+        return ResponseDto.builder()
+            .code(HttpStatus.CREATED.name())
+            .message("주문이 미리 저장 되었습니다.")
+            .data(new OrderUuid(orderUuid))
+            .build();
     }
 }

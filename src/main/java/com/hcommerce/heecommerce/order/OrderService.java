@@ -1,5 +1,9 @@
 package com.hcommerce.heecommerce.order;
 
+import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
+import com.hcommerce.heecommerce.deal.DealQueryRepository;
+import com.hcommerce.heecommerce.deal.DiscountType;
+import com.hcommerce.heecommerce.deal.TimeDealProductDetail;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import java.util.UUID;
@@ -15,15 +19,19 @@ public class OrderService {
 
     private final InventoryCommandRepository inventoryCommandRepository;
 
+    private final DealQueryRepository dealQueryRepository;
+
     @Autowired
     public OrderService(
         OrderCommandRepository orderCommandRepository,
         InventoryQueryRepository inventoryQueryRepository,
-        InventoryCommandRepository inventoryCommandRepository
+        InventoryCommandRepository inventoryCommandRepository,
+        DealQueryRepository dealQueryRepository
     ) {
         this.orderCommandRepository = orderCommandRepository;
         this.inventoryQueryRepository = inventoryQueryRepository;
         this.inventoryCommandRepository = inventoryCommandRepository;
+        this.dealQueryRepository = dealQueryRepository;
     }
 
     public void completeOrderReceipt(UUID orderUuid) {
@@ -132,5 +140,111 @@ public class OrderService {
      */
     private void rollbackReducedInventory(String key, int amount) {
         inventoryCommandRepository.increaseByAmount(key, amount);
+    }
+
+    /**
+     * placeOrderInAdvance 는 주문 승인 전에 검증을 위해 미리 주문 내역을 저장하는 함수이다.
+     */
+    public UUID placeOrderInAdvance(OrderForm orderForm) {
+        UUID dealProductUuid = orderForm.getDealProductUuid();
+
+        int orderQuantity = orderForm.getOrderQuantity();
+
+        // 1. DB에 존재하는 dealProductUuid 인지
+        validateHasDealProductUuid(dealProductUuid);
+
+        // 2. DB에 존재하는 userId 인지
+        // TODO : 회원 기능 추가 후 구현
+
+        // 3. 최대 주문 수량에 맞는 orderQuantity 인지
+        validateOrderQuantityInMaxOrderQuantityPerOrder(dealProductUuid, orderQuantity);
+
+        // 4. 재고가 있는지
+        int availableOrderQuantity = checkOrderQuantityInInventory(dealProductUuid, orderQuantity, orderForm.getOutOfStockHandlingOption());
+
+        OrderFormSavedInAdvanceEntity orderFormSavedInAdvanceEntity = createOrderFormSavedInAdvanceEntity(orderForm, availableOrderQuantity);
+
+        UUID orderUuidSavedInAdvance = orderCommandRepository.saveOrderInAdvance(orderFormSavedInAdvanceEntity);
+
+        return orderUuidSavedInAdvance;
+    }
+
+    /**
+     * validateHasDealProductUuid 는 DB에 존재하는 dealProductUuid 인지 검사하는 함수이다.
+     */
+    private void validateHasDealProductUuid(UUID dealProductUuid) {
+        boolean hasDealProductUuid = dealQueryRepository.hasDealProductUuid(dealProductUuid);
+
+        if(!hasDealProductUuid) {
+            throw new TimeDealProductNotFoundException(dealProductUuid);
+        }
+    }
+
+    /**
+     * checkOrderQuantityInInventory 는 주문 가능한 수량을 체크하는 함수이다.
+     */
+    private int checkOrderQuantityInInventory(UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
+        String redisKey = "timeDealProductInventory:"+dealProductUuid.toString();
+
+        int inventory = inventoryQueryRepository.get(redisKey);
+
+        if(orderQuantity > inventory && outOfStockHandlingOption == OutOfStockHandlingOption.ALL_CANCEL) {
+            throw new OrderOverStockException();
+        } else if(orderQuantity > inventory && outOfStockHandlingOption == OutOfStockHandlingOption.PARTIAL_ORDER) {
+            return inventory;
+        } else  {
+            return orderQuantity;
+        }
+    }
+
+    /**
+     * validateOrderQuantityInMaxOrderQuantityPerOrder 는 최대 주문 수량에 맞는지에 대해 검증하는 함수이다.
+     */
+    private void validateOrderQuantityInMaxOrderQuantityPerOrder(UUID dealProductUuid, int orderQuantity) {
+        int maxOrderQuantityPerOrder = dealQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(dealProductUuid);
+
+        if(orderQuantity > maxOrderQuantityPerOrder) {
+            throw new MaxOrderQuantityExceededException(maxOrderQuantityPerOrder);
+        }
+    }
+
+    /**
+     * createOrderFormSavedInAdvanceEntity 는 OrderFormSavedInAdvanceEntity 를 만드는 함수 이다.
+     * 이 함수가 필요한 이유는 다음 3가지 때문이다.
+     * 1. UUID
+     * - UUID 는 DB에 저장될 때 byte[] 로 저장되기 때문에, UUID -> byte[] 타입 변환이 필요하다.
+     * 2. 부분 주문
+     * - 실제 주문 수량과 다르게 주문이 접수되는 경우도 있기 때문이다.
+     * 3. 총 결제 금액
+     * - 총 결제 금액을 위변조 방지를 위해 클라이언트에서 받은 값이 아닌 DB에 있는 데이터를 기반으로 계산하기 때문이다.
+     */
+    private OrderFormSavedInAdvanceEntity createOrderFormSavedInAdvanceEntity(OrderForm orderForm, int realOrderQuantity) {
+        TimeDealProductDetail timeDealProductDetail = dealQueryRepository.getTimeDealProductDetailByDealProductUuid(orderForm.getDealProductUuid());
+
+        int totalPaymentAmount = calculateTotalPaymentAmount(timeDealProductDetail.getProductOriginPrice(), timeDealProductDetail.getDealProductDiscountType(), timeDealProductDetail.getDealProductDiscountValue());
+
+        return OrderFormSavedInAdvanceEntity.builder()
+            .uuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
+            .orderStatus(OrderStatus.PAYMENT_PENDING)
+            .userId(orderForm.getUserId())
+            .recipientInfoForm(orderForm.getRecipientInfoForm())
+            .outOfStockHandlingOption(orderForm.getOutOfStockHandlingOption())
+            .dealProductUuid(TypeConversionUtils.convertUuidToBinary(orderForm.getDealProductUuid()))
+            .totalPaymentAmount(totalPaymentAmount)
+            .orderQuantity(realOrderQuantity)
+            .paymentMethod(orderForm.getPaymentMethod())
+            .build();
+    }
+
+    /**
+     * calculateTotalPaymentAmount 는 총 결제 금액을 계산하는 함수이다.
+     * TODO : 할인 정책이 회원마다 다를 수 있고, 날짜마다, 또는 중복 할인 안되는 등 다양한 경우의 수가 있을 수 있는데, 이부분은 추후에 시간 나면 하기
+     */
+    private int calculateTotalPaymentAmount(int originPrice, DiscountType discountType, int discountValue) {
+        if (discountType == DiscountType.PERCENTAGE) {
+            return originPrice * ((100 - discountValue)/100);
+        }
+
+        return originPrice - discountValue; // 정률 할인
     }
 }
