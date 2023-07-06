@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class DealQueryRepository {
+public class DealProductQueryRepository {
 
     private final RedisSortSetRepository<String> redisSortSetRepository;
 
@@ -28,7 +28,7 @@ public class DealQueryRepository {
     private final InventoryQueryRepository inventoryQueryRepository;
 
     @Autowired
-    public DealQueryRepository(
+    public DealProductQueryRepository(
         RedisSortSetRepository<String> redisSortSetRepository,
         RedisHashRepository<TimeDealProductEntity> redisHashRepository,
         InventoryQueryRepository inventoryQueryRepository

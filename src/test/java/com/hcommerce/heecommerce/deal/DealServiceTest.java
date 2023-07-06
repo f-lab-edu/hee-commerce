@@ -23,7 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class DealServiceTest {
 
     @Mock
-    private DealQueryRepository dealQueryRepository;
+    private DealProductQueryRepository dealProductQueryRepository;
 
     @InjectMocks
     private DealService dealService;
@@ -63,7 +63,7 @@ class DealServiceTest {
         @DisplayName("return dealProducts")
         void It_return_dealProducts() {
             // given
-            given(dealQueryRepository.getDealProductsByDealType(DEAL_TYPE_TIME_DEAL, PAGE_NUMBER, SORT)).willReturn(dealProductsFixture);
+            given(dealProductQueryRepository.getDealProductsByDealType(DEAL_TYPE_TIME_DEAL, PAGE_NUMBER, SORT)).willReturn(dealProductsFixture);
 
             // when
             List<DealProductSummary> dealProducts = dealService.getDealProductsByDealType(DEAL_TYPE_TIME_DEAL, PAGE_NUMBER, SORT);
@@ -96,7 +96,7 @@ class DealServiceTest {
                 .finishedAt(FINISHED_AT)
                 .build();
 
-            given(dealQueryRepository.getTimeDealProductDetailByDealProductUuid(dealProductUuid)).willReturn(timeDealProductDetailFixture);
+            given(dealProductQueryRepository.getTimeDealProductDetailByDealProductUuid(dealProductUuid)).willReturn(timeDealProductDetailFixture);
 
             // when
             TimeDealProductDetail timeDealProductDetail = dealService.getTimeDealProductDetailByDealProductUuid(dealProductUuid);

@@ -9,23 +9,23 @@ import org.springframework.stereotype.Service;
 @Service
 public class DealService {
 
-    private final DealQueryRepository dealQueryRepository;
+    private final DealProductQueryRepository dealProductQueryRepository;
 
     @Autowired
-    public DealService(DealQueryRepository dealQueryRepository) {
-        this.dealQueryRepository = dealQueryRepository;
+    public DealService(DealProductQueryRepository dealProductQueryRepository) {
+        this.dealProductQueryRepository = dealProductQueryRepository;
     }
 
     public List<DealProductSummary> getDealProductsByDealType(DealType dealType, int pageNumber, ProductsSort sort) {
 
-        List<DealProductSummary> dealProducts = dealQueryRepository.getDealProductsByDealType(dealType, pageNumber, sort);
+        List<DealProductSummary> dealProducts = dealProductQueryRepository.getDealProductsByDealType(dealType, pageNumber, sort);
 
         return dealProducts;
     }
 
     public TimeDealProductDetail getTimeDealProductDetailByDealProductUuid(UUID dealProductUuid) {
 
-        TimeDealProductDetail timeDealProductDetail = dealQueryRepository.getTimeDealProductDetailByDealProductUuid(dealProductUuid);
+        TimeDealProductDetail timeDealProductDetail = dealProductQueryRepository.getTimeDealProductDetailByDealProductUuid(dealProductUuid);
 
         return timeDealProductDetail;
     }
