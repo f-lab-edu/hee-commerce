@@ -63,4 +63,22 @@ public class OrderController {
                 .data(null)
                 .build();
     }
+
+    /**
+     * 검증을 위한 주문 데이터 사전 저장
+     * @param orderForm
+     * @return
+     */
+    @PostMapping("/orders/place-in-advance")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseDto placeOrderInAdvance(@Valid @RequestBody OrderForm orderForm) {
+
+        UUID orderUuid = orderService.placeOrderInAdvance(orderForm);
+
+        return ResponseDto.builder()
+            .code(HttpStatus.CREATED.name())
+            .message("주문이 미리 저장 되었습니다.")
+            .data(new OrderUuid(orderUuid))
+            .build();
+    }
 }

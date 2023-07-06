@@ -1,6 +1,8 @@
 package com.hcommerce.heecommerce.order;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -17,6 +19,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
@@ -33,6 +36,9 @@ class OrderControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockBean
+    private OrderService orderService;
 
     private MockHttpSession session;
 
@@ -342,6 +348,48 @@ class OrderControllerTest {
                 // then
                 resultActions.andExpect(status().isBadRequest());
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("POST /orders/place-in-advance")
+    class Describe_PlaceOrderInAdvance_API {
+        @Test
+        @DisplayName("returns 201")
+        void It_returns_201() throws Exception {
+            OrderForm orderForm = OrderForm.builder()
+                .userId(1)
+                .recipientInfoForm(
+                    RecipientInfoForm.builder()
+                        .recipientName("leecommerce")
+                        .recipientPhoneNumber("01087654321")
+                        .recipientAddress("서울시 ")
+                        .recipientDetailAddress("101호")
+                        .shippingRequest("빠른 배송 부탁드려요!")
+                        .build()
+                )
+                .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
+                .dealProductUuid(UUID.randomUUID())
+                .orderQuantity(2)
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .build();
+
+            // given
+            given(orderService.placeOrderInAdvance(any())).willReturn(UUID.randomUUID());
+
+            // when
+            String content = objectMapper.writeValueAsString(orderForm);
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/orders/place-in-advance")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(content)
+            );
+
+            // then
+            resultActions.andExpect(status().isCreated())
+                .andDo(OrderControllerRestDocs.placeOrderInAdvance());
         }
     }
 }
