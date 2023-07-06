@@ -66,7 +66,10 @@ public class DealControllerRestDocs {
                 fieldWithPath("data.productOriginPrice").type(JsonFieldType.NUMBER).description("상품 원가격"),
                 fieldWithPath("data.dealProductDiscountType").type(JsonFieldType.STRING).description("딜 상품 할인 유형"),
                 fieldWithPath("data.dealProductDiscountValue").type(JsonFieldType.NUMBER).description("딜 상품 할인가"),
-                fieldWithPath("data.dealProductDealQuantity").type(JsonFieldType.NUMBER).description("딜 상품 재고 수량")
+                fieldWithPath("data.dealProductDealQuantity").type(JsonFieldType.NUMBER).description("딜 상품 재고 수량"),
+                fieldWithPath("data.maxOrderQuantityPerOrder").type(JsonFieldType.NUMBER).description("딜 상품 주문당 최대 주문 수량"),
+                fieldWithPath("data.startedAt").type(JsonFieldType.STRING).description("딜 상품 시작 시간(예 : 2023-07-01T01:00:00Z)"),
+                fieldWithPath("data.finishedAt").type(JsonFieldType.STRING).description("딜 상품 종료 시간(예 : 2023-07-01T02:00:00Z)")
             )
         );
     }
