@@ -21,7 +21,7 @@ import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class DealProductCommandRepository {
+public class DealProductCommandRepository extends DealProductRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -105,8 +105,6 @@ public class DealProductCommandRepository {
                     // --- 트랜잭션 시작
                     operations.multi();
 
-                    int PAGE_NUMBER = 0;
-
                     UUID dealProductUuid = UUID.randomUUID();
 
                     String dealProductUuidString = dealProductUuid.toString();
@@ -114,15 +112,15 @@ public class DealProductCommandRepository {
                     int expirationInSeconds = 86_400; // TODO : 일단 임시로 24시간으로 설정, 유효시간을 설정해서 관리할 것인가? 아니면 따로 lambda나 batch 서버를 두어서 삭제시킬 것인가?
 
                     saveDealProductUuids(
-                        DealType.TIME_DEAL+":"+dealOpenDate+":"+PAGE_NUMBER,
+                        dealOpenDate,
                         dealProductUuidString,
                         scoreForSortSet,
                         expirationInSeconds
                     );
 
                     saveDealProductEntity(
-                        "timeDealProducts:"+dealOpenDate,
-                        dealProductUuidString,
+                        dealOpenDate,
+                        dealProductUuid,
                         TimeDealProductEntity.builder()
                             .dealProductUuid(dealProductUuid)
                             .dealProductTile("1000원 할인 상품 "+scoreForSortSet)
@@ -152,14 +150,20 @@ public class DealProductCommandRepository {
         });
     }
 
-    private void saveDealProductUuids(String key, String value, int score, long expirationInSeconds) {
+    private void saveDealProductUuids(String dealOpenDate, String value, int score, long expirationInSeconds) {
+        String key = super.getRedisKeyForDealProductUuids(dealOpenDate, 0);
+
         redisSortSetRepository.addWithExpirationTime(
             key, value, score,
             expirationInSeconds, TimeUnit.SECONDS
         );
     }
 
-    private void saveDealProductEntity(String redisKey, String hashKey, TimeDealProductEntity timeDealProductEntity, long expirationInSeconds) {
+    private void saveDealProductEntity(String dealOpenDate, UUID dealProductUuid, TimeDealProductEntity timeDealProductEntity, long expirationInSeconds) {
+        String redisKey = super.getRedisKey(dealOpenDate);
+
+        String hashKey = super.getRedisHashKey(dealProductUuid);
+
         redisHashRepository.putWithExpirationTime(
             redisKey, hashKey, timeDealProductEntity,
             expirationInSeconds, TimeUnit.SECONDS
