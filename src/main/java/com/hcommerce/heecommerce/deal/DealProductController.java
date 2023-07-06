@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class DealController {
+public class DealProductController {
 
     private final DealService dealService;
 
     private final DealProductCommandRepository dealProductCommandRepository;
 
     @Autowired
-    public DealController(DealService dealService, DealProductCommandRepository dealProductCommandRepository) {
+    public DealProductController(DealService dealService, DealProductCommandRepository dealProductCommandRepository) {
         this.dealService = dealService;
         this.dealProductCommandRepository = dealProductCommandRepository;
     }

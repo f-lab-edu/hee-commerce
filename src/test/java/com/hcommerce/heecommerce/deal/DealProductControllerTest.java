@@ -34,7 +34,7 @@ import org.springframework.test.web.servlet.ResultActions;
 @AutoConfigureRestDocs
 @AutoConfigureMockMvc
 @DisplayName("DealController")
-class DealControllerTest {
+class DealProductControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
