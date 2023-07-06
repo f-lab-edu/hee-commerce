@@ -1,6 +1,7 @@
 package com.hcommerce.heecommerce.order;
 
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
+import com.hcommerce.heecommerce.deal.DealQueryRepository;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import java.util.UUID;
@@ -16,15 +17,19 @@ public class OrderService {
 
     private final InventoryCommandRepository inventoryCommandRepository;
 
+    private final DealQueryRepository dealQueryRepository;
+
     @Autowired
     public OrderService(
         OrderCommandRepository orderCommandRepository,
         InventoryQueryRepository inventoryQueryRepository,
-        InventoryCommandRepository inventoryCommandRepository
+        InventoryCommandRepository inventoryCommandRepository,
+        DealQueryRepository dealQueryRepository
     ) {
         this.orderCommandRepository = orderCommandRepository;
         this.inventoryQueryRepository = inventoryQueryRepository;
         this.inventoryCommandRepository = inventoryCommandRepository;
+        this.dealQueryRepository = dealQueryRepository;
     }
 
     public void completeOrderReceipt(UUID orderUuid) {
@@ -139,13 +144,40 @@ public class OrderService {
      * placeOrderInAdvance 는 주문 승인 전에 검증을 위해 미리 주문 내역을 저장하는 함수이다.
      */
     public UUID placeOrderInAdvance(OrderForm orderForm) {
-        // TODO : 검증 로직
+        validateOrderForm(orderForm);
 
         OrderFormSavedInAdvanceEntity orderFormSavedInAdvanceEntity = convertOrderFormToOrderFormSavedInAdvanceEntity(orderForm);
 
         UUID orderUuidSavedInAdvance = orderCommandRepository.saveOrderInAdvance(orderFormSavedInAdvanceEntity);
 
         return orderUuidSavedInAdvance;
+    }
+
+    /**
+     * validateOrderForm 는 orderForm에 대해 유효성 검사를 하는 함수 이다.
+     *
+     * OrderForm 은 다음과 같은 유효성 검사가 필요하다.
+     * 1. DB에 존재하는 dealProductUuid 인지
+     * 2. DB에 존재하는 userId 인지
+     * 3. 주문 가능한 orderQuantity 인지
+     * (1) 재고가 있는지
+     * (2) 최대 주문 수량 이하의 주문 수량인지
+     */
+    private void validateOrderForm(OrderForm orderForm) {
+        // 1. DB에 존재하는 dealProductUuid 인지
+        validateHasDealProductUuid(orderForm.getDealProductUuid());
+
+        // 2. DB에 존재하는 userId 인지
+
+        // 3. 주문 가능한 orderQuantity 인지
+    }
+
+    private void validateHasDealProductUuid(UUID dealProductUuid) {
+        boolean hasDealProductUuid = dealQueryRepository.hasDealProductUuid(dealProductUuid);
+
+        if(!hasDealProductUuid) {
+            throw new TimeDealProductNotFoundException(dealProductUuid);
+        }
     }
 
     /**

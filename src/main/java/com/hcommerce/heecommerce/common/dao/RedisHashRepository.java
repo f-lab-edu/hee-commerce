@@ -43,6 +43,10 @@ public class RedisHashRepository<T> {
         return list;
     }
 
+    public boolean hasKey(String key, String hashKey) {
+        return hashOperations.hasKey(key, hashKey);
+    }
+
     public void put(String key, String hashKey, T item) {
         String itemString = convertStringFromObject(item);
 

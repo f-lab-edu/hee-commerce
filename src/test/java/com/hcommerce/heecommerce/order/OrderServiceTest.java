@@ -7,6 +7,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
 import static org.mockito.Mockito.times;
 
+import com.hcommerce.heecommerce.deal.DealQueryRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -22,6 +23,9 @@ class OrderServiceTest {
 
     @Mock
     private OrderCommandRepository orderCommandRepository;
+
+    @Mock
+    private DealQueryRepository dealQueryRepository;
 
     @InjectMocks
     private OrderService orderService;
@@ -73,36 +77,75 @@ class OrderServiceTest {
     @Nested
     @DisplayName("placeOrderInAdvance")
     class Describe_PlaceOrderInAdvance {
-        @Test
-        @DisplayName("return OrderUuid")
-        void It_returns_OrderUuid() {
-            // given
-            OrderForm orderForm = OrderForm.builder()
-                .userId(1)
-                .recipientInfoForm(
-                    RecipientInfoForm.builder()
-                        .recipientName("leecommerce")
-                        .recipientPhoneNumber("01087654321")
-                        .recipientAddress("서울시 ")
-                        .recipientDetailAddress("101호")
-                        .shippingRequest("빠른 배송 부탁드려요!")
-                        .build()
-                )
-                .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
-                .dealProductUuid(UUID.randomUUID())
-                .orderQuantity(2)
-                .paymentMethod(PaymentMethod.CREDIT_CARD)
-                .build();
+        @Nested
+        @DisplayName("with valid orderForm")
+        class Context_With_Valid_OrderForm {
+            @Test
+            @DisplayName("return OrderUuid")
+            void It_returns_OrderUuid() {
+                // given
+                OrderForm orderForm = OrderForm.builder()
+                    .userId(1)
+                    .recipientInfoForm(
+                        RecipientInfoForm.builder()
+                            .recipientName("leecommerce")
+                            .recipientPhoneNumber("01087654321")
+                            .recipientAddress("서울시 ")
+                            .recipientDetailAddress("101호")
+                            .shippingRequest("빠른 배송 부탁드려요!")
+                            .build()
+                    )
+                    .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
+                    .dealProductUuid(UUID.randomUUID())
+                    .orderQuantity(2)
+                    .paymentMethod(PaymentMethod.CREDIT_CARD)
+                    .build();
 
-            UUID expectedOrderUuid = UUID.randomUUID();
+                UUID expectedOrderUuid = UUID.randomUUID();
 
-            given(orderCommandRepository.saveOrderInAdvance(any())).willReturn(expectedOrderUuid);
+                given(orderCommandRepository.saveOrderInAdvance(any())).willReturn(expectedOrderUuid);
 
-            // when
-            UUID uuid = orderService.placeOrderInAdvance(orderForm);
+                // when
+                UUID uuid = orderService.placeOrderInAdvance(orderForm);
 
-            // then
-            assertEquals(expectedOrderUuid, uuid);
+                // then
+                assertEquals(expectedOrderUuid, uuid);
+            }
+        }
+
+        @Nested
+        @DisplayName("with invalid dealProductUuid")
+        class Context_With_Invalid_DealProductUuid {
+            @Test
+            @DisplayName("throws TimeDealProductNotFoundException")
+            void It_throws_TimeDealProductNotFoundException() {
+                // given
+                UUID NOT_EXIST_DEAL_PRODUCT_UUID = UUID.randomUUID();
+
+                OrderForm orderForm = OrderForm.builder()
+                    .userId(1)
+                    .recipientInfoForm(
+                        RecipientInfoForm.builder()
+                            .recipientName("leecommerce")
+                            .recipientPhoneNumber("01087654321")
+                            .recipientAddress("서울시 ")
+                            .recipientDetailAddress("101호")
+                            .shippingRequest("빠른 배송 부탁드려요!")
+                            .build()
+                    )
+                    .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
+                    .dealProductUuid(NOT_EXIST_DEAL_PRODUCT_UUID)
+                    .orderQuantity(2)
+                    .paymentMethod(PaymentMethod.CREDIT_CARD)
+                    .build();
+
+                given(dealQueryRepository.hasDealProductUuid(NOT_EXIST_DEAL_PRODUCT_UUID)).willReturn(false);
+
+                // when + then
+                assertThrows(TimeDealProductNotFoundException.class, () -> {
+                    orderService.placeOrderInAdvance(orderForm);
+                });
+            }
         }
     }
 }
