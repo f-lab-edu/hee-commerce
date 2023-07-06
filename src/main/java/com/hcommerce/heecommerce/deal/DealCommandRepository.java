@@ -118,10 +118,6 @@ public class DealCommandRepository {
                         expirationInSeconds
                     );
 
-                    if(scoreForSortSet == 1) {
-                        throw new RuntimeException("예외다");
-                    }
-
                     saveDealProductEntity(
                         "timeDealProducts:"+dealOpenDate,
                         dealProductUuid,
