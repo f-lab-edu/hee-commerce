@@ -8,7 +8,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
 import static org.mockito.Mockito.times;
 
-import com.hcommerce.heecommerce.deal.DealQueryRepository;
+import com.hcommerce.heecommerce.deal.DealProductQueryRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -27,7 +27,7 @@ class OrderServiceTest {
     private OrderCommandRepository orderCommandRepository;
 
     @Mock
-    private DealQueryRepository dealQueryRepository;
+    private DealProductQueryRepository dealProductQueryRepository;
 
     @Mock
     private InventoryQueryRepository inventoryQueryRepository;
@@ -114,11 +114,11 @@ class OrderServiceTest {
 
                 boolean HAS_DEAL_PRODUCT_UUID = true;
 
-                given(dealQueryRepository.hasDealProductUuid(dealProductUuid)).willReturn(HAS_DEAL_PRODUCT_UUID);
+                given(dealProductQueryRepository.hasDealProductUuid(dealProductUuid)).willReturn(HAS_DEAL_PRODUCT_UUID);
 
                 given(inventoryQueryRepository.get(any())).willReturn(3);
 
-                given(dealQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
+                given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
 
                 // when
                 UUID uuid = orderService.placeOrderInAdvance(orderForm);
@@ -154,7 +154,7 @@ class OrderServiceTest {
                     .paymentMethod(PaymentMethod.CREDIT_CARD)
                     .build();
 
-                given(dealQueryRepository.hasDealProductUuid(NOT_EXIST_DEAL_PRODUCT_UUID)).willReturn(false);
+                given(dealProductQueryRepository.hasDealProductUuid(NOT_EXIST_DEAL_PRODUCT_UUID)).willReturn(false);
 
                 // when + then
                 assertThrows(TimeDealProductNotFoundException.class, () -> {
@@ -190,7 +190,7 @@ class OrderServiceTest {
                         .paymentMethod(PaymentMethod.CREDIT_CARD)
                         .build();
 
-                    given(dealQueryRepository.hasDealProductUuid(any())).willReturn(true);
+                    given(dealProductQueryRepository.hasDealProductUuid(any())).willReturn(true);
 
                     given(inventoryQueryRepository.get(any())).willReturn(1);
 
@@ -227,11 +227,11 @@ class OrderServiceTest {
                         .paymentMethod(PaymentMethod.CREDIT_CARD)
                         .build();
 
-                    given(dealQueryRepository.hasDealProductUuid(uuid)).willReturn(true);
+                    given(dealProductQueryRepository.hasDealProductUuid(uuid)).willReturn(true);
 
                     given(inventoryQueryRepository.get(any())).willReturn(1);
 
-                    given(dealQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
+                    given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
 
                     // when + then
                     assertDoesNotThrow(() -> {
@@ -265,11 +265,11 @@ class OrderServiceTest {
                     .paymentMethod(PaymentMethod.CREDIT_CARD)
                     .build();
 
-                given(dealQueryRepository.hasDealProductUuid(any())).willReturn(true);
+                given(dealProductQueryRepository.hasDealProductUuid(any())).willReturn(true);
 
                 given(inventoryQueryRepository.get(any())).willReturn(3);
 
-                given(dealQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(1);
+                given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(1);
 
                 // when + then
                 assertThrows(MaxOrderQuantityExceededException.class, () -> {

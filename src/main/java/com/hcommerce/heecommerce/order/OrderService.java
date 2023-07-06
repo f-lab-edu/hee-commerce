@@ -1,7 +1,7 @@
 package com.hcommerce.heecommerce.order;
 
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
-import com.hcommerce.heecommerce.deal.DealQueryRepository;
+import com.hcommerce.heecommerce.deal.DealProductQueryRepository;
 import com.hcommerce.heecommerce.deal.DiscountType;
 import com.hcommerce.heecommerce.deal.TimeDealProductDetail;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
@@ -19,19 +19,19 @@ public class OrderService {
 
     private final InventoryCommandRepository inventoryCommandRepository;
 
-    private final DealQueryRepository dealQueryRepository;
+    private final DealProductQueryRepository dealProductQueryRepository;
 
     @Autowired
     public OrderService(
         OrderCommandRepository orderCommandRepository,
         InventoryQueryRepository inventoryQueryRepository,
         InventoryCommandRepository inventoryCommandRepository,
-        DealQueryRepository dealQueryRepository
+        DealProductQueryRepository dealProductQueryRepository
     ) {
         this.orderCommandRepository = orderCommandRepository;
         this.inventoryQueryRepository = inventoryQueryRepository;
         this.inventoryCommandRepository = inventoryCommandRepository;
-        this.dealQueryRepository = dealQueryRepository;
+        this.dealProductQueryRepository = dealProductQueryRepository;
     }
 
     public void completeOrderReceipt(UUID orderUuid) {
@@ -171,7 +171,7 @@ public class OrderService {
      * validateHasDealProductUuid 는 DB에 존재하는 dealProductUuid 인지 검사하는 함수이다.
      */
     private void validateHasDealProductUuid(UUID dealProductUuid) {
-        boolean hasDealProductUuid = dealQueryRepository.hasDealProductUuid(dealProductUuid);
+        boolean hasDealProductUuid = dealProductQueryRepository.hasDealProductUuid(dealProductUuid);
 
         if(!hasDealProductUuid) {
             throw new TimeDealProductNotFoundException(dealProductUuid);
@@ -197,7 +197,7 @@ public class OrderService {
      * validateOrderQuantityInMaxOrderQuantityPerOrder 는 최대 주문 수량에 맞는지에 대해 검증하는 함수이다.
      */
     private void validateOrderQuantityInMaxOrderQuantityPerOrder(UUID dealProductUuid, int orderQuantity) {
-        int maxOrderQuantityPerOrder = dealQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(dealProductUuid);
+        int maxOrderQuantityPerOrder = dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(dealProductUuid);
 
         if(orderQuantity > maxOrderQuantityPerOrder) {
             throw new MaxOrderQuantityExceededException(maxOrderQuantityPerOrder);
@@ -215,7 +215,7 @@ public class OrderService {
      * - 총 결제 금액을 위변조 방지를 위해 클라이언트에서 받은 값이 아닌 DB에 있는 데이터를 기반으로 계산하기 때문이다.
      */
     private OrderFormSavedInAdvanceEntity createOrderFormSavedInAdvanceEntity(OrderForm orderForm, int realOrderQuantity) {
-        TimeDealProductDetail timeDealProductDetail = dealQueryRepository.getTimeDealProductDetailByDealProductUuid(orderForm.getDealProductUuid());
+        TimeDealProductDetail timeDealProductDetail = dealProductQueryRepository.getTimeDealProductDetailByDealProductUuid(orderForm.getDealProductUuid());
 
         int totalPaymentAmount = calculateTotalPaymentAmount(timeDealProductDetail.getProductOriginPrice(), timeDealProductDetail.getDealProductDiscountType(), timeDealProductDetail.getDealProductDiscountValue());
 

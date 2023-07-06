@@ -34,13 +34,13 @@ import org.springframework.test.web.servlet.ResultActions;
 @AutoConfigureRestDocs
 @AutoConfigureMockMvc
 @DisplayName("DealController")
-class DealControllerTest {
+class DealProductControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private DealService dealService;
+    private DealProductService dealProductService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -106,7 +106,8 @@ class DealControllerTest {
         @DisplayName("returns 200 ok")
         void It_returns_200_OK() throws Exception {
             // given
-            given(dealService.getDealProductsByDealType(DEAL_TYPE_TIME_DEAL, PAGE_NUMBER, SORT)).willReturn(dealProductsFixture);
+            given(
+                dealProductService.getDealProductsByDealType(DEAL_TYPE_TIME_DEAL, PAGE_NUMBER, SORT)).willReturn(dealProductsFixture);
 
             // when
             ResultActions resultActions = mockMvc.perform(
@@ -149,7 +150,7 @@ class DealControllerTest {
                 .finishedAt(FINISHED_AT)
                 .build();
 
-            given(dealService.getTimeDealProductDetailByDealProductUuid(DEAL_PRODUCT_UUID)).willReturn(timeDealProductDetailFixture);
+            given(dealProductService.getTimeDealProductDetailByDealProductUuid(DEAL_PRODUCT_UUID)).willReturn(timeDealProductDetailFixture);
 
             // when
             ResultActions resultActions = mockMvc.perform(

@@ -15,16 +15,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class DealController {
+public class DealProductController {
 
-    private final DealService dealService;
+    private final DealProductService dealProductService;
 
-    private final DealCommandRepository dealCommandRepository;
+    private final DealProductCommandRepository dealProductCommandRepository;
 
     @Autowired
-    public DealController(DealService dealService, DealCommandRepository dealCommandRepository) {
-        this.dealService = dealService;
-        this.dealCommandRepository = dealCommandRepository;
+    public DealProductController(DealProductService dealProductService, DealProductCommandRepository dealProductCommandRepository) {
+        this.dealProductService = dealProductService;
+        this.dealProductCommandRepository = dealProductCommandRepository;
     }
 
     /**
@@ -38,7 +38,7 @@ public class DealController {
 
         int month = initTestDealPrdouctsDto.getMonth();
 
-        dealCommandRepository.initDealProducts(month);
+        dealProductCommandRepository.initDealProducts(month);
 
         return ResponseDto.builder()
             .code(HttpStatus.OK.name())
@@ -54,7 +54,7 @@ public class DealController {
             @RequestParam ProductsSort sort
     ) {
 
-        List<DealProductSummary> dealProducts = dealService.getDealProductsByDealType(dealType, pageNumber, sort);
+        List<DealProductSummary> dealProducts = dealProductService.getDealProductsByDealType(dealType, pageNumber, sort);
 
         List<DealProductSummaryForUI> dealProductSummaryForUIs = DealProductSummaryForUI.convertDealProductSummariesToDealProductSummaryUI(dealProducts);
 
@@ -75,7 +75,7 @@ public class DealController {
         @PathVariable("dealProductUuid") UUID dealProductUuid
     ) {
 
-        TimeDealProductDetail timeDealProductDetail = dealService.getTimeDealProductDetailByDealProductUuid(dealProductUuid);
+        TimeDealProductDetail timeDealProductDetail = dealProductService.getTimeDealProductDetailByDealProductUuid(dealProductUuid);
 
         return ResponseDto.builder()
             .code(HttpStatus.OK.name())

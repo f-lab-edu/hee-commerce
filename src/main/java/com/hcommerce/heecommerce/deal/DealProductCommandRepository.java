@@ -21,7 +21,7 @@ import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class DealCommandRepository {
+public class DealProductCommandRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -32,7 +32,7 @@ public class DealCommandRepository {
     private final InventoryCommandRepository inventoryCommandRepository;
 
     @Autowired
-    public DealCommandRepository(
+    public DealProductCommandRepository(
         RedisTemplate<String, String> redisTemplate,
         RedisSortSetRepository<String> redisSortSetRepository,
         RedisHashRepository<TimeDealProductEntity> redisHashRepository,

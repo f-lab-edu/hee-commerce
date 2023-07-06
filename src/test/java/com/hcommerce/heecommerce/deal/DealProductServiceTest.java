@@ -20,13 +20,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @DisplayName("DealService")
 @ExtendWith(MockitoExtension.class)
-class DealServiceTest {
+class DealProductServiceTest {
 
     @Mock
-    private DealQueryRepository dealQueryRepository;
+    private DealProductQueryRepository dealProductQueryRepository;
 
     @InjectMocks
-    private DealService dealService;
+    private DealProductService dealProductService;
 
     private static final DealType DEAL_TYPE_TIME_DEAL = DealType.TIME_DEAL;
 
@@ -63,10 +63,10 @@ class DealServiceTest {
         @DisplayName("return dealProducts")
         void It_return_dealProducts() {
             // given
-            given(dealQueryRepository.getDealProductsByDealType(DEAL_TYPE_TIME_DEAL, PAGE_NUMBER, SORT)).willReturn(dealProductsFixture);
+            given(dealProductQueryRepository.getDealProductsByDealType(DEAL_TYPE_TIME_DEAL, PAGE_NUMBER, SORT)).willReturn(dealProductsFixture);
 
             // when
-            List<DealProductSummary> dealProducts = dealService.getDealProductsByDealType(DEAL_TYPE_TIME_DEAL, PAGE_NUMBER, SORT);
+            List<DealProductSummary> dealProducts = dealProductService.getDealProductsByDealType(DEAL_TYPE_TIME_DEAL, PAGE_NUMBER, SORT);
 
             // then
             assertEquals(dealProducts.size(), dealProductsFixture.size());
@@ -96,10 +96,10 @@ class DealServiceTest {
                 .finishedAt(FINISHED_AT)
                 .build();
 
-            given(dealQueryRepository.getTimeDealProductDetailByDealProductUuid(dealProductUuid)).willReturn(timeDealProductDetailFixture);
+            given(dealProductQueryRepository.getTimeDealProductDetailByDealProductUuid(dealProductUuid)).willReturn(timeDealProductDetailFixture);
 
             // when
-            TimeDealProductDetail timeDealProductDetail = dealService.getTimeDealProductDetailByDealProductUuid(dealProductUuid);
+            TimeDealProductDetail timeDealProductDetail = dealProductService.getTimeDealProductDetailByDealProductUuid(dealProductUuid);
 
             // then
             assertEquals(timeDealProductDetail, timeDealProductDetailFixture);
