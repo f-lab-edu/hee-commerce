@@ -7,12 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DealService {
+public class DealProductService {
 
     private final DealProductQueryRepository dealProductQueryRepository;
 
     @Autowired
-    public DealService(DealProductQueryRepository dealProductQueryRepository) {
+    public DealProductService(DealProductQueryRepository dealProductQueryRepository) {
         this.dealProductQueryRepository = dealProductQueryRepository;
     }
 

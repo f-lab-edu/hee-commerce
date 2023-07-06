@@ -17,13 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class DealProductController {
 
-    private final DealService dealService;
+    private final DealProductService dealProductService;
 
     private final DealProductCommandRepository dealProductCommandRepository;
 
     @Autowired
-    public DealProductController(DealService dealService, DealProductCommandRepository dealProductCommandRepository) {
-        this.dealService = dealService;
+    public DealProductController(DealProductService dealProductService, DealProductCommandRepository dealProductCommandRepository) {
+        this.dealProductService = dealProductService;
         this.dealProductCommandRepository = dealProductCommandRepository;
     }
 
@@ -54,7 +54,7 @@ public class DealProductController {
             @RequestParam ProductsSort sort
     ) {
 
-        List<DealProductSummary> dealProducts = dealService.getDealProductsByDealType(dealType, pageNumber, sort);
+        List<DealProductSummary> dealProducts = dealProductService.getDealProductsByDealType(dealType, pageNumber, sort);
 
         List<DealProductSummaryForUI> dealProductSummaryForUIs = DealProductSummaryForUI.convertDealProductSummariesToDealProductSummaryUI(dealProducts);
 
@@ -75,7 +75,7 @@ public class DealProductController {
         @PathVariable("dealProductUuid") UUID dealProductUuid
     ) {
 
-        TimeDealProductDetail timeDealProductDetail = dealService.getTimeDealProductDetailByDealProductUuid(dealProductUuid);
+        TimeDealProductDetail timeDealProductDetail = dealProductService.getTimeDealProductDetailByDealProductUuid(dealProductUuid);
 
         return ResponseDto.builder()
             .code(HttpStatus.OK.name())
