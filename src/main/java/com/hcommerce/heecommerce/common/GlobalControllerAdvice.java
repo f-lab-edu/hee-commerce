@@ -3,6 +3,7 @@ package com.hcommerce.heecommerce.common;
 import com.hcommerce.heecommerce.common.dto.ResponseDto;
 import com.hcommerce.heecommerce.order.OrderNotFoundException;
 import com.hcommerce.heecommerce.order.OrderOverStockException;
+import com.hcommerce.heecommerce.order.TimeDealProductNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -21,6 +22,15 @@ public class GlobalControllerAdvice {
                 .code(HttpStatus.NOT_FOUND.name())
                 .message(e.getMessage())
                 .build();
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler
+    public ResponseDto timeDealProductNotFoundExceptionHandler(TimeDealProductNotFoundException e) {
+        return ResponseDto.builder()
+            .code(HttpStatus.NOT_FOUND.name())
+            .message(e.getMessage())
+            .build();
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)

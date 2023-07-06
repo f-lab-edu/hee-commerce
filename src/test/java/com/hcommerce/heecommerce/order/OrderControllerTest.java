@@ -354,42 +354,90 @@ class OrderControllerTest {
     @Nested
     @DisplayName("POST /orders/place-in-advance")
     class Describe_PlaceOrderInAdvance_API {
-        @Test
-        @DisplayName("returns 201")
-        void It_returns_201() throws Exception {
-            OrderForm orderForm = OrderForm.builder()
-                .userId(1)
-                .recipientInfoForm(
-                    RecipientInfoForm.builder()
-                        .recipientName("leecommerce")
-                        .recipientPhoneNumber("01087654321")
-                        .recipientAddress("서울시 ")
-                        .recipientDetailAddress("101호")
-                        .shippingRequest("빠른 배송 부탁드려요!")
-                        .build()
-                )
-                .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
-                .dealProductUuid(UUID.randomUUID())
-                .orderQuantity(2)
-                .paymentMethod(PaymentMethod.CREDIT_CARD)
-                .build();
+        @Nested
+        @DisplayName("with valid orderForm")
+        class Context_With_Valid_OrderForm {
+            @Test
+            @DisplayName("returns 201")
+            void It_returns_201() throws Exception {
+                OrderForm orderForm = OrderForm.builder()
+                    .userId(1)
+                    .recipientInfoForm(
+                        RecipientInfoForm.builder()
+                            .recipientName("leecommerce")
+                            .recipientPhoneNumber("01087654321")
+                            .recipientAddress("서울시 ")
+                            .recipientDetailAddress("101호")
+                            .shippingRequest("빠른 배송 부탁드려요!")
+                            .build()
+                    )
+                    .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
+                    .dealProductUuid(UUID.randomUUID())
+                    .orderQuantity(2)
+                    .paymentMethod(PaymentMethod.CREDIT_CARD)
+                    .build();
 
-            // given
-            given(orderService.placeOrderInAdvance(any())).willReturn(UUID.randomUUID());
+                // given
+                given(orderService.placeOrderInAdvance(any())).willReturn(UUID.randomUUID());
 
-            // when
-            String content = objectMapper.writeValueAsString(orderForm);
+                // when
+                String content = objectMapper.writeValueAsString(orderForm);
 
-            ResultActions resultActions = mockMvc.perform(
-                post("/orders/place-in-advance")
-                    .accept(MediaType.APPLICATION_JSON)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(content)
-            );
+                ResultActions resultActions = mockMvc.perform(
+                    post("/orders/place-in-advance")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content)
+                );
 
-            // then
-            resultActions.andExpect(status().isCreated())
-                .andDo(OrderControllerRestDocs.placeOrderInAdvance());
+                // then
+                resultActions.andExpect(status().isCreated())
+                    .andDo(OrderControllerRestDocs.placeOrderInAdvance());
+            }
+        }
+
+        @Nested
+        @DisplayName("with invalid dealProductUuid")
+        class Context_With_Invalid_DealProductUuid {
+            @Test
+            @DisplayName("returns 404")
+            void It_returns_404() throws Exception {
+
+                UUID NOT_EXIST_DEAL_PRODUCT_UUID = UUID.randomUUID();
+
+                OrderForm orderFormWithNotExistDealProductUuid = OrderForm.builder()
+                    .userId(1)
+                    .recipientInfoForm(
+                        RecipientInfoForm.builder()
+                            .recipientName("leecommerce")
+                            .recipientPhoneNumber("01087654321")
+                            .recipientAddress("서울시 ")
+                            .recipientDetailAddress("101호")
+                            .shippingRequest("빠른 배송 부탁드려요!")
+                            .build()
+                    )
+                    .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
+                    .dealProductUuid(NOT_EXIST_DEAL_PRODUCT_UUID)
+                    .orderQuantity(2)
+                    .paymentMethod(PaymentMethod.CREDIT_CARD)
+                    .build();
+
+                // given
+                given(orderService.placeOrderInAdvance(any())).willThrow(TimeDealProductNotFoundException.class);
+
+                // when
+                String content = objectMapper.writeValueAsString(orderFormWithNotExistDealProductUuid);
+
+                ResultActions resultActions = mockMvc.perform(
+                    post("/orders/place-in-advance")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content)
+                );
+
+                // then
+                resultActions.andExpect(status().isNotFound());
+            }
         }
     }
 }
