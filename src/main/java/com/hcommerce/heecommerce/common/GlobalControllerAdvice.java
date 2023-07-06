@@ -1,6 +1,7 @@
 package com.hcommerce.heecommerce.common;
 
 import com.hcommerce.heecommerce.common.dto.ResponseDto;
+import com.hcommerce.heecommerce.order.MaxOrderQuantityExceededException;
 import com.hcommerce.heecommerce.order.OrderNotFoundException;
 import com.hcommerce.heecommerce.order.OrderOverStockException;
 import com.hcommerce.heecommerce.order.TimeDealProductNotFoundException;
@@ -40,6 +41,15 @@ public class GlobalControllerAdvice {
                 .code(HttpStatus.CONFLICT.name())
                 .message(e.getMessage())
                 .build();
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler
+    public ResponseDto maxOrderQuantityExceededExceptionHandler(MaxOrderQuantityExceededException e) {
+        return ResponseDto.builder()
+            .code(HttpStatus.CONFLICT.name())
+            .message(e.getMessage())
+            .build();
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

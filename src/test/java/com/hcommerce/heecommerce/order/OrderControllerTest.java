@@ -537,5 +537,53 @@ class OrderControllerTest {
                 }
             }
         }
+
+
+        @Nested
+        @DisplayName("with orderQuantity > maxOrderQuantityPerOrder")
+        class Context_With_OrderQuantity_Exceeds_MaxOrderQuantityPerOrder {
+            @Test
+            @DisplayName("returns 409 error")
+            void It_returns_409_Error() throws Exception {
+                // given
+                given(orderService.placeOrderInAdvance(any())).willThrow(OrderOverStockException.class);
+
+                UUID UUID_WITH_ORDER_QUANTITY_EXCEEDING_INVENTORY = UUID.randomUUID();
+
+                int ORDER_QUANTITY_EXCEEDING_INVENTORY = 5;
+
+                OutOfStockHandlingOption ALL_CANCEL = OutOfStockHandlingOption.ALL_CANCEL;
+
+                OrderForm orderForm = OrderForm.builder()
+                    .userId(1)
+                    .recipientInfoForm(
+                        RecipientInfoForm.builder()
+                            .recipientName("leecommerce")
+                            .recipientPhoneNumber("01087654321")
+                            .recipientAddress("서울시 ")
+                            .recipientDetailAddress("101호")
+                            .shippingRequest("빠른 배송 부탁드려요!")
+                            .build()
+                    )
+                    .outOfStockHandlingOption(ALL_CANCEL)
+                    .dealProductUuid(UUID_WITH_ORDER_QUANTITY_EXCEEDING_INVENTORY)
+                    .orderQuantity(ORDER_QUANTITY_EXCEEDING_INVENTORY)
+                    .paymentMethod(PaymentMethod.CREDIT_CARD)
+                    .build();
+
+                String content = objectMapper.writeValueAsString(orderForm);
+
+                // when
+                ResultActions resultActions = mockMvc.perform(
+                    post("/orders/place-in-advance")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content)
+                );
+
+                // then
+                resultActions.andExpect(status().isConflict());
+            }
+        }
     }
 }
