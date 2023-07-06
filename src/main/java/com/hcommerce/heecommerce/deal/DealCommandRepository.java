@@ -107,22 +107,24 @@ public class DealCommandRepository {
 
                     int PAGE_NUMBER = 0;
 
-                    String dealProductUuid = UUID.randomUUID().toString();
+                    UUID dealProductUuid = UUID.randomUUID();
+
+                    String dealProductUuidString = dealProductUuid.toString();
 
                     int expirationInSeconds = 86_400; // TODO : 일단 임시로 24시간으로 설정, 유효시간을 설정해서 관리할 것인가? 아니면 따로 lambda나 batch 서버를 두어서 삭제시킬 것인가?
 
                     saveDealProductUuids(
                         DealType.TIME_DEAL+":"+dealOpenDate+":"+PAGE_NUMBER,
-                        dealProductUuid,
+                        dealProductUuidString,
                         scoreForSortSet,
                         expirationInSeconds
                     );
 
                     saveDealProductEntity(
                         "timeDealProducts:"+dealOpenDate,
-                        dealProductUuid,
+                        dealProductUuidString,
                         TimeDealProductEntity.builder()
-                            .dealProductUuid(UUID.fromString(dealProductUuid))
+                            .dealProductUuid(dealProductUuid)
                             .dealProductTile("1000원 할인 상품 "+scoreForSortSet)
                             .productMainImgThumbnailUrl("/main_thumbnail_test.png")
                             .productOriginPrice(1000*(scoreForSortSet+1))
@@ -137,8 +139,7 @@ public class DealCommandRepository {
                         expirationInSeconds
                     );
 
-                    saveInventory(
-                        "timeDealProductInventory:"+dealProductUuid,
+                    saveInventory(dealProductUuid,
                         10 // TODO : 일단 통일 시킴
                     );
 
@@ -165,8 +166,8 @@ public class DealCommandRepository {
         );
     }
 
-    private void saveInventory(String redisKey, int redisValue) {
-        inventoryCommandRepository.set(redisKey, redisValue);
+    private void saveInventory(UUID dealProductUuid, int redisValue) {
+        inventoryCommandRepository.set(dealProductUuid, redisValue);
     }
 
     private static int getRandomNumber(int min, int max) {

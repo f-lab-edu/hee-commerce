@@ -59,11 +59,9 @@ public class OrderService {
         // 1. 유효성 검사
 
         // 2. 재고량 감소
-        String key = "dealProductInventory:"+dealProductUuid.toString();
-
         int orderQuantity = orderForm.getOrderQuantity();
 
-        int inventoryAfterDecrease = inventoryCommandRepository.decreaseByAmount(key, orderQuantity);
+        int inventoryAfterDecrease = inventoryCommandRepository.decreaseByAmount(dealProductUuid, orderQuantity);
 
         // 3. 실제 주문량 계산
         int realOrderQuantity = calculateRealOrderQuantity(inventoryAfterDecrease, orderQuantity, orderForm.getOutOfStockHandlingOption());
@@ -74,7 +72,7 @@ public class OrderService {
         boolean isSuccessPayment = false; // TODO : 임시 데이터
 
         if(!isSuccessPayment) {
-            rollbackReducedInventory(key, realOrderQuantity);
+            rollbackReducedInventory(dealProductUuid, realOrderQuantity);
             return;
         }
 
@@ -135,11 +133,11 @@ public class OrderService {
     /**
      * rollbackReducedInventory 는 임의로 감소시킨 재고량을 다시 원상복귀하기 위한 함수이다.
      * 함수로 만든 이유는 다양한 원인으로 재고량을 rollback 시켜줘야 하므로, 함수로 만들어 재활용하고 싶었기 때문이다.
-     * @param key : 원상복귀해야 하는 딜 상품 key
+     * @param dealProductUuid : 원상복귀해야 하는 딜 상품 key
      * @param amount : 원상복귀해야 하는 재고량
      */
-    private void rollbackReducedInventory(String key, int amount) {
-        inventoryCommandRepository.increaseByAmount(key, amount);
+    private void rollbackReducedInventory(UUID dealProductUuid, int amount) {
+        inventoryCommandRepository.increaseByAmount(dealProductUuid, amount);
     }
 
     /**
@@ -184,9 +182,7 @@ public class OrderService {
      * checkOrderQuantityInInventory 는 주문 가능한 수량을 체크하는 함수이다.
      */
     private int checkOrderQuantityInInventory(UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
-        String redisKey = "timeDealProductInventory:"+dealProductUuid.toString();
-
-        int inventory = inventoryQueryRepository.get(redisKey);
+        int inventory = inventoryQueryRepository.get(dealProductUuid);
 
         if(orderQuantity > inventory && outOfStockHandlingOption == OutOfStockHandlingOption.ALL_CANCEL) {
             throw new OrderOverStockException();
