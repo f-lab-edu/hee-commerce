@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class DealProductQueryRepository {
+public class DealProductQueryRepository extends DealProductRepository {
 
     private final RedisSortSetRepository<String> redisSortSetRepository;
 
@@ -83,7 +83,7 @@ public class DealProductQueryRepository {
      * TODO : 기재하기
      */
     private Set<String> getTimeDealProductUuids(String dealOpenDate, int pageNumber) {
-        String timeDealProductIdsSetKey = DealType.TIME_DEAL + ":" + dealOpenDate + ":" + pageNumber;
+        String timeDealProductIdsSetKey = super.getRedisKeyForDealProductUuids(dealOpenDate, pageNumber);
 
         return redisSortSetRepository.getAll(timeDealProductIdsSetKey); // 해당 key에 해당하는 데이터가 없으면? Null로 됨
     }
@@ -92,7 +92,7 @@ public class DealProductQueryRepository {
      * getTimeDealProductEntities 는 특정 날짜에 해당하는 timeDealProductEntity 목록을 가져오는 함수이다.
      */
     private List<TimeDealProductEntity> getTimeDealProductEntities(String dealOpenDate) {
-        String redisKey = "timeDealProducts:"+dealOpenDate;
+        String redisKey = super.getRedisKey(dealOpenDate);
 
         return redisHashRepository.getAllByKey(redisKey, new TypeReference<TimeDealProductEntity>() {});
     }
@@ -178,9 +178,9 @@ public class DealProductQueryRepository {
     private TimeDealProductEntity getTimeDealProductEntity(UUID dealProductUuid) {
         String dealOpenDate = getDateForCurrentDealProducts();
 
-        String key = "timeDealProducts:"+dealOpenDate;
+        String key = super.getRedisKey(dealOpenDate);
 
-        String hashKey = dealProductUuid.toString();
+        String hashKey = super.getRedisHashKey(dealProductUuid);
 
         return redisHashRepository.getOneByKeyAndHashKey(key, hashKey, new TypeReference<TimeDealProductEntity>() {});
     }
@@ -246,9 +246,9 @@ public class DealProductQueryRepository {
     public boolean hasDealProductUuid(UUID dealProductUuid) {
         String dealOpenDate = getDateForCurrentDealProducts();
 
-        String key = "timeDealProducts:"+dealOpenDate;
+        String key = super.getRedisKey(dealOpenDate);;
 
-        String hashKey = dealProductUuid.toString();
+        String hashKey = super.getRedisHashKey(dealProductUuid);
 
         return redisHashRepository.hasKey(key, hashKey);
     }
