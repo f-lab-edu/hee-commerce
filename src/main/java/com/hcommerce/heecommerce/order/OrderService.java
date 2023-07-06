@@ -168,8 +168,10 @@ public class OrderService {
         validateHasDealProductUuid(orderForm.getDealProductUuid());
 
         // 2. DB에 존재하는 userId 인지
+        // TODO : 회원 기능 추가 후 구현
 
         // 3. 주문 가능한 orderQuantity 인지
+        validateOrderQuantity(orderForm.getDealProductUuid(), orderForm.getOrderQuantity(), orderForm.getOutOfStockHandlingOption());
     }
 
     private void validateHasDealProductUuid(UUID dealProductUuid) {
@@ -177,6 +179,20 @@ public class OrderService {
 
         if(!hasDealProductUuid) {
             throw new TimeDealProductNotFoundException(dealProductUuid);
+        }
+    }
+
+    private void validateOrderQuantity(UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
+        validateOrderQuantityInInventory(dealProductUuid, orderQuantity, outOfStockHandlingOption);
+    }
+
+    private void validateOrderQuantityInInventory(UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
+        String redisKey = "timeDealProductInventory:"+dealProductUuid.toString();
+
+        int inventory = inventoryQueryRepository.get(redisKey);
+
+        if(orderQuantity > inventory && outOfStockHandlingOption == OutOfStockHandlingOption.ALL_CANCEL) {
+            throw new OrderOverStockException();
         }
     }
 

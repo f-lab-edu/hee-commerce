@@ -1,5 +1,6 @@
 package com.hcommerce.heecommerce.order;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -8,6 +9,7 @@ import static org.mockito.BDDMockito.verify;
 import static org.mockito.Mockito.times;
 
 import com.hcommerce.heecommerce.deal.DealQueryRepository;
+import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -26,6 +28,9 @@ class OrderServiceTest {
 
     @Mock
     private DealQueryRepository dealQueryRepository;
+
+    @Mock
+    private InventoryQueryRepository inventoryQueryRepository;
 
     @InjectMocks
     private OrderService orderService;
@@ -84,6 +89,8 @@ class OrderServiceTest {
             @DisplayName("return OrderUuid")
             void It_returns_OrderUuid() {
                 // given
+                UUID dealProductUuid = UUID.randomUUID();
+
                 OrderForm orderForm = OrderForm.builder()
                     .userId(1)
                     .recipientInfoForm(
@@ -96,7 +103,7 @@ class OrderServiceTest {
                             .build()
                     )
                     .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
-                    .dealProductUuid(UUID.randomUUID())
+                    .dealProductUuid(dealProductUuid)
                     .orderQuantity(2)
                     .paymentMethod(PaymentMethod.CREDIT_CARD)
                     .build();
@@ -104,6 +111,13 @@ class OrderServiceTest {
                 UUID expectedOrderUuid = UUID.randomUUID();
 
                 given(orderCommandRepository.saveOrderInAdvance(any())).willReturn(expectedOrderUuid);
+
+                boolean HAS_DEAL_PRODUCT_UUID = true;
+
+                given(dealQueryRepository.hasDealProductUuid(dealProductUuid)).willReturn(HAS_DEAL_PRODUCT_UUID);
+
+                given(inventoryQueryRepository.get(any())).willReturn(3);
+
 
                 // when
                 UUID uuid = orderService.placeOrderInAdvance(orderForm);
@@ -145,6 +159,82 @@ class OrderServiceTest {
                 assertThrows(TimeDealProductNotFoundException.class, () -> {
                     orderService.placeOrderInAdvance(orderForm);
                 });
+            }
+        }
+
+        @Nested
+        @DisplayName("with orderQuantity > inventory")
+        class Context_With_OrderQuantity_Exceeds_Inventory {
+            @Nested
+            @DisplayName("with outOfStockHandlingOption is ALL_CANCEL")
+            class Context_With_outOfStockHandlingOption_Is_ALL_CANCEL {
+                @Test
+                @DisplayName("throws OrderOverStockException")
+                void It_throws_OrderOverStockException() {
+                    // given
+                    OrderForm orderForm = OrderForm.builder()
+                        .userId(1)
+                        .recipientInfoForm(
+                            RecipientInfoForm.builder()
+                                .recipientName("leecommerce")
+                                .recipientPhoneNumber("01087654321")
+                                .recipientAddress("서울시 ")
+                                .recipientDetailAddress("101호")
+                                .shippingRequest("빠른 배송 부탁드려요!")
+                                .build()
+                        )
+                        .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
+                        .dealProductUuid(UUID.randomUUID())
+                        .orderQuantity(2)
+                        .paymentMethod(PaymentMethod.CREDIT_CARD)
+                        .build();
+
+                    given(dealQueryRepository.hasDealProductUuid(any())).willReturn(true);
+
+                    given(inventoryQueryRepository.get(any())).willReturn(1);
+
+                    // when + then
+                    assertThrows(OrderOverStockException.class, () -> {
+                        orderService.placeOrderInAdvance(orderForm);
+                    });
+                }
+            }
+
+            @Nested
+            @DisplayName("with outOfStockHandlingOption is PARTIAL_ORDER")
+            class Context_With_outOfStockHandlingOption_Is_PARTIAL_ORDER {
+                @Test
+                @DisplayName("does not throws OrderOverStockException")
+                void It_Does_Not_OrderOverStockException() {
+                    // given
+                    UUID uuid = UUID.randomUUID();
+
+                    OrderForm orderForm = OrderForm.builder()
+                        .userId(1)
+                        .recipientInfoForm(
+                            RecipientInfoForm.builder()
+                                .recipientName("leecommerce")
+                                .recipientPhoneNumber("01087654321")
+                                .recipientAddress("서울시 ")
+                                .recipientDetailAddress("101호")
+                                .shippingRequest("빠른 배송 부탁드려요!")
+                                .build()
+                        )
+                        .outOfStockHandlingOption(OutOfStockHandlingOption.PARTIAL_ORDER)
+                        .dealProductUuid(uuid)
+                        .orderQuantity(2)
+                        .paymentMethod(PaymentMethod.CREDIT_CARD)
+                        .build();
+
+                    given(dealQueryRepository.hasDealProductUuid(uuid)).willReturn(true);
+
+                    given(inventoryQueryRepository.get(any())).willReturn(1);
+
+                    // when + then
+                    assertDoesNotThrow(() -> {
+                        orderService.placeOrderInAdvance(orderForm);
+                    });
+                }
             }
         }
     }
