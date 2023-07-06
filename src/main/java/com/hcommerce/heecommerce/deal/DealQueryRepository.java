@@ -11,7 +11,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -120,24 +119,9 @@ public class DealQueryRepository {
      * getTimeDealProductInventories 는 Redis에서 딜상품의 재고량을 가져오는 함수이다.
      */
     private List<Integer> getTimeDealProductInventories(Set<String> timeDealProductUuidSets) {
-        Set<String> timeDealProductInventoryKeySets = createTimeDealProductInventoryKeys(timeDealProductUuidSets);
-
-        List<Integer> integers = inventoryQueryRepository.getMany(timeDealProductInventoryKeySets);
+        List<Integer> integers = inventoryQueryRepository.getMany(timeDealProductUuidSets);
 
         return integers;
-    }
-
-    /**
-     * createTimeDealProductInventoryKeys 는 Redis에서 딜상품의 재고량을 가져오기 위한 key들의 목록을 만드는 함수이다.
-     */
-    private Set<String> createTimeDealProductInventoryKeys(Set<String> timeDealProductUuids) {
-        Set<String> timeDealProductInventoryKeys = new HashSet<>();
-
-        for(String timeDealProductUuid: timeDealProductUuids) {
-            timeDealProductInventoryKeys.add("timeDealProductInventory:"+timeDealProductUuid);
-        }
-
-        return timeDealProductInventoryKeys;
     }
 
     /**
@@ -205,9 +189,7 @@ public class DealQueryRepository {
      * getTimeDealProductInventory 는 Redis에서 TimeDealProductInventory 을 가져오는 함수이다.
      */
     private int getTimeDealProductInventory(UUID timeDealProductUuid) {
-        String redisKey = "timeDealProductInventory:"+timeDealProductUuid.toString();
-
-        return inventoryQueryRepository.get(redisKey);
+        return inventoryQueryRepository.get(timeDealProductUuid);
     }
 
     /**
