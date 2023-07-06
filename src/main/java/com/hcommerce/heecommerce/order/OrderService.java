@@ -144,9 +144,23 @@ public class OrderService {
      * placeOrderInAdvance 는 주문 승인 전에 검증을 위해 미리 주문 내역을 저장하는 함수이다.
      */
     public UUID placeOrderInAdvance(OrderForm orderForm) {
-        validateOrderForm(orderForm);
+        UUID dealProductUuid = orderForm.getDealProductUuid();
 
-        OrderFormSavedInAdvanceEntity orderFormSavedInAdvanceEntity = convertOrderFormToOrderFormSavedInAdvanceEntity(orderForm);
+        int orderQuantity = orderForm.getOrderQuantity();
+
+        // 1. DB에 존재하는 dealProductUuid 인지
+        validateHasDealProductUuid(dealProductUuid);
+
+        // 2. DB에 존재하는 userId 인지
+        // TODO : 회원 기능 추가 후 구현
+
+        // 3. 최대 주문 수량에 맞는 orderQuantity 인지
+        validateOrderQuantityInMaxOrderQuantityPerOrder(dealProductUuid, orderQuantity);
+
+        // 4. 재고가 있는지
+        int availableOrderQuantity = checkOrderQuantityInInventory(dealProductUuid, orderQuantity, orderForm.getOutOfStockHandlingOption());
+
+        OrderFormSavedInAdvanceEntity orderFormSavedInAdvanceEntity = createOrderFormSavedInAdvanceEntity(orderForm, availableOrderQuantity);
 
         UUID orderUuidSavedInAdvance = orderCommandRepository.saveOrderInAdvance(orderFormSavedInAdvanceEntity);
 
@@ -154,26 +168,8 @@ public class OrderService {
     }
 
     /**
-     * validateOrderForm 는 orderForm에 대해 유효성 검사를 하는 함수 이다.
-     *
-     * OrderForm 은 다음과 같은 유효성 검사가 필요하다.
-     * 1. DB에 존재하는 dealProductUuid 인지
-     * 2. DB에 존재하는 userId 인지
-     * 3. 주문 가능한 orderQuantity 인지
-     * (1) 재고가 있는지
-     * (2) 최대 주문 수량 이하의 주문 수량인지
+     * validateHasDealProductUuid 는 DB에 존재하는 dealProductUuid 인지 검사하는 함수이다.
      */
-    private void validateOrderForm(OrderForm orderForm) {
-        // 1. DB에 존재하는 dealProductUuid 인지
-        validateHasDealProductUuid(orderForm.getDealProductUuid());
-
-        // 2. DB에 존재하는 userId 인지
-        // TODO : 회원 기능 추가 후 구현
-
-        // 3. 주문 가능한 orderQuantity 인지
-        validateOrderQuantity(orderForm.getDealProductUuid(), orderForm.getOrderQuantity(), orderForm.getOutOfStockHandlingOption());
-    }
-
     private void validateHasDealProductUuid(UUID dealProductUuid) {
         boolean hasDealProductUuid = dealQueryRepository.hasDealProductUuid(dealProductUuid);
 
@@ -182,22 +178,26 @@ public class OrderService {
         }
     }
 
-    private void validateOrderQuantity(UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
-        validateOrderQuantityInInventory(dealProductUuid, orderQuantity, outOfStockHandlingOption);
-
-        validateOrderQuantityInMaxOrderQuantityPerOrder(dealProductUuid, orderQuantity);
-    }
-
-    private void validateOrderQuantityInInventory(UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
+    /**
+     * checkOrderQuantityInInventory 는 주문 가능한 수량을 체크하는 함수이다.
+     */
+    private int checkOrderQuantityInInventory(UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
         String redisKey = "timeDealProductInventory:"+dealProductUuid.toString();
 
         int inventory = inventoryQueryRepository.get(redisKey);
 
         if(orderQuantity > inventory && outOfStockHandlingOption == OutOfStockHandlingOption.ALL_CANCEL) {
             throw new OrderOverStockException();
+        } else if(orderQuantity > inventory && outOfStockHandlingOption == OutOfStockHandlingOption.PARTIAL_ORDER) {
+            return inventory;
+        } else  {
+            return orderQuantity;
         }
     }
 
+    /**
+     * validateOrderQuantityInMaxOrderQuantityPerOrder 는 최대 주문 수량에 맞는지에 대해 검증하는 함수이다.
+     */
     private void validateOrderQuantityInMaxOrderQuantityPerOrder(UUID dealProductUuid, int orderQuantity) {
         int maxOrderQuantityPerOrder = dealQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(dealProductUuid);
 
@@ -207,10 +207,14 @@ public class OrderService {
     }
 
     /**
-     * convertOrderFormToOrderFormSavedInAdvanceEntity 가 필요한 이유는 UUID 때문이다.
-     * UUID 는 DB에 저장될 때 byte[] 로 저장되기 때문에, UUID -> byte[] 타입 변환이 필요하다.
+     * createOrderFormSavedInAdvanceEntity 는 OrderFormSavedInAdvanceEntity 를 만드는 함수 이다.
+     * 이 함수가 필요한 이유는 다음 2가지 때문이다.
+     * 1. UUID 떄문이다.
+     * - UUID 는 DB에 저장될 때 byte[] 로 저장되기 때문에, UUID -> byte[] 타입 변환이 필요하다.
+     * 2. 부분 주문 때문이다.
+     * - 실제 주문 수량과 다르게 주문이 접수되는 경우도 있기 때문이다.
      */
-    private OrderFormSavedInAdvanceEntity convertOrderFormToOrderFormSavedInAdvanceEntity(OrderForm orderForm) {
+    private OrderFormSavedInAdvanceEntity createOrderFormSavedInAdvanceEntity(OrderForm orderForm, int realOrderQuantity) {
         return OrderFormSavedInAdvanceEntity.builder()
             .uuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
             .orderStatus(OrderStatus.PAYMENT_PENDING)
@@ -218,7 +222,7 @@ public class OrderService {
             .recipientInfoForm(orderForm.getRecipientInfoForm())
             .outOfStockHandlingOption(orderForm.getOutOfStockHandlingOption())
             .dealProductUuid(TypeConversionUtils.convertUuidToBinary(orderForm.getDealProductUuid()))
-            .orderQuantity(orderForm.getOrderQuantity())
+            .orderQuantity(realOrderQuantity)
             .paymentMethod(orderForm.getPaymentMethod())
             .build();
     }
