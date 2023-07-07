@@ -187,6 +187,7 @@ class OrderControllerTest {
                 // when
                 OrderForm orderForm = OrderForm.builder()
                     .userId(1)
+                    .orderUuid(UUID.randomUUID())
                     .recipientInfoForm(
                         RecipientInfoForm.builder()
                             .recipientName("leecommerce")
@@ -233,6 +234,7 @@ class OrderControllerTest {
                 // when
                 OrderForm orderForm = OrderForm.builder()
                     .userId(1)
+                    .orderUuid(UUID.randomUUID())
                     .recipientInfoForm(
                         RecipientInfoForm.builder()
                             .recipientName("leecommerce")
@@ -278,6 +280,7 @@ class OrderControllerTest {
                 // when
                 OrderForm orderForm = OrderForm.builder()
                     .userId(1)
+                    .orderUuid(UUID.randomUUID())
                     .recipientInfoForm(
                         RecipientInfoForm.builder()
                             .recipientName("leecommerce")
@@ -321,6 +324,7 @@ class OrderControllerTest {
                 // when
                 OrderForm orderForm = OrderForm.builder()
                     .userId(1)
+                    .orderUuid(UUID.randomUUID())
                     .recipientInfoForm(
                         RecipientInfoForm.builder()
                             .recipientName("leecommerce")
@@ -362,6 +366,7 @@ class OrderControllerTest {
             void It_returns_201() throws Exception {
                 OrderForm orderForm = OrderForm.builder()
                     .userId(1)
+                    .orderUuid(UUID.randomUUID())
                     .recipientInfoForm(
                         RecipientInfoForm.builder()
                             .recipientName("leecommerce")
@@ -407,6 +412,7 @@ class OrderControllerTest {
 
                 OrderForm orderFormWithNotExistDealProductUuid = OrderForm.builder()
                     .userId(1)
+                    .orderUuid(UUID.randomUUID())
                     .recipientInfoForm(
                         RecipientInfoForm.builder()
                             .recipientName("leecommerce")
@@ -460,6 +466,7 @@ class OrderControllerTest {
 
                     OrderForm orderForm = OrderForm.builder()
                         .userId(1)
+                        .orderUuid(UUID.randomUUID())
                         .recipientInfoForm(
                             RecipientInfoForm.builder()
                                 .recipientName("leecommerce")
@@ -506,6 +513,7 @@ class OrderControllerTest {
                     // when
                     OrderForm orderForm = OrderForm.builder()
                         .userId(1)
+                        .orderUuid(UUID.randomUUID())
                         .recipientInfoForm(
                             RecipientInfoForm.builder()
                                 .recipientName("leecommerce")
@@ -556,6 +564,7 @@ class OrderControllerTest {
 
                 OrderForm orderForm = OrderForm.builder()
                     .userId(1)
+                    .orderUuid(UUID.randomUUID())
                     .recipientInfoForm(
                         RecipientInfoForm.builder()
                             .recipientName("leecommerce")

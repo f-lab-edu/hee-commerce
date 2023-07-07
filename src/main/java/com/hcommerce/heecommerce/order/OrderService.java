@@ -220,7 +220,7 @@ public class OrderService {
         int totalPaymentAmount = calculateTotalPaymentAmount(timeDealProductDetail.getProductOriginPrice(), timeDealProductDetail.getDealProductDiscountType(), timeDealProductDetail.getDealProductDiscountValue());
 
         return OrderFormSavedInAdvanceEntity.builder()
-            .uuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
+            .uuid(TypeConversionUtils.convertUuidToBinary(orderForm.getOrderUuid()))
             .orderStatus(OrderStatus.PAYMENT_PENDING)
             .userId(orderForm.getUserId())
             .recipientInfoForm(orderForm.getRecipientInfoForm())
