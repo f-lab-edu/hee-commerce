@@ -261,6 +261,12 @@ public class OrderService {
         validateOrderApproveForm(orderApproveForm, orderForm);
 
         // 2. 재고 감소
+        UUID dealProductUuid = TypeConversionUtils.convertBinaryToUuid(orderForm.getDealProductUuid());
+
+        int orderQuantity = orderForm.getOrderQuantity();
+
+        int inventoryAfterDecrease = inventoryCommandRepository.decreaseByAmount(dealProductUuid, orderQuantity);
+
 
         // 3. 실제 주문 수량 계산
 
