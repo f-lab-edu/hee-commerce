@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class OrderService {
 
+    private final OrderQueryRepository orderQueryRepository;
+
     private final OrderCommandRepository orderCommandRepository;
 
     private final InventoryQueryRepository inventoryQueryRepository;
@@ -23,11 +25,13 @@ public class OrderService {
 
     @Autowired
     public OrderService(
+        OrderQueryRepository orderQueryRepository,
         OrderCommandRepository orderCommandRepository,
         InventoryQueryRepository inventoryQueryRepository,
         InventoryCommandRepository inventoryCommandRepository,
         DealProductQueryRepository dealProductQueryRepository
     ) {
+        this.orderQueryRepository = orderQueryRepository;
         this.orderCommandRepository = orderCommandRepository;
         this.inventoryQueryRepository = inventoryQueryRepository;
         this.inventoryCommandRepository = inventoryCommandRepository;
@@ -242,5 +246,28 @@ public class OrderService {
         }
 
         return originPrice - discountValue; // 정률 할인
+    }
+
+    /**
+     * approveOrder 는 주문 승인을 하기 위한 함수이다.
+     */
+    public UUID approveOrder(OrderApproveForm orderApproveForm) {
+
+        // 0. DB에서 검증에 필요한 데이터 가져오기
+        OrderEntityForOrderApproveValidation orderForm = orderQueryRepository.findOrderEntityForOrderApproveValidation(orderApproveForm.getOrderId());
+
+        UUID orderUuid = UUID.randomUUID();
+
+        // 1. orderApproveForm 검증
+
+        // 2. 재고 감소
+
+        // 3. 실제 주문 수량 계산
+
+        // 4. 토스 페이먼트 결제 승인
+
+        // 5. 주문 관련 데이터 저장
+
+        return orderUuid; // TODO : 임시 데이터
     }
 }

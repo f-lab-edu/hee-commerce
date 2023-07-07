@@ -8,6 +8,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
 import static org.mockito.Mockito.times;
 
+import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.deal.DealProductQueryRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import java.util.UUID;
@@ -22,6 +23,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @DisplayName("OrderService")
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
+
+    @Mock
+    private OrderQueryRepository orderQueryRepository;
 
     @Mock
     private OrderCommandRepository orderCommandRepository;
@@ -280,6 +284,40 @@ class OrderServiceTest {
                 assertThrows(MaxOrderQuantityExceededException.class, () -> {
                     orderService.placeOrderInAdvance(orderForm);
                 });
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("approveOrder")
+    class Describe_ApproveOrder {
+        @Nested
+        @DisplayName("with valid orderApproveForm")
+        class Context_With_valid_orderApproveForm {
+            @Test
+            @DisplayName("returns orderUuid")
+            void It_returns_orderUuid() {
+                // given
+                OrderApproveForm orderApproveForm = OrderApproveForm.builder()
+                    .orderId(UUID.randomUUID().toString())
+                    .amount(1000)
+                    .paymentKey("tossPaymentsPaymentKey")
+                    .build();
+
+                OrderEntityForOrderApproveValidation orderEntityForOrderApproveValidation =
+                    OrderEntityForOrderApproveValidation.builder()
+                        .orderQuantity(3)
+                        .totalPaymentAmount(1000)
+                        .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
+                        .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
+                        .build();
+
+                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(orderEntityForOrderApproveValidation);
+
+                // when + then
+                UUID uuid = orderService.approveOrder(orderApproveForm);
+
+                assertEquals(uuid.toString(), orderApproveForm.getOrderId());
             }
         }
     }
