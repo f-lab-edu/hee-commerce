@@ -97,6 +97,10 @@ public class OrderService {
      * @param orderQuantity : 주문량
      * @param outOfStockHandlingOption : 재고 부족 처리 옵션
      * @return realOrderQuantity : 실제 주문량
+     *
+     * realOrderQuantity 이 필요한 이유는 "부분 주문" 때문이다.
+     * 재고량이 0은 아니지만, 사용자가 주문한 수량에 비해 재고량이 없는 경우가 있다.
+     * 이때, 재고량만큼만 주문하도록 할 수 있도록 "부문 주문"이 가능한데, 사용자가 주문한 수량과 혼동되지 않도록 실제 주문하는 수량이라는 의미를 내포하기 위해서 필요하다.
      */
     private int calculateRealOrderQuantity(int inventoryAfterDecrease, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
 
@@ -267,12 +271,26 @@ public class OrderService {
 
         int inventoryAfterDecrease = inventoryCommandRepository.decreaseByAmount(dealProductUuid, orderQuantity);
 
+        try {
+            // 3. 실제 주문 수량 계산
+            int inventoryBeforeDecrease = orderQuantity + inventoryAfterDecrease;
 
-        // 3. 실제 주문 수량 계산
+            OutOfStockHandlingOption outOfStockHandlingOption = orderForm.getOutOfStockHandlingOption();
 
-        // 4. 토스 페이먼트 결제 승인
+            int realOrderQuantity = calculateRealOrderQuantity(inventoryAfterDecrease, orderQuantity, outOfStockHandlingOption);
 
-        // 5. 주문 관련 데이터 저장
+            if (inventoryBeforeDecrease < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.PARTIAL_ORDER) {
+                inventoryCommandRepository.set(dealProductUuid, 0); // 데이터 일관성 맞춰주기 위해
+            }
+
+            // 4. 토스 페이먼트 결제 승인
+
+            // 5. 주문 관련 데이터 저장
+
+        } catch (OrderOverStockException orderOverStockException) {
+            rollbackReducedInventory(dealProductUuid, orderQuantity);
+            throw orderOverStockException;
+        }
 
         return UUID.fromString(orderId); // TODO : 임시 데이터
     }

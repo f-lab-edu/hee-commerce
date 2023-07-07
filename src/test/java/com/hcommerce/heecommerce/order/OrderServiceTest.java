@@ -4,12 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
 import static org.mockito.Mockito.times;
 
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.deal.DealProductQueryRepository;
+import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -35,6 +37,9 @@ class OrderServiceTest {
 
     @Mock
     private InventoryQueryRepository inventoryQueryRepository;
+
+    @Mock
+    private InventoryCommandRepository inventoryCommandRepository;
 
     @InjectMocks
     private OrderService orderService;
@@ -346,6 +351,40 @@ class OrderServiceTest {
 
                 // when + then
                 assertThrows(InvalidPaymentAmountException.class, () -> {
+                    orderService.approveOrder(orderApproveForm);
+                });
+            }
+        }
+
+        @Nested
+        @DisplayName("with orderQuantity > inventory and outOfStockHandlingOption is ALL_CANCEL")
+        class Context_With_OrderQuantity_Exceeds_Inventory_And_outOfStockHandlingOption_Is_ALL_CANCEL {
+            @Test
+            @DisplayName("throws OrderOverStockException")
+            void It_throws_OrderOverStockException() {
+                // given
+                int totalPaymentAmount = 1000;
+
+                OrderApproveForm orderApproveForm = OrderApproveForm.builder()
+                    .orderId(UUID.randomUUID().toString())
+                    .amount(totalPaymentAmount)
+                    .paymentKey("tossPaymentsPaymentKey")
+                    .build();
+
+                OrderEntityForOrderApproveValidation orderEntityForOrderApproveValidation =
+                    OrderEntityForOrderApproveValidation.builder()
+                        .orderQuantity(3)
+                        .totalPaymentAmount(totalPaymentAmount)
+                        .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
+                        .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
+                        .build();
+
+                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(orderEntityForOrderApproveValidation);
+
+                given(inventoryCommandRepository.decreaseByAmount(any(), anyInt())).willReturn(-1);
+
+                // when + then
+                assertThrows(OrderOverStockException.class, () -> {
                     orderService.approveOrder(orderApproveForm);
                 });
             }
