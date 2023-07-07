@@ -93,6 +93,7 @@ class OrderServiceTest {
 
                 OrderForm orderForm = OrderForm.builder()
                     .userId(1)
+                    .orderUuid(UUID.randomUUID())
                     .recipientInfoForm(
                         RecipientInfoForm.builder()
                             .recipientName("leecommerce")
@@ -139,6 +140,7 @@ class OrderServiceTest {
 
                 OrderForm orderForm = OrderForm.builder()
                     .userId(1)
+                    .orderUuid(UUID.randomUUID())
                     .recipientInfoForm(
                         RecipientInfoForm.builder()
                             .recipientName("leecommerce")
@@ -175,6 +177,7 @@ class OrderServiceTest {
                     // given
                     OrderForm orderForm = OrderForm.builder()
                         .userId(1)
+                        .orderUuid(UUID.randomUUID())
                         .recipientInfoForm(
                             RecipientInfoForm.builder()
                                 .recipientName("leecommerce")
@@ -212,6 +215,7 @@ class OrderServiceTest {
 
                     OrderForm orderForm = OrderForm.builder()
                         .userId(1)
+                        .orderUuid(UUID.randomUUID())
                         .recipientInfoForm(
                             RecipientInfoForm.builder()
                                 .recipientName("leecommerce")
@@ -250,6 +254,7 @@ class OrderServiceTest {
                 // given
                 OrderForm orderForm = OrderForm.builder()
                     .userId(1)
+                    .orderUuid(UUID.randomUUID())
                     .recipientInfoForm(
                         RecipientInfoForm.builder()
                             .recipientName("leecommerce")

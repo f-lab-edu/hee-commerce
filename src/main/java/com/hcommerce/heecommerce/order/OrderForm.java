@@ -12,6 +12,9 @@ import org.hibernate.validator.constraints.Range;
 @Getter
 public class OrderForm {
 
+    @Range(min = 1, message = "주문 ID를 확인해주세요.")
+    private final UUID orderUuid;
+
     @Range(min = 1, message = "주문자 ID를 확인해주세요.")
     private final int userId;
 
@@ -33,6 +36,7 @@ public class OrderForm {
 
     @Builder
     @ConstructorProperties({
+        "orderUuid",
         "userId",
         "recipientInfoForm",
         "outOfStockHandlingOption",
@@ -41,6 +45,7 @@ public class OrderForm {
         "paymentType"
     })
     public OrderForm(
+        UUID orderUuid,
         int userId,
         RecipientInfoForm recipientInfoForm,
         OutOfStockHandlingOption outOfStockHandlingOption,
@@ -49,6 +54,7 @@ public class OrderForm {
         PaymentMethod paymentMethod
     ) {
         this.userId = userId;
+        this.orderUuid = orderUuid;
         this.recipientInfoForm = recipientInfoForm;
         this.outOfStockHandlingOption = outOfStockHandlingOption;
         this.dealProductUuid = dealProductUuid;
