@@ -1,6 +1,7 @@
 package com.hcommerce.heecommerce.common;
 
 import com.hcommerce.heecommerce.common.dto.ResponseDto;
+import com.hcommerce.heecommerce.order.InvalidPaymentAmountException;
 import com.hcommerce.heecommerce.order.MaxOrderQuantityExceededException;
 import com.hcommerce.heecommerce.order.OrderNotFoundException;
 import com.hcommerce.heecommerce.order.OrderOverStockException;
@@ -58,6 +59,15 @@ public class GlobalControllerAdvice {
         return ResponseDto.builder()
             .code(HttpStatus.BAD_REQUEST.name())
             .message(e.getBindingResult().getAllErrors().get(0).getDefaultMessage())
+            .build();
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler
+    public ResponseDto invalidPaymentAmountExceptionHandler(InvalidPaymentAmountException e) {
+        return ResponseDto.builder()
+            .code(HttpStatus.BAD_REQUEST.name())
+            .message(e.getMessage())
             .build();
     }
 

@@ -320,5 +320,35 @@ class OrderServiceTest {
                 assertEquals(uuid.toString(), orderApproveForm.getOrderId());
             }
         }
+
+        @Nested
+        @DisplayName("with invalid amount")
+        class Context_With_Invalid_Amount {
+            @Test
+            @DisplayName("throws InvalidPaymentAmountException")
+            void It_throws_InvalidPaymentAmountException() {
+                // given
+                OrderApproveForm orderApproveForm = OrderApproveForm.builder()
+                    .orderId(UUID.randomUUID().toString())
+                    .amount(1000)
+                    .paymentKey("tossPaymentsPaymentKey")
+                    .build();
+
+                OrderEntityForOrderApproveValidation orderEntityForOrderApproveValidation =
+                    OrderEntityForOrderApproveValidation.builder()
+                        .orderQuantity(3)
+                        .totalPaymentAmount(20000)
+                        .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
+                        .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
+                        .build();
+
+                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(orderEntityForOrderApproveValidation);
+
+                // when + then
+                assertThrows(InvalidPaymentAmountException.class, () -> {
+                    orderService.approveOrder(orderApproveForm);
+                });
+            }
+        }
     }
 }

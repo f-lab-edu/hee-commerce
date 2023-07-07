@@ -252,13 +252,13 @@ public class OrderService {
      * approveOrder 는 주문 승인을 하기 위한 함수이다.
      */
     public UUID approveOrder(OrderApproveForm orderApproveForm) {
+        String orderId = orderApproveForm.getOrderId();
 
         // 0. DB에서 검증에 필요한 데이터 가져오기
         OrderEntityForOrderApproveValidation orderForm = orderQueryRepository.findOrderEntityForOrderApproveValidation(orderApproveForm.getOrderId());
 
-        UUID orderUuid = UUID.randomUUID();
-
         // 1. orderApproveForm 검증
+        validateOrderApproveForm(orderApproveForm, orderForm);
 
         // 2. 재고 감소
 
@@ -268,6 +268,12 @@ public class OrderService {
 
         // 5. 주문 관련 데이터 저장
 
-        return orderUuid; // TODO : 임시 데이터
+        return UUID.fromString(orderId); // TODO : 임시 데이터
+    }
+
+    public void validateOrderApproveForm(OrderApproveForm orderApproveForm, OrderEntityForOrderApproveValidation orderForm) {
+        if(orderApproveForm.getAmount() != orderForm.getTotalPaymentAmount()) {
+            throw new InvalidPaymentAmountException();
+        }
     }
 }
