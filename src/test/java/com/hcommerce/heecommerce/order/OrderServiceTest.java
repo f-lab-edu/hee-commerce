@@ -9,8 +9,12 @@ import static org.mockito.BDDMockito.given;
 
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.deal.DealProductQueryRepository;
+import com.hcommerce.heecommerce.deal.DiscountType;
+import com.hcommerce.heecommerce.deal.TimeDealProductDetail;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -43,6 +47,10 @@ class OrderServiceTest {
     private OrderService orderService;
 
     private static final UUID TEMP_NOT_EXIST_UUID = UUID.fromString("8b455042-e709-11ed-93e5-0242ac110002");
+
+    private Instant STARTED_AT = Instant.now();
+
+    private Instant FINISHED_AT = Instant.now().plus(1, ChronoUnit.HOURS);
 
     /**
      * any()를 사용하는 이유 : https://github.com/f-lab-edu/hee-commerce/issues/102 참고
@@ -88,6 +96,22 @@ class OrderServiceTest {
                 given(inventoryQueryRepository.get(any())).willReturn(3);
 
                 given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
+
+                TimeDealProductDetail timeDealProductDetail = TimeDealProductDetail.builder()
+                    .dealProductUuid(dealProductUuid)
+                    .dealProductTile("1000원 할인 상품 1")
+                    .productMainImgUrl("/test.png")
+                    .productDetailImgUrls(new String[]{"/detail_test1.png", "/detail_test2.png", "/detail_test3.png", "/detail_test4.png", "/detail_test5.png"})
+                    .productOriginPrice(3000)
+                    .dealProductDiscountType(DiscountType.FIXED_AMOUNT)
+                    .dealProductDiscountValue(1000)
+                    .dealProductDealQuantity(3)
+                    .maxOrderQuantityPerOrder(10)
+                    .startedAt(STARTED_AT)
+                    .finishedAt(FINISHED_AT)
+                    .build();
+
+                given(dealProductQueryRepository.getTimeDealProductDetailByDealProductUuid(any())).willReturn(timeDealProductDetail);
 
                 // when
                 UUID uuid = orderService.placeOrderInAdvance(orderForm);
@@ -163,6 +187,8 @@ class OrderServiceTest {
 
                     given(dealProductQueryRepository.hasDealProductUuid(any())).willReturn(true);
 
+                    given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
+
                     given(inventoryQueryRepository.get(any())).willReturn(1);
 
                     // when + then
@@ -198,6 +224,22 @@ class OrderServiceTest {
                         .orderQuantity(2)
                         .paymentMethod(PaymentMethod.CREDIT_CARD)
                         .build();
+
+                    TimeDealProductDetail timeDealProductDetail = TimeDealProductDetail.builder()
+                        .dealProductUuid(uuid)
+                        .dealProductTile("1000원 할인 상품 1")
+                        .productMainImgUrl("/test.png")
+                        .productDetailImgUrls(new String[]{"/detail_test1.png", "/detail_test2.png", "/detail_test3.png", "/detail_test4.png", "/detail_test5.png"})
+                        .productOriginPrice(3000)
+                        .dealProductDiscountType(DiscountType.FIXED_AMOUNT)
+                        .dealProductDiscountValue(1000)
+                        .dealProductDealQuantity(3)
+                        .maxOrderQuantityPerOrder(10)
+                        .startedAt(STARTED_AT)
+                        .finishedAt(FINISHED_AT)
+                        .build();
+
+                    given(dealProductQueryRepository.getTimeDealProductDetailByDealProductUuid(any())).willReturn(timeDealProductDetail);
 
                     given(dealProductQueryRepository.hasDealProductUuid(uuid)).willReturn(true);
 
@@ -239,8 +281,6 @@ class OrderServiceTest {
                     .build();
 
                 given(dealProductQueryRepository.hasDealProductUuid(any())).willReturn(true);
-
-                given(inventoryQueryRepository.get(any())).willReturn(3);
 
                 given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(1);
 
