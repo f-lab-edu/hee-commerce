@@ -38,14 +38,6 @@ public class OrderService {
         this.dealProductQueryRepository = dealProductQueryRepository;
     }
 
-    public void completeOrderReceipt(UUID orderUuid) {
-        UUID resultOrderUuid = orderCommandRepository.updateToCompleteOrderReceipt(orderUuid);
-
-        if(resultOrderUuid == null) {
-            throw new OrderNotFoundException(orderUuid);
-        }
-    }
-
     /**
      * placeOrder 는 주문 처리를 하는 함수로, 다음과 같은 단계로 이루어진다.
      *

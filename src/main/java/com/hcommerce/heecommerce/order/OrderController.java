@@ -5,8 +5,6 @@ import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -20,19 +18,6 @@ public class OrderController {
     @Autowired
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
-    }
-
-    // TODO : placeOrder 완성 후 삭제 예정
-    @PatchMapping("/admin/orders/{orderUuid}/order-receipt-complete")
-    public ResponseDto completeOrderReceipt(@PathVariable("orderUuid") UUID orderUuid) {
-
-        orderService.completeOrderReceipt(orderUuid);
-
-        return ResponseDto.builder()
-                .code(HttpStatus.OK.name())
-                .message("주문 접수 완료가 처리되었습니다.")
-                .data(null)
-                .build();
     }
 
     @PostMapping("/orders")
