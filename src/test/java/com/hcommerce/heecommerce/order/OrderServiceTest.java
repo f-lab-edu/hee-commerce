@@ -4,11 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
 import static org.mockito.Mockito.times;
 
+import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.deal.DealProductQueryRepository;
+import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -24,6 +27,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class OrderServiceTest {
 
     @Mock
+    private OrderQueryRepository orderQueryRepository;
+
+    @Mock
     private OrderCommandRepository orderCommandRepository;
 
     @Mock
@@ -31,6 +37,9 @@ class OrderServiceTest {
 
     @Mock
     private InventoryQueryRepository inventoryQueryRepository;
+
+    @Mock
+    private InventoryCommandRepository inventoryCommandRepository;
 
     @InjectMocks
     private OrderService orderService;
@@ -279,6 +288,104 @@ class OrderServiceTest {
                 // when + then
                 assertThrows(MaxOrderQuantityExceededException.class, () -> {
                     orderService.placeOrderInAdvance(orderForm);
+                });
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("approveOrder")
+    class Describe_ApproveOrder {
+        @Nested
+        @DisplayName("with valid orderApproveForm")
+        class Context_With_valid_orderApproveForm {
+            @Test
+            @DisplayName("returns orderUuid")
+            void It_returns_orderUuid() {
+                // given
+                OrderApproveForm orderApproveForm = OrderApproveForm.builder()
+                    .orderId(UUID.randomUUID().toString())
+                    .amount(1000)
+                    .paymentKey("tossPaymentsPaymentKey")
+                    .build();
+
+                OrderEntityForOrderApproveValidation orderEntityForOrderApproveValidation =
+                    OrderEntityForOrderApproveValidation.builder()
+                        .orderQuantity(3)
+                        .totalPaymentAmount(1000)
+                        .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
+                        .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
+                        .build();
+
+                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(orderEntityForOrderApproveValidation);
+
+                // when + then
+                UUID uuid = orderService.approveOrder(orderApproveForm);
+
+                assertEquals(uuid.toString(), orderApproveForm.getOrderId());
+            }
+        }
+
+        @Nested
+        @DisplayName("with invalid amount")
+        class Context_With_Invalid_Amount {
+            @Test
+            @DisplayName("throws InvalidPaymentAmountException")
+            void It_throws_InvalidPaymentAmountException() {
+                // given
+                OrderApproveForm orderApproveForm = OrderApproveForm.builder()
+                    .orderId(UUID.randomUUID().toString())
+                    .amount(1000)
+                    .paymentKey("tossPaymentsPaymentKey")
+                    .build();
+
+                OrderEntityForOrderApproveValidation orderEntityForOrderApproveValidation =
+                    OrderEntityForOrderApproveValidation.builder()
+                        .orderQuantity(3)
+                        .totalPaymentAmount(20000)
+                        .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
+                        .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
+                        .build();
+
+                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(orderEntityForOrderApproveValidation);
+
+                // when + then
+                assertThrows(InvalidPaymentAmountException.class, () -> {
+                    orderService.approveOrder(orderApproveForm);
+                });
+            }
+        }
+
+        @Nested
+        @DisplayName("with orderQuantity > inventory and outOfStockHandlingOption is ALL_CANCEL")
+        class Context_With_OrderQuantity_Exceeds_Inventory_And_outOfStockHandlingOption_Is_ALL_CANCEL {
+            @Test
+            @DisplayName("throws OrderOverStockException")
+            void It_throws_OrderOverStockException() {
+                // given
+                int totalPaymentAmount = 1000;
+
+                OrderApproveForm orderApproveForm = OrderApproveForm.builder()
+                    .orderId(UUID.randomUUID().toString())
+                    .amount(totalPaymentAmount)
+                    .paymentKey("tossPaymentsPaymentKey")
+                    .build();
+
+                OrderEntityForOrderApproveValidation orderEntityForOrderApproveValidation =
+                    OrderEntityForOrderApproveValidation.builder()
+                        .orderQuantity(3)
+                        .totalPaymentAmount(totalPaymentAmount)
+                        .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
+                        .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
+                        .build();
+
+                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(orderEntityForOrderApproveValidation);
+
+                given(inventoryCommandRepository.decreaseByAmount(any(), anyInt())).willReturn(-1);
+
+                // when + then
+                assertThrows(OrderOverStockException.class, () -> {
+                    orderService.approveOrder(orderApproveForm);
                 });
             }
         }

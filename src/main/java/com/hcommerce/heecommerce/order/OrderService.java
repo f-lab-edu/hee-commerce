@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class OrderService {
 
+    private final OrderQueryRepository orderQueryRepository;
+
     private final OrderCommandRepository orderCommandRepository;
 
     private final InventoryQueryRepository inventoryQueryRepository;
@@ -23,11 +25,13 @@ public class OrderService {
 
     @Autowired
     public OrderService(
+        OrderQueryRepository orderQueryRepository,
         OrderCommandRepository orderCommandRepository,
         InventoryQueryRepository inventoryQueryRepository,
         InventoryCommandRepository inventoryCommandRepository,
         DealProductQueryRepository dealProductQueryRepository
     ) {
+        this.orderQueryRepository = orderQueryRepository;
         this.orderCommandRepository = orderCommandRepository;
         this.inventoryQueryRepository = inventoryQueryRepository;
         this.inventoryCommandRepository = inventoryCommandRepository;
@@ -93,6 +97,10 @@ public class OrderService {
      * @param orderQuantity : 주문량
      * @param outOfStockHandlingOption : 재고 부족 처리 옵션
      * @return realOrderQuantity : 실제 주문량
+     *
+     * realOrderQuantity 이 필요한 이유는 "부분 주문" 때문이다.
+     * 재고량이 0은 아니지만, 사용자가 주문한 수량에 비해 재고량이 없는 경우가 있다.
+     * 이때, 재고량만큼만 주문하도록 할 수 있도록 "부문 주문"이 가능한데, 사용자가 주문한 수량과 혼동되지 않도록 실제 주문하는 수량이라는 의미를 내포하기 위해서 필요하다.
      */
     private int calculateRealOrderQuantity(int inventoryAfterDecrease, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
 
@@ -242,5 +250,54 @@ public class OrderService {
         }
 
         return originPrice - discountValue; // 정률 할인
+    }
+
+    /**
+     * approveOrder 는 주문 승인을 하기 위한 함수이다.
+     */
+    public UUID approveOrder(OrderApproveForm orderApproveForm) {
+        String orderId = orderApproveForm.getOrderId();
+
+        // 0. DB에서 검증에 필요한 데이터 가져오기
+        OrderEntityForOrderApproveValidation orderForm = orderQueryRepository.findOrderEntityForOrderApproveValidation(orderApproveForm.getOrderId());
+
+        // 1. orderApproveForm 검증
+        validateOrderApproveForm(orderApproveForm, orderForm);
+
+        // 2. 재고 감소
+        UUID dealProductUuid = TypeConversionUtils.convertBinaryToUuid(orderForm.getDealProductUuid());
+
+        int orderQuantity = orderForm.getOrderQuantity();
+
+        int inventoryAfterDecrease = inventoryCommandRepository.decreaseByAmount(dealProductUuid, orderQuantity);
+
+        try {
+            // 3. 실제 주문 수량 계산
+            int inventoryBeforeDecrease = orderQuantity + inventoryAfterDecrease;
+
+            OutOfStockHandlingOption outOfStockHandlingOption = orderForm.getOutOfStockHandlingOption();
+
+            int realOrderQuantity = calculateRealOrderQuantity(inventoryAfterDecrease, orderQuantity, outOfStockHandlingOption);
+
+            if (inventoryBeforeDecrease < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.PARTIAL_ORDER) {
+                inventoryCommandRepository.set(dealProductUuid, 0); // 데이터 일관성 맞춰주기 위해
+            }
+
+            // 4. 토스 페이먼트 결제 승인
+
+            // 5. 주문 관련 데이터 저장
+
+        } catch (OrderOverStockException orderOverStockException) {
+            rollbackReducedInventory(dealProductUuid, orderQuantity);
+            throw orderOverStockException;
+        }
+
+        return UUID.fromString(orderId); // TODO : 임시 데이터
+    }
+
+    public void validateOrderApproveForm(OrderApproveForm orderApproveForm, OrderEntityForOrderApproveValidation orderForm) {
+        if(orderApproveForm.getAmount() != orderForm.getTotalPaymentAmount()) {
+            throw new InvalidPaymentAmountException();
+        }
     }
 }

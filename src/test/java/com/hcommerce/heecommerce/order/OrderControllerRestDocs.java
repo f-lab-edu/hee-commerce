@@ -41,6 +41,18 @@ public class OrderControllerRestDocs {
         );
     }
 
+    public static RestDocumentationResultHandler approveOrder() {
+        return document("approve-order",
+            preprocessRequest(prettyPrint()),
+            preprocessResponse(prettyPrint()),
+            responseFields(
+                fieldWithPath("code").type(JsonFieldType.STRING).description("코드"),
+                fieldWithPath("message").type(JsonFieldType.STRING).description("메시지"),
+                fieldWithPath("data.orderUuid").type(JsonFieldType.STRING).description("주문 UUID")
+            )
+        );
+    }
+
     public static RestDocumentationResultHandler placeOrder() {
         return document("place-order",
             preprocessRequest(prettyPrint()),

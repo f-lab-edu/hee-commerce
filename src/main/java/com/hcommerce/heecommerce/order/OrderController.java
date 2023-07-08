@@ -74,4 +74,20 @@ public class OrderController {
             .data(new OrderUuid(orderUuid))
             .build();
     }
+
+    /**
+     * 클라이언트에서 결제 완료가 되고, 주문 승인을 하는 경우에 대한 것
+     */
+    @PostMapping("/orders/approve")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseDto approveOrder(@Valid @RequestBody OrderApproveForm orderApproveForm) {
+
+        UUID uuid = orderService.approveOrder(orderApproveForm);
+
+        return ResponseDto.builder()
+            .code(HttpStatus.CREATED.name())
+            .message("주문 접수가 완료되었습니다.")
+            .data(new OrderUuid(uuid))
+            .build();
+    }
 }
