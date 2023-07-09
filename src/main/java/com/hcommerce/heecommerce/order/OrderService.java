@@ -236,12 +236,12 @@ public class OrderService {
      * calculateTotalPaymentAmount 는 총 결제 금액을 계산하는 함수이다.
      * TODO : 할인 정책이 회원마다 다를 수 있고, 날짜마다, 또는 중복 할인 안되는 등 다양한 경우의 수가 있을 수 있는데, 이부분은 추후에 시간 나면 하기
      */
-    private int calculateTotalPaymentAmount(int originPrice, DiscountType discountType, int discountValue) {
+    private int calculateTotalPaymentAmount(int originPrice, int realOrderQuantity, DiscountType discountType, int discountValue) {
         if (discountType == DiscountType.PERCENTAGE) {
-            return originPrice * ((100 - discountValue)/100);
+            return (originPrice * ((100 - discountValue) / 100)) * realOrderQuantity;
         }
 
-        return originPrice - discountValue; // 정률 할인
+        return (originPrice - discountValue) * realOrderQuantity; // 정률 할인
     }
 
     /**
