@@ -7,7 +7,7 @@ import lombok.Getter;
 public class OrderFormSavedInAdvanceEntity {
 
     private final byte[] uuid;
-    private final OrderStatus orderStatus;
+    private final OrderStatus orderStatus = OrderStatus.PAYMENT_PENDING; // 고정값이므로,
     private final int userId;
     private final OutOfStockHandlingOption outOfStockHandlingOption;
     private final byte[] dealProductUuid;
@@ -20,7 +20,6 @@ public class OrderFormSavedInAdvanceEntity {
     @Builder
     public OrderFormSavedInAdvanceEntity(
         byte[] uuid,
-        OrderStatus orderStatus,
         int userId,
         OutOfStockHandlingOption outOfStockHandlingOption,
         byte[] dealProductUuid,
@@ -31,7 +30,6 @@ public class OrderFormSavedInAdvanceEntity {
         RecipientInfoForm recipientInfoForm
     ) {
         this.uuid = uuid;
-        this.orderStatus = orderStatus;
         this.userId = userId;
         this.outOfStockHandlingOption = outOfStockHandlingOption;
         this.dealProductUuid = dealProductUuid;
