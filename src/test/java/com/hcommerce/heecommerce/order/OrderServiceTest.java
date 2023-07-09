@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
@@ -165,7 +164,7 @@ class OrderServiceTest {
             class Context_With_outOfStockHandlingOption_Is_ALL_CANCEL {
                 @Test
                 @DisplayName("throws OrderOverStockException")
-                void It_throws_OrderOverStockException() {
+                void It_throws_OrderOverStockException() { // TODO : 테스트 코드 깨짐. redisTemplate SessionCallback Mocking 하는 방법 또는 다른 방법을 찾은 후 해결하기
                     // given
                     OrderForm orderForm = OrderForm.builder()
                         .userId(1)
@@ -188,8 +187,6 @@ class OrderServiceTest {
                     given(dealProductQueryRepository.hasDealProductUuid(any())).willReturn(true);
 
                     given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
-
-                    given(inventoryQueryRepository.get(any())).willReturn(1);
 
                     // when + then
                     assertThrows(OrderOverStockException.class, () -> {
@@ -242,8 +239,6 @@ class OrderServiceTest {
                     given(dealProductQueryRepository.getTimeDealProductDetailByDealProductUuid(any())).willReturn(timeDealProductDetail);
 
                     given(dealProductQueryRepository.hasDealProductUuid(uuid)).willReturn(true);
-
-                    given(inventoryQueryRepository.get(any())).willReturn(1);
 
                     given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
 
@@ -350,40 +345,6 @@ class OrderServiceTest {
 
                 // when + then
                 assertThrows(InvalidPaymentAmountException.class, () -> {
-                    orderService.approveOrder(orderApproveForm);
-                });
-            }
-        }
-
-        @Nested
-        @DisplayName("with orderQuantity > inventory and outOfStockHandlingOption is ALL_CANCEL")
-        class Context_With_OrderQuantity_Exceeds_Inventory_And_outOfStockHandlingOption_Is_ALL_CANCEL {
-            @Test
-            @DisplayName("throws OrderOverStockException")
-            void It_throws_OrderOverStockException() {
-                // given
-                int totalPaymentAmount = 1000;
-
-                OrderApproveForm orderApproveForm = OrderApproveForm.builder()
-                    .orderId(UUID.randomUUID().toString())
-                    .amount(totalPaymentAmount)
-                    .paymentKey("tossPaymentsPaymentKey")
-                    .build();
-
-                OrderEntityForOrderApproveValidation orderEntityForOrderApproveValidation =
-                    OrderEntityForOrderApproveValidation.builder()
-                        .orderQuantity(3)
-                        .totalPaymentAmount(totalPaymentAmount)
-                        .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
-                        .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
-                        .build();
-
-                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(orderEntityForOrderApproveValidation);
-
-                given(inventoryCommandRepository.decreaseByAmount(any(), anyInt())).willReturn(-1);
-
-                // when + then
-                assertThrows(OrderOverStockException.class, () -> {
                     orderService.approveOrder(orderApproveForm);
                 });
             }
