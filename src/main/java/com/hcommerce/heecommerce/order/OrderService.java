@@ -119,7 +119,7 @@ public class OrderService {
             realOrderQuantity = inventoryBeforeDecrease; // 기존 재고량 만큼만 주문
         }
 
-        if(inventoryAfterDecrease > 0) { // case 3
+        if(inventoryAfterDecrease >= 0) { // case 3
             realOrderQuantity = orderQuantity;
         }
 
