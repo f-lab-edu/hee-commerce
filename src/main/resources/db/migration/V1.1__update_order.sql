@@ -26,6 +26,8 @@ CREATE TABLE `order` (
   `deleted_at` timestamp
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- partial_order 는 부분 주문이 발생할 경우, 사용자가 요청한 주문 수량을 저장하기 위한 테이블이다.
+-- 사용자가 요청한 주문 수량을 저장하는 이유는 CS(고객 서비스) 대응시 필요한 데이터라고 생각했기 때문이다.
 CREATE TABLE `partial_order` (
   `uuid` binary(16) PRIMARY KEY NOT NULL COMMENT '부분 주문 식별자',
   `order_uuid` binary(16) NOT NULL COMMENT '주문 식별자',
