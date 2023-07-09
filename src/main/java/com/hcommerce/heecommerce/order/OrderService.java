@@ -184,7 +184,7 @@ public class OrderService {
     private int checkOrderQuantityInInventory(UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
         int inventory = inventoryQueryRepository.get(dealProductUuid);
 
-        if(orderQuantity > inventory && outOfStockHandlingOption == OutOfStockHandlingOption.ALL_CANCEL) {
+        if(inventory <= 0 || orderQuantity > inventory && outOfStockHandlingOption == OutOfStockHandlingOption.ALL_CANCEL) {
             throw new OrderOverStockException();
         } else if(orderQuantity > inventory && outOfStockHandlingOption == OutOfStockHandlingOption.PARTIAL_ORDER) {
             return inventory;
