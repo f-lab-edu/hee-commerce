@@ -307,7 +307,7 @@ class OrderServiceTest {
 
                 OrderEntityForOrderApproveValidation orderEntityForOrderApproveValidation =
                     OrderEntityForOrderApproveValidation.builder()
-                        .orderQuantity(3)
+                        .realOrderQuantity(3)
                         .totalPaymentAmount(1000)
                         .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
                         .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
@@ -337,7 +337,7 @@ class OrderServiceTest {
 
                 OrderEntityForOrderApproveValidation orderEntityForOrderApproveValidation =
                     OrderEntityForOrderApproveValidation.builder()
-                        .orderQuantity(3)
+                        .realOrderQuantity(3)
                         .totalPaymentAmount(20000)
                         .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
                         .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
