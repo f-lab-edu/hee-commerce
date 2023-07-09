@@ -22,10 +22,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.RedisTemplate;
 
 @DisplayName("OrderService")
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
+
+    @Mock
+    private RedisTemplate<String, String> redisTemplate;
 
     @Mock
     private OrderQueryRepository orderQueryRepository;
@@ -91,8 +95,6 @@ class OrderServiceTest {
                 boolean HAS_DEAL_PRODUCT_UUID = true;
 
                 given(dealProductQueryRepository.hasDealProductUuid(dealProductUuid)).willReturn(HAS_DEAL_PRODUCT_UUID);
-
-                given(inventoryQueryRepository.get(any())).willReturn(3);
 
                 given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
 
