@@ -16,10 +16,15 @@ public class OrderCommandRepository {
     }
 
     public UUID saveOrderInAdvance(OrderFormSavedInAdvanceEntity orderFormSavedInAdvanceEntity) {
-
         orderCommandMapper.saveOrderInAdvance(orderFormSavedInAdvanceEntity);
 
         return TypeConversionUtils.convertBinaryToUuid(orderFormSavedInAdvanceEntity.getUuid());
+    }
+
+    public UUID updateOrderAfterApprove(byte[] orderUuid, OrderApproveEntity orderApproveEntity) {
+        orderCommandMapper.updateOrderAfterApprove(orderUuid, orderApproveEntity);
+
+        return TypeConversionUtils.convertBinaryToUuid(orderUuid);
     }
 }
 
