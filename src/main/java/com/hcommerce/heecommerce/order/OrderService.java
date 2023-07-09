@@ -47,44 +47,6 @@ public class OrderService {
     }
 
     /**
-     * placeOrder 는 주문 처리를 하는 함수로, 다음과 같은 단계로 이루어진다.
-     *
-     * 1. 유효성 검사 : orderForm의 비즈니스적 유효성 검사
-     * 2. 재고량 감소
-     * 3. 실제 주문량 계산
-     * 4. 결제
-     * 5. MySQL에 결제 및 주문 내역 저장
-     *
-     * 만약, 재고 감소가 이루어진 후 결제 실패 등 다양한 이유로 주문 처리가 안된 경우, 다시 재고량을 증가시켜줘야 한다.
-     */
-    public void placeOrder(OrderForm orderForm) {
-        UUID dealProductUuid = orderForm.getDealProductUuid();
-
-        // 1. 유효성 검사
-
-        // 2. 재고량 감소
-        int orderQuantity = orderForm.getOrderQuantity();
-
-        int inventoryAfterDecrease = inventoryCommandRepository.decreaseByAmount(dealProductUuid, orderQuantity);
-
-        // 3. 실제 주문량 계산
-        int realOrderQuantity = calculateRealOrderQuantity(inventoryAfterDecrease, orderQuantity, orderForm.getOutOfStockHandlingOption());
-
-        // 4. 결제 : TODO : 결제 API 검토 후 추가해야할 데이터 추가
-        // 1) 결제 실패하면, 재고량 다시 증가시키기
-        // 2) n분의 Timeout을 정해서 시간 초과시, 재고량 다시 증가시키고 결제 종료
-        boolean isSuccessPayment = false; // TODO : 임시 데이터
-
-        if(!isSuccessPayment) {
-            rollbackReducedInventory(dealProductUuid, realOrderQuantity);
-            return;
-        }
-
-        // 5. MySQL 주문 내역 저장
-        saveOrder(); // TODO : 구체적인 건 다른 PR에서 정해지면 완성할 에정
-    }
-
-    /**
      * calculateRealOrderQuantity 는 실제 주문 수량을 계산하는 함수이다.
      *
      * 실제 주문 수량은 감소시킨 후의 재고량, 주문량, 재고 부족 처리 옵션에 따라 달라지고, 경우의 수는 다음과 같다.
