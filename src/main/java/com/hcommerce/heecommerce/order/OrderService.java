@@ -6,13 +6,19 @@ import com.hcommerce.heecommerce.deal.DiscountType;
 import com.hcommerce.heecommerce.deal.TimeDealProductDetail;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.RedisOperations;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Service;
 
 @Service
 public class OrderService {
 
+    private final RedisTemplate<String, String> redisTemplate;
     private final OrderQueryRepository orderQueryRepository;
 
     private final OrderCommandRepository orderCommandRepository;
@@ -25,12 +31,14 @@ public class OrderService {
 
     @Autowired
     public OrderService(
+        RedisTemplate<String, String> redisTemplate,
         OrderQueryRepository orderQueryRepository,
         OrderCommandRepository orderCommandRepository,
         InventoryQueryRepository inventoryQueryRepository,
         InventoryCommandRepository inventoryCommandRepository,
         DealProductQueryRepository dealProductQueryRepository
     ) {
+        this.redisTemplate = redisTemplate;
         this.orderQueryRepository = orderQueryRepository;
         this.orderCommandRepository = orderCommandRepository;
         this.inventoryQueryRepository = inventoryQueryRepository;
@@ -80,7 +88,7 @@ public class OrderService {
      * calculateRealOrderQuantity 는 실제 주문 수량을 계산하는 함수이다.
      *
      * 실제 주문 수량은 감소시킨 후의 재고량, 주문량, 재고 부족 처리 옵션에 따라 달라지고, 경우의 수는 다음과 같다.
-     * case 1) 재고량이 0인 경우(예 : 감소시킨 후의 재고량 : -3, 주문량 : 3) : 주문 불가
+     * case 1) 재고량이 0 이하인 경우(예 : 감소시킨 후의 재고량 : -4, 주문량 : 3) : 주문 불가
      * case 2-1) 재고량은 0은 아니지만, 재고량이 주문량보다 적은 경우(예 : 감소시킨 후의 재고량 : -2, 주문량 : 3 -> 기존 재고량 : 1) + ALL_CANCEL : 주문 불가
      * case 2-2) 재고량은 0은 아니지만, 재고량이 주문량보다 적은 경우(예 : 감소시킨 후의 재고량 : -2, 주문량 : 3 -> 기존 재고량 : 1) + PARTIAL_ORDER : 주문 가능
      * case 3) 재고량이 주문량보다 많은 경우(예 : 감소시킨 후의 재고량 : 1, 주문량 : 3 -> 기존 재고 : 4) : 주문 가능
@@ -99,7 +107,7 @@ public class OrderService {
         int inventoryBeforeDecrease = orderQuantity + inventoryAfterDecrease;
 
         if(
-            inventoryBeforeDecrease == 0 || // case 1
+            inventoryBeforeDecrease <= 0 || // case 1
             inventoryBeforeDecrease < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.ALL_CANCEL // case 2-1
         ) {
             throw new OrderOverStockException();
@@ -157,14 +165,63 @@ public class OrderService {
         // 3. 최대 주문 수량에 맞는 orderQuantity 인지
         validateOrderQuantityInMaxOrderQuantityPerOrder(dealProductUuid, orderQuantity);
 
-        // 4. 재고가 있는지
-        int availableOrderQuantity = checkOrderQuantityInInventory(dealProductUuid, orderQuantity, orderForm.getOutOfStockHandlingOption());
+        // 4. 재고 감소
+        OutOfStockHandlingOption outOfStockHandlingOption = orderForm.getOutOfStockHandlingOption();
 
-        OrderFormSavedInAdvanceEntity orderFormSavedInAdvanceEntity = createOrderFormSavedInAdvanceEntity(orderForm, availableOrderQuantity);
+        final int[] inventoryAfterDecrease = decreaseInventoryInAdvance(dealProductUuid, orderQuantity, outOfStockHandlingOption);
 
-        UUID orderUuidSavedInAdvance = orderCommandRepository.saveOrderInAdvance(orderFormSavedInAdvanceEntity);
+        // 5. 실제 주문 가능한 수량 계산
+        int realOrderQuantity = 0;
 
-        return orderUuidSavedInAdvance;
+        try {
+            realOrderQuantity = calculateRealOrderQuantity(inventoryAfterDecrease[0], orderQuantity, outOfStockHandlingOption);
+
+            OrderFormSavedInAdvanceEntity orderFormSavedInAdvanceEntity = createOrderFormSavedInAdvanceEntity(orderForm, realOrderQuantity);
+
+            // 6. 주문 내역 미리 저장
+            UUID orderUuidSavedInAdvance = orderCommandRepository.saveOrderInAdvance(orderFormSavedInAdvanceEntity);
+
+            return orderUuidSavedInAdvance;
+        } catch (OrderOverStockException orderOverStockException) {
+            rollbackReducedInventory(dealProductUuid, orderQuantity);
+            throw orderOverStockException;
+        } catch (Exception e) {
+            rollbackReducedInventory(dealProductUuid, realOrderQuantity);
+            throw e;
+        }
+    }
+
+    /**
+     * decreaseInventoryInAdvance 는 주문 전 재고를 미리 감소시키는 함수 이다.
+     * inventoryAfterDecrease 를 final int[] 로 선언한 이유는 https://github.com/f-lab-edu/hee-commerce/issues/123 참고
+     */
+    private int[] decreaseInventoryInAdvance(UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
+        final int[] inventoryAfterDecrease = new int[1];
+
+        redisTemplate.execute(new SessionCallback<List<Object>>() {
+            @Override
+            public List<Object> execute(RedisOperations operations) throws DataAccessException {
+                try {
+                    operations.multi();
+
+                    // TODO : 재고 증가/감소 다음 단계로 재고 히스토리 저장 로직 추가 필요
+                    inventoryAfterDecrease[0] = inventoryCommandRepository.decreaseByAmount(dealProductUuid, orderQuantity);
+
+                    int inventoryBeforeDecrease = orderQuantity + inventoryAfterDecrease[0];
+
+                    if (inventoryBeforeDecrease < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.PARTIAL_ORDER) {
+                        inventoryCommandRepository.set(dealProductUuid, 0); // 데이터 일관성 맞춰주기 위해
+                    }
+
+                    return operations.exec();
+                } catch (Exception e) {
+                    operations.discard();
+                    throw e;
+                }
+            }
+        });
+
+        return inventoryAfterDecrease;
     }
 
     /**
@@ -175,21 +232,6 @@ public class OrderService {
 
         if(!hasDealProductUuid) {
             throw new TimeDealProductNotFoundException(dealProductUuid);
-        }
-    }
-
-    /**
-     * checkOrderQuantityInInventory 는 주문 가능한 수량을 체크하는 함수이다.
-     */
-    private int checkOrderQuantityInInventory(UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
-        int inventory = inventoryQueryRepository.get(dealProductUuid);
-
-        if(inventory <= 0 || orderQuantity > inventory && outOfStockHandlingOption == OutOfStockHandlingOption.ALL_CANCEL) {
-            throw new OrderOverStockException();
-        } else if(orderQuantity > inventory && outOfStockHandlingOption == OutOfStockHandlingOption.PARTIAL_ORDER) {
-            return inventory;
-        } else  {
-            return orderQuantity;
         }
     }
 
@@ -262,33 +304,9 @@ public class OrderService {
         // 1. orderApproveForm 검증
         validateOrderApproveForm(orderApproveForm, orderForm);
 
-        // 2. 재고 감소
-        UUID dealProductUuid = TypeConversionUtils.convertBinaryToUuid(orderForm.getDealProductUuid());
+        // 3. 토스 페이먼트 결제 승인
 
-        int orderQuantity = orderForm.getOrderQuantity();
-
-        int inventoryAfterDecrease = inventoryCommandRepository.decreaseByAmount(dealProductUuid, orderQuantity);
-
-        try {
-            // 3. 실제 주문 수량 계산
-            int inventoryBeforeDecrease = orderQuantity + inventoryAfterDecrease;
-
-            OutOfStockHandlingOption outOfStockHandlingOption = orderForm.getOutOfStockHandlingOption();
-
-            int realOrderQuantity = calculateRealOrderQuantity(inventoryAfterDecrease, orderQuantity, outOfStockHandlingOption);
-
-            if (inventoryBeforeDecrease < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.PARTIAL_ORDER) {
-                inventoryCommandRepository.set(dealProductUuid, 0); // 데이터 일관성 맞춰주기 위해
-            }
-
-            // 4. 토스 페이먼트 결제 승인
-
-            // 5. 주문 관련 데이터 저장
-
-        } catch (OrderOverStockException orderOverStockException) {
-            rollbackReducedInventory(dealProductUuid, orderQuantity);
-            throw orderOverStockException;
-        }
+        // 4. 주문 관련 데이터 저장
 
         return UUID.fromString(orderId); // TODO : 임시 데이터
     }
