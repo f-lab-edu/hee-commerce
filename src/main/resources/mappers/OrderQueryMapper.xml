@@ -5,6 +5,6 @@
 
   <!-- 주문 검증을 위해 주문 조회  -->
   <select id="findOrderEntityForOrderApproveValidation" resultType="OrderEntityForOrderApproveValidation">
-    SELECT deal_product_uuid, order_quantity, total_payment_amount, out_of_stock_handling_option FROM `order` WHERE uuid = #{orderUuid}
+    SELECT deal_product_uuid, real_order_quantity, total_payment_amount, out_of_stock_handling_option FROM `order` WHERE uuid = #{orderUuid}
   </select>
 </mapper>
