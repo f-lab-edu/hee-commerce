@@ -217,7 +217,13 @@ public class OrderService {
     private OrderFormSavedInAdvanceEntity createOrderFormSavedInAdvanceEntity(OrderForm orderForm, int realOrderQuantity) {
         TimeDealProductDetail timeDealProductDetail = dealProductQueryRepository.getTimeDealProductDetailByDealProductUuid(orderForm.getDealProductUuid());
 
-        int totalPaymentAmount = calculateTotalPaymentAmount(timeDealProductDetail.getProductOriginPrice(), timeDealProductDetail.getDealProductDiscountType(), timeDealProductDetail.getDealProductDiscountValue());
+        int totalPaymentAmount = calculateTotalPaymentAmount(timeDealProductDetail.getProductOriginPrice(), realOrderQuantity, timeDealProductDetail.getDealProductDiscountType(), timeDealProductDetail.getDealProductDiscountValue());
+
+        int originalOrderQuantityForPartialOrder = -1; // 부분 주문이 아닌 경우 값으로, Null 을 넣어주고 싶었으나, int 는 Null 을 헝용하지 않기 때문에, 임의의 값 넣어줌
+
+        if(orderForm.getOutOfStockHandlingOption() == OutOfStockHandlingOption.PARTIAL_ORDER) {
+            originalOrderQuantityForPartialOrder = orderForm.getOrderQuantity();
+        }
 
         return OrderFormSavedInAdvanceEntity.builder()
             .uuid(TypeConversionUtils.convertUuidToBinary(orderForm.getOrderUuid()))
@@ -227,7 +233,8 @@ public class OrderService {
             .outOfStockHandlingOption(orderForm.getOutOfStockHandlingOption())
             .dealProductUuid(TypeConversionUtils.convertUuidToBinary(orderForm.getDealProductUuid()))
             .totalPaymentAmount(totalPaymentAmount)
-            .orderQuantity(realOrderQuantity)
+            .originalOrderQuantityForPartialOrder(originalOrderQuantityForPartialOrder)
+            .realOrderQuantity(realOrderQuantity)
             .paymentMethod(orderForm.getPaymentMethod())
             .build();
     }

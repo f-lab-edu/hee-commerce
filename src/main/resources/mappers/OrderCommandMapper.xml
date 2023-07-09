@@ -6,11 +6,22 @@
   <!-- 검증을 위해 주문 내역 사전 저장  -->
   <insert id="saveOrderInAdvance">
     INSERT INTO `order` (
-      uuid, order_status, user_id, out_of_stock_handling_option, deal_product_uuid, order_quantity, payment_method, total_payment_amount,
-      recipient_name, recipient_phone_number, recipient_address, recipient_detail_address, shipping_request
+    uuid, order_status, user_id, out_of_stock_handling_option, deal_product_uuid,
+    original_order_quantity_for_partial_order,
+    real_order_quantity, payment_method, total_payment_amount,
+    recipient_name, recipient_phone_number, recipient_address, recipient_detail_address, shipping_request
     ) values (
-      #{uuid}, #{orderStatus}, #{userId}, #{outOfStockHandlingOption}, #{dealProductUuid}, #{orderQuantity}, #{paymentMethod}, #{totalPaymentAmount},
-      #{recipientInfoForm.recipientName}, #{recipientInfoForm.recipientPhoneNumber}, #{recipientInfoForm.recipientAddress}, #{recipientInfoForm.recipientDetailAddress}, #{recipientInfoForm.shippingRequest}
+    #{uuid}, #{orderStatus}, #{userId}, #{outOfStockHandlingOption}, #{dealProductUuid},
+    <choose>
+      <when test="originalOrderQuantityForPartialOrder == -1">
+        NULL
+      </when>
+      <otherwise>
+        #{originalOrderQuantityForPartialOrder}
+      </otherwise>
+    </choose>,
+    #{realOrderQuantity}, #{paymentMethod}, #{totalPaymentAmount},
+    #{recipientInfoForm.recipientName}, #{recipientInfoForm.recipientPhoneNumber}, #{recipientInfoForm.recipientAddress}, #{recipientInfoForm.recipientDetailAddress}, #{recipientInfoForm.shippingRequest}
     )
   </insert>
 </mapper>
