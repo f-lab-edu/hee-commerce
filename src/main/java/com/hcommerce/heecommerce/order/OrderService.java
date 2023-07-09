@@ -227,7 +227,6 @@ public class OrderService {
 
         return OrderFormSavedInAdvanceEntity.builder()
             .uuid(TypeConversionUtils.convertUuidToBinary(orderForm.getOrderUuid()))
-            .orderStatus(OrderStatus.PAYMENT_PENDING)
             .userId(orderForm.getUserId())
             .recipientInfoForm(orderForm.getRecipientInfoForm())
             .outOfStockHandlingOption(orderForm.getOutOfStockHandlingOption())
