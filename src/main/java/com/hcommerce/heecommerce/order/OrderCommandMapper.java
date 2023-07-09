@@ -6,4 +6,6 @@ import org.apache.ibatis.annotations.Mapper;
 public interface OrderCommandMapper {
 
     void saveOrderInAdvance(OrderFormSavedInAdvanceEntity orderFormSavedInAdvanceEntity);
+
+    void updateOrderAfterApprove(byte[] orderUuid, OrderApproveEntity orderApproveEntity);
 }

@@ -1,5 +1,6 @@
 package com.hcommerce.heecommerce.order;
 
+import com.hcommerce.heecommerce.common.utils.DateTimeConversionUtils;
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.deal.DealProductQueryRepository;
 import com.hcommerce.heecommerce.deal.DiscountType;
@@ -267,10 +268,19 @@ public class OrderService {
         validateOrderApproveForm(orderApproveForm, orderForm);
 
         // 3. 토스 페이먼트 결제 승인
+        String approvedAt = "2022-01-01T00:00:00+09:00"; // TODO : 임시 데이터
 
         // 4. 주문 관련 데이터 저장
+        byte[] orderUuid = TypeConversionUtils.convertUuidToBinary(UUID.fromString(orderId));
 
-        return UUID.fromString(orderId); // TODO : 임시 데이터
+        OrderApproveEntity orderApproveEntity = OrderApproveEntity.builder()
+            .realOrderQuantity(orderForm.getRealOrderQuantity())
+            .paymentApprovedAt(DateTimeConversionUtils.convertIsoDateTimeToInstant(approvedAt))
+            .build();
+
+        orderCommandRepository.updateOrderAfterApprove(orderUuid, orderApproveEntity);
+
+        return UUID.fromString(orderId);
     }
 
     public void validateOrderApproveForm(OrderApproveForm orderApproveForm, OrderEntityForOrderApproveValidation orderForm) {
