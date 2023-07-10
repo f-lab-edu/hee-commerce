@@ -12,14 +12,7 @@
     recipient_name, recipient_phone_number, recipient_address, recipient_detail_address, shipping_request
     ) values (
     #{uuid}, #{orderStatus}, #{userId}, #{outOfStockHandlingOption}, #{dealProductUuid},
-    <choose>
-      <when test="originalOrderQuantityForPartialOrder == -1">
-        NULL
-      </when>
-      <otherwise>
-        #{originalOrderQuantityForPartialOrder}
-      </otherwise>
-    </choose>,
+    #{originalOrderQuantityForPartialOrder},
     #{realOrderQuantity}, #{paymentMethod}, #{totalPaymentAmount},
     #{recipientInfoForm.recipientName}, #{recipientInfoForm.recipientPhoneNumber}, #{recipientInfoForm.recipientAddress}, #{recipientInfoForm.recipientDetailAddress}, #{recipientInfoForm.shippingRequest}
     )
