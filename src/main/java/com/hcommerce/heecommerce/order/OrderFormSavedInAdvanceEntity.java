@@ -1,5 +1,6 @@
 package com.hcommerce.heecommerce.order;
 
+import java.util.Optional;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -19,7 +20,7 @@ public class OrderFormSavedInAdvanceEntity {
     private final int userId;
     private final OutOfStockHandlingOption outOfStockHandlingOption;
     private final byte[] dealProductUuid;
-    private final Integer originalOrderQuantityForPartialOrder;
+    private final Optional<Integer> originalOrderQuantityForPartialOrder;
     private final int realOrderQuantity;
     private final int totalPaymentAmount;
     private final PaymentMethod paymentMethod;
@@ -31,7 +32,7 @@ public class OrderFormSavedInAdvanceEntity {
         int userId,
         OutOfStockHandlingOption outOfStockHandlingOption,
         byte[] dealProductUuid,
-        Integer originalOrderQuantityForPartialOrder,
+        Optional<Integer> originalOrderQuantityForPartialOrder,
         int realOrderQuantity,
         int totalPaymentAmount,
         PaymentMethod paymentMethod,

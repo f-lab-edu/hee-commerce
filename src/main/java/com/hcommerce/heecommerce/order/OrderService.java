@@ -8,6 +8,7 @@ import com.hcommerce.heecommerce.deal.TimeDealProductDetail;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -224,10 +225,10 @@ public class OrderService {
 
         int totalPaymentAmount = calculateTotalPaymentAmount(timeDealProductDetail.getProductOriginPrice(), realOrderQuantity, timeDealProductDetail.getDealProductDiscountType(), timeDealProductDetail.getDealProductDiscountValue());
 
-        Integer originalOrderQuantityForPartialOrder = null; // 부분 주문이 아닌 경우 값으로, Null 값을 가지므로,
+        Optional<Integer> originalOrderQuantityForPartialOrder = null; // 부분 주문이 아닌 경우 값으로, Null 값을 가지므로,
 
         if(orderForm.getOutOfStockHandlingOption() == OutOfStockHandlingOption.PARTIAL_ORDER) {
-            originalOrderQuantityForPartialOrder = orderForm.getOrderQuantity();
+            originalOrderQuantityForPartialOrder = Optional.of(orderForm.getOrderQuantity());
         }
 
         return OrderFormSavedInAdvanceEntity.builder()
