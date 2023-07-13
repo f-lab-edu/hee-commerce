@@ -134,28 +134,18 @@ public class OrderService {
         // 3. 최대 주문 수량에 맞는 orderQuantity 인지
         validateOrderQuantityInMaxOrderQuantityPerOrder(dealProductUuid, orderQuantity);
 
-        // 4. 재고 감소
+        // 4. 실제 주문 수량 계산
         OutOfStockHandlingOption outOfStockHandlingOption = orderForm.getOutOfStockHandlingOption();
 
-        int inventoryAfterDecrease = decreaseInventoryInAdvance(orderForm.getUserId(), dealProductUuid, orderQuantity, outOfStockHandlingOption);
+        int realOrderQuantity = determineRealOrderQuantity(orderForm.getUserId(), dealProductUuid, orderQuantity, outOfStockHandlingOption);
 
-        System.out.println("inventoryAfterDecrease :"+inventoryAfterDecrease);
-
-        // 5. 실제 주문 가능한 수량 계산
-        int realOrderQuantity = 0;
-
+        // 5. 주문 내역 미리 저장
         try {
-            realOrderQuantity = calculateRealOrderQuantity(inventoryAfterDecrease, orderQuantity, outOfStockHandlingOption);
-
             OrderFormSavedInAdvanceEntity orderFormSavedInAdvanceEntity = createOrderFormSavedInAdvanceEntity(orderForm, realOrderQuantity);
 
-            // 6. 주문 내역 미리 저장
             UUID orderUuidSavedInAdvance = orderCommandRepository.saveOrderInAdvance(orderFormSavedInAdvanceEntity);
 
             return orderUuidSavedInAdvance;
-        } catch (OrderOverStockException orderOverStockException) {
-            rollbackReducedInventory(dealProductUuid, orderQuantity);
-            throw orderOverStockException;
         } catch (Exception e) {
             rollbackReducedInventory(dealProductUuid, realOrderQuantity);
             throw e;
@@ -163,7 +153,7 @@ public class OrderService {
     }
 
     /**
-     * decreaseInventoryInAdvance 는 주문 전 재고를 미리 감소시키는 함수 이다.
+     * determineRealOrderQuantity 는 실제 주문 수량을 결정하는 함수 이다.
      *
      * 분산락을 이용한 이유는 https://github.com/f-lab-edu/hee-commerce/pull/135 참고
      *
@@ -174,7 +164,7 @@ public class OrderService {
      * 재시도는 최대 3번 정도이고, 그래도 실패할 경우, "현재 접속자가 몰려 서비스 이용이 불가능합니다. 잠시 후 다시 시도해주세요." 라는 메시지를 던져준다.
      * 재고 감소 로직은 결제창 열리기 전에 처리되기 때문에, 사용자에게 재시도 책임을 넘겨줘도 된다고 생각했기 떄문이다.
      */
-    private int decreaseInventoryInAdvance(int userId, UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
+    private int determineRealOrderQuantity(int userId, UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
         // 1. lock 획득하기
         RLock rlock = redisLockHelper.getLock(dealProductUuid+"_lock");
 
@@ -209,15 +199,24 @@ public class OrderService {
         log.info("[lock 획득] userId = {}, dealProductUuid ={}, orderQuantity ={}", userId, dealProductUuid, orderQuantity);
 
         try {
-            int inventoryAfterDecrease = inventoryCommandRepository.decreaseByAmount(dealProductUuid, orderQuantity);
+            // 1) 재고 조회
+            int inventory = inventoryQueryRepository.get(dealProductUuid);
 
-            int inventoryBeforeDecrease = orderQuantity + inventoryAfterDecrease;
-
-            if (inventoryBeforeDecrease < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.PARTIAL_ORDER) {
-                inventoryCommandRepository.set(dealProductUuid, 0); // 데이터 일관성 맞춰주기 위해
+            // 2) 재고 검증
+            if(inventory <= 0 || (inventory < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.ALL_CANCEL)) {
+                throw new OrderOverStockException();
             }
 
-            return inventoryAfterDecrease;
+            int realOrderQuantity = orderQuantity;
+
+            if(inventory < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.PARTIAL_ORDER) {
+                realOrderQuantity = inventory;
+            }
+
+            // 3) 재고 감소
+            inventoryCommandRepository.decreaseByAmount(dealProductUuid, realOrderQuantity);
+
+            return realOrderQuantity;
         } finally {
             // 3. lock 해제
             if (rlock != null && rlock.isLocked()) {
