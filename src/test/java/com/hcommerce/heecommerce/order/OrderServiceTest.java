@@ -4,8 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 
+import com.hcommerce.heecommerce.common.RedisLockHelper;
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.deal.DealProductQueryRepository;
 import com.hcommerce.heecommerce.deal.DiscountType;
@@ -22,14 +24,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.redisson.api.RedissonClient;
 
 @DisplayName("OrderService")
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
 
     @Mock
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisLockHelper redisLockHelper;
 
     @Mock
     private OrderQueryRepository orderQueryRepository;
@@ -45,6 +47,9 @@ class OrderServiceTest {
 
     @Mock
     private InventoryCommandRepository inventoryCommandRepository;
+
+    @Mock
+    private RedissonClient redissonClient;
 
     @InjectMocks
     private OrderService orderService;
@@ -66,7 +71,7 @@ class OrderServiceTest {
         class Context_With_Valid_OrderForm {
             @Test
             @DisplayName("return OrderUuid")
-            void It_returns_OrderUuid() {
+            void It_returns_OrderUuid() throws InterruptedException {
                 // given
                 UUID dealProductUuid = UUID.randomUUID();
 
@@ -166,7 +171,7 @@ class OrderServiceTest {
             class Context_With_outOfStockHandlingOption_Is_ALL_CANCEL {
                 @Test
                 @DisplayName("throws OrderOverStockException")
-                void It_throws_OrderOverStockException() { // TODO : 테스트 코드 깨짐. redisTemplate SessionCallback Mocking 하는 방법 또는 다른 방법을 찾은 후 해결하기
+                void It_throws_OrderOverStockException() {
                     // given
                     OrderForm orderForm = OrderForm.builder()
                         .userId(1)
@@ -186,9 +191,25 @@ class OrderServiceTest {
                         .paymentMethod(PaymentMethod.CREDIT_CARD)
                         .build();
 
+                    TimeDealProductDetail timeDealProductDetail = TimeDealProductDetail.builder()
+                        .dealProductUuid(UUID.randomUUID())
+                        .dealProductTile("1000원 할인 상품 1")
+                        .productMainImgUrl("/test.png")
+                        .productDetailImgUrls(new String[]{"/detail_test1.png", "/detail_test2.png", "/detail_test3.png", "/detail_test4.png", "/detail_test5.png"})
+                        .productOriginPrice(3000)
+                        .dealProductDiscountType(DiscountType.FIXED_AMOUNT)
+                        .dealProductDiscountValue(1000)
+                        .dealProductDealQuantity(0)
+                        .maxOrderQuantityPerOrder(10)
+                        .startedAt(STARTED_AT)
+                        .finishedAt(FINISHED_AT)
+                        .build();
+
                     given(dealProductQueryRepository.hasDealProductUuid(any())).willReturn(true);
 
                     given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
+
+                    given(inventoryCommandRepository.decreaseByAmount(any(), anyInt())).willReturn(-2);
 
                     // when + then
                     assertThrows(OrderOverStockException.class, () -> {

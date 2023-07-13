@@ -1,5 +1,6 @@
 package com.hcommerce.heecommerce.order;
 
+import com.hcommerce.heecommerce.common.RedisLockHelper;
 import com.hcommerce.heecommerce.common.utils.DateTimeConversionUtils;
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.deal.DealProductQueryRepository;
@@ -7,20 +8,20 @@ import com.hcommerce.heecommerce.deal.DiscountType;
 import com.hcommerce.heecommerce.deal.TimeDealProductDetail;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.data.redis.core.RedisOperations;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class OrderService {
 
-    private final RedisTemplate<String, String> redisTemplate;
+    private final RedisLockHelper redisLockHelper;
+
     private final OrderQueryRepository orderQueryRepository;
 
     private final OrderCommandRepository orderCommandRepository;
@@ -31,21 +32,25 @@ public class OrderService {
 
     private final DealProductQueryRepository dealProductQueryRepository;
 
+    private final RedissonClient redissonClient;
+
     @Autowired
     public OrderService(
-        RedisTemplate<String, String> redisTemplate,
+        RedisLockHelper redisLockHelper,
         OrderQueryRepository orderQueryRepository,
         OrderCommandRepository orderCommandRepository,
         InventoryQueryRepository inventoryQueryRepository,
         InventoryCommandRepository inventoryCommandRepository,
-        DealProductQueryRepository dealProductQueryRepository
+        DealProductQueryRepository dealProductQueryRepository,
+        RedissonClient redissonClient
     ) {
-        this.redisTemplate = redisTemplate;
+        this.redisLockHelper = redisLockHelper;
         this.orderQueryRepository = orderQueryRepository;
         this.orderCommandRepository = orderCommandRepository;
         this.inventoryQueryRepository = inventoryQueryRepository;
         this.inventoryCommandRepository = inventoryCommandRepository;
         this.dealProductQueryRepository = dealProductQueryRepository;
+        this.redissonClient = redissonClient;
     }
 
     /**
@@ -132,13 +137,15 @@ public class OrderService {
         // 4. 재고 감소
         OutOfStockHandlingOption outOfStockHandlingOption = orderForm.getOutOfStockHandlingOption();
 
-        final int[] inventoryAfterDecrease = decreaseInventoryInAdvance(dealProductUuid, orderQuantity, outOfStockHandlingOption);
+        int inventoryAfterDecrease = decreaseInventoryInAdvance(orderForm.getUserId(), dealProductUuid, orderQuantity, outOfStockHandlingOption);
+
+        System.out.println("inventoryAfterDecrease :"+inventoryAfterDecrease);
 
         // 5. 실제 주문 가능한 수량 계산
         int realOrderQuantity = 0;
 
         try {
-            realOrderQuantity = calculateRealOrderQuantity(inventoryAfterDecrease[0], orderQuantity, outOfStockHandlingOption);
+            realOrderQuantity = calculateRealOrderQuantity(inventoryAfterDecrease, orderQuantity, outOfStockHandlingOption);
 
             OrderFormSavedInAdvanceEntity orderFormSavedInAdvanceEntity = createOrderFormSavedInAdvanceEntity(orderForm, realOrderQuantity);
 
@@ -157,35 +164,67 @@ public class OrderService {
 
     /**
      * decreaseInventoryInAdvance 는 주문 전 재고를 미리 감소시키는 함수 이다.
-     * inventoryAfterDecrease 를 final int[] 로 선언한 이유는 https://github.com/f-lab-edu/hee-commerce/issues/123 참고
+     *
+     * 분산락을 이용한 이유는 https://github.com/f-lab-edu/hee-commerce/pull/135 참고
+     *
+     * 락 임대하는 시간(leaseTimeForLock) : 0.5초 -> TODO : 일단 0.5초 인데, 함께 작업해야 하는 작업들의 총 소요시간 파악 후 수정 될 수 있음
+     * 락 획득하기 위한 대기 시간(waitTimeForAcquiringLock) : 1초 -> TODO : 위 락 임대 시간이 수정되면, 수정될 수 있음
+     *
+     * Redisson 분산락이 Pub/Sub 방식인데, 재시도 로직이 필요한 이유는 Lock 을 대기하고 있다가, 타임아웃 시간 초과로 Sub 끝난 경우가 발생하기 때문이다.
+     * 재시도는 최대 3번 정도이고, 그래도 실패할 경우, "현재 접속자가 몰려 서비스 이용이 불가능합니다. 잠시 후 다시 시도해주세요." 라는 메시지를 던져준다.
+     * 재고 감소 로직은 결제창 열리기 전에 처리되기 때문에, 사용자에게 재시도 책임을 넘겨줘도 된다고 생각했기 떄문이다.
      */
-    private int[] decreaseInventoryInAdvance(UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
-        final int[] inventoryAfterDecrease = new int[1];
+    private int decreaseInventoryInAdvance(int userId, UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
+        // 1. lock 획득하기
+        RLock rlock = redisLockHelper.getLock(dealProductUuid+"_lock");
 
-        redisTemplate.execute(new SessionCallback<List<Object>>() {
-            @Override
-            public List<Object> execute(RedisOperations operations) throws DataAccessException {
-                try {
-                    operations.multi();
+        final int WAIT_TIME_MS_FOR_ACQUIRING_LOCK = 1000; // 락 획득하기 위한 대기시간, 1초
 
-                    // TODO : 재고 증가/감소 다음 단계로 재고 히스토리 저장 로직 추가 필요
-                    inventoryAfterDecrease[0] = inventoryCommandRepository.decreaseByAmount(dealProductUuid, orderQuantity);
+        final int LEASE_TIME_MS_FOR_ACQUIRED_LOCK = 500; // 락 임대하는 시간, 0.5초
 
-                    int inventoryBeforeDecrease = orderQuantity + inventoryAfterDecrease[0];
+        final int MAX_RETRIES = 3; // 최대 재시도 횟수
 
-                    if (inventoryBeforeDecrease < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.PARTIAL_ORDER) {
-                        inventoryCommandRepository.set(dealProductUuid, 0); // 데이터 일관성 맞춰주기 위해
-                    }
+        long RETRY_INTERVAL_MS = 100; // 재시도 간격 (밀리초)
 
-                    return operations.exec();
-                } catch (Exception e) {
-                    operations.discard();
-                    throw e;
+        int retryCount = 0;
+
+        boolean isLockAvailable = false;
+
+        while (retryCount < MAX_RETRIES && !isLockAvailable) {
+            try {
+                isLockAvailable = redisLockHelper.tryLock(rlock, WAIT_TIME_MS_FOR_ACQUIRING_LOCK, LEASE_TIME_MS_FOR_ACQUIRED_LOCK);
+
+                if (!isLockAvailable) {
+                    Thread.sleep(RETRY_INTERVAL_MS); // 재시도 간격 대기
                 }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RedisLockTryInterruptedException(e);
             }
-        });
 
-        return inventoryAfterDecrease;
+            retryCount++;
+        }
+
+        // 2. lock 획득한 후의 로직
+        log.info("[lock 획득] userId = {}, dealProductUuid ={}, orderQuantity ={}", userId, dealProductUuid, orderQuantity);
+
+        try {
+            int inventoryAfterDecrease = inventoryCommandRepository.decreaseByAmount(dealProductUuid, orderQuantity);
+
+            int inventoryBeforeDecrease = orderQuantity + inventoryAfterDecrease;
+
+            if (inventoryBeforeDecrease < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.PARTIAL_ORDER) {
+                inventoryCommandRepository.set(dealProductUuid, 0); // 데이터 일관성 맞춰주기 위해
+            }
+
+            return inventoryAfterDecrease;
+        } finally {
+            // 3. lock 해제
+            if (rlock != null && rlock.isLocked()) {
+                redisLockHelper.unlock(rlock);
+                log.info("[lock 해제] userId = {}, dealProductUuid ={}, orderQuantity ={}", userId, dealProductUuid, orderQuantity);
+            }
+        }
     }
 
     /**

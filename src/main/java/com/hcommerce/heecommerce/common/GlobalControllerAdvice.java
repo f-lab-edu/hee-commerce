@@ -5,6 +5,7 @@ import com.hcommerce.heecommerce.order.InvalidPaymentAmountException;
 import com.hcommerce.heecommerce.order.MaxOrderQuantityExceededException;
 import com.hcommerce.heecommerce.order.OrderNotFoundException;
 import com.hcommerce.heecommerce.order.OrderOverStockException;
+import com.hcommerce.heecommerce.order.RedisLockTryInterruptedException;
 import com.hcommerce.heecommerce.order.TimeDealProductNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -67,6 +68,15 @@ public class GlobalControllerAdvice {
     public ResponseDto invalidPaymentAmountExceptionHandler(InvalidPaymentAmountException e) {
         return ResponseDto.builder()
             .code(HttpStatus.BAD_REQUEST.name())
+            .message(e.getMessage())
+            .build();
+    }
+
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler
+    public ResponseDto runtimeInterruptedExceptionHandler(RedisLockTryInterruptedException e) {
+        return ResponseDto.builder()
+            .code(HttpStatus.SERVICE_UNAVAILABLE.name())
             .message(e.getMessage())
             .build();
     }
