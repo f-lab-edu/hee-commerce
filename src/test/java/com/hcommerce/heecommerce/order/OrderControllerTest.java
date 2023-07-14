@@ -225,7 +225,7 @@ class OrderControllerTest {
                     String content = objectMapper.writeValueAsString(orderForm);
 
                     ResultActions resultActions = mockMvc.perform(
-                        post("/orders")
+                        post("/orders/place-in-advance")
                             .accept(MediaType.APPLICATION_JSON)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(content)
