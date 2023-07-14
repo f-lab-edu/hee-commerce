@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
 import com.hcommerce.heecommerce.common.RedisLockHelper;
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
@@ -119,11 +120,61 @@ class OrderServiceTest {
 
                 given(dealProductQueryRepository.getTimeDealProductDetailByDealProductUuid(any())).willReturn(timeDealProductDetail);
 
+                given(inventoryQueryRepository.get(any())).willReturn(3);
+
+                given(inventoryCommandRepository.decreaseByAmount(any(), anyInt())).willReturn(1);
+
                 // when
                 UUID uuid = orderService.placeOrderInAdvance(orderForm);
 
                 // then
                 assertEquals(expectedOrderUuid, uuid);
+            }
+        }
+
+        @Nested
+        @DisplayName("when Invalid inventory decrease occurs")
+        class Context_With_Invalid_Inventory_Decrease_Occurs {
+            @Test
+            @DisplayName("rollbacks inventory and throws OrderOverStockException")
+            void It_Rollbacks_inventory_And_throws_OrderOverStockException() {
+                // given
+                UUID dealProductUuid = UUID.randomUUID();
+
+                OrderForm orderForm = OrderForm.builder()
+                    .userId(1)
+                    .orderUuid(UUID.randomUUID())
+                    .recipientInfoForm(
+                        RecipientInfoForm.builder()
+                            .recipientName("leecommerce")
+                            .recipientPhoneNumber("01087654321")
+                            .recipientAddress("서울시 ")
+                            .recipientDetailAddress("101호")
+                            .shippingRequest("빠른 배송 부탁드려요!")
+                            .build()
+                    )
+                    .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
+                    .dealProductUuid(dealProductUuid)
+                    .orderQuantity(2)
+                    .paymentMethod(PaymentMethod.CREDIT_CARD)
+                    .build();
+
+                boolean HAS_DEAL_PRODUCT_UUID = true;
+
+                given(dealProductQueryRepository.hasDealProductUuid(dealProductUuid)).willReturn(HAS_DEAL_PRODUCT_UUID);
+
+                given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
+
+                given(inventoryQueryRepository.get(any())).willReturn(3);
+
+                given(inventoryCommandRepository.decreaseByAmount(any(), anyInt())).willReturn(-1);
+
+                // when
+                assertThrows(OrderOverStockException.class, () -> {
+                    orderService.placeOrderInAdvance(orderForm);
+                });
+
+                verify(inventoryCommandRepository).increaseByAmount(dealProductUuid, 2);
             }
         }
 
@@ -172,6 +223,13 @@ class OrderServiceTest {
                 @Test
                 @DisplayName("throws OrderOverStockException")
                 void It_throws_OrderOverStockException() {
+                    final int ORDER_QUANTITY = 2;
+
+                    final int MAX_ORDER_QUANTITY_PER_ORDER = 3;
+
+                    final int INVENTORY = 1;
+
+
                     // given
                     OrderForm orderForm = OrderForm.builder()
                         .userId(1)
@@ -187,7 +245,7 @@ class OrderServiceTest {
                         )
                         .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
                         .dealProductUuid(UUID.randomUUID())
-                        .orderQuantity(2)
+                        .orderQuantity(ORDER_QUANTITY)
                         .paymentMethod(PaymentMethod.CREDIT_CARD)
                         .build();
 
@@ -199,17 +257,17 @@ class OrderServiceTest {
                         .productOriginPrice(3000)
                         .dealProductDiscountType(DiscountType.FIXED_AMOUNT)
                         .dealProductDiscountValue(1000)
-                        .dealProductDealQuantity(0)
-                        .maxOrderQuantityPerOrder(10)
+                        .dealProductDealQuantity(INVENTORY)
+                        .maxOrderQuantityPerOrder(MAX_ORDER_QUANTITY_PER_ORDER)
                         .startedAt(STARTED_AT)
                         .finishedAt(FINISHED_AT)
                         .build();
 
                     given(dealProductQueryRepository.hasDealProductUuid(any())).willReturn(true);
 
-                    given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
+                    given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(MAX_ORDER_QUANTITY_PER_ORDER);
 
-                    given(inventoryCommandRepository.decreaseByAmount(any(), anyInt())).willReturn(-2);
+                    given(inventoryQueryRepository.get(any())).willReturn(INVENTORY);
 
                     // when + then
                     assertThrows(OrderOverStockException.class, () -> {
@@ -225,7 +283,13 @@ class OrderServiceTest {
                 @DisplayName("does not throws OrderOverStockException")
                 void It_Does_Not_OrderOverStockException() {
                     // given
-                    UUID uuid = UUID.randomUUID();
+                    UUID uuidFixture = UUID.randomUUID();
+
+                    final int ORDER_QUANTITY = 2;
+
+                    final int MAX_ORDER_QUANTITY_PER_ORDER = 3;
+
+                    final int INVENTORY = 1;
 
                     OrderForm orderForm = OrderForm.builder()
                         .userId(1)
@@ -240,30 +304,34 @@ class OrderServiceTest {
                                 .build()
                         )
                         .outOfStockHandlingOption(OutOfStockHandlingOption.PARTIAL_ORDER)
-                        .dealProductUuid(uuid)
-                        .orderQuantity(2)
+                        .dealProductUuid(uuidFixture)
+                        .orderQuantity(ORDER_QUANTITY)
                         .paymentMethod(PaymentMethod.CREDIT_CARD)
                         .build();
 
+                    given(dealProductQueryRepository.hasDealProductUuid(uuidFixture)).willReturn(true);
+
+                    given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
+
+                    given(inventoryQueryRepository.get(any())).willReturn(INVENTORY);
+
                     TimeDealProductDetail timeDealProductDetail = TimeDealProductDetail.builder()
-                        .dealProductUuid(uuid)
+                        .dealProductUuid(uuidFixture)
                         .dealProductTile("1000원 할인 상품 1")
                         .productMainImgUrl("/test.png")
                         .productDetailImgUrls(new String[]{"/detail_test1.png", "/detail_test2.png", "/detail_test3.png", "/detail_test4.png", "/detail_test5.png"})
                         .productOriginPrice(3000)
                         .dealProductDiscountType(DiscountType.FIXED_AMOUNT)
                         .dealProductDiscountValue(1000)
-                        .dealProductDealQuantity(3)
-                        .maxOrderQuantityPerOrder(10)
+                        .dealProductDealQuantity(INVENTORY)
+                        .maxOrderQuantityPerOrder(MAX_ORDER_QUANTITY_PER_ORDER)
                         .startedAt(STARTED_AT)
                         .finishedAt(FINISHED_AT)
                         .build();
 
                     given(dealProductQueryRepository.getTimeDealProductDetailByDealProductUuid(any())).willReturn(timeDealProductDetail);
 
-                    given(dealProductQueryRepository.hasDealProductUuid(uuid)).willReturn(true);
-
-                    given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
+                    given(inventoryCommandRepository.decreaseByAmount(any(), anyInt())).willReturn(1);
 
                     // when + then
                     assertDoesNotThrow(() -> {
