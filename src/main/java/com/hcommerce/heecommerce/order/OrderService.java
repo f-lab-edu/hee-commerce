@@ -11,7 +11,6 @@ import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -114,6 +113,7 @@ public class OrderService {
      * @param amount : 원상복귀해야 하는 재고량
      */
     private void rollbackReducedInventory(UUID dealProductUuid, int amount) {
+        log.debug("[rollback] dealProductUuid = {}, amount = {} ", dealProductUuid, amount);
         inventoryCommandRepository.increaseByAmount(dealProductUuid, amount);
     }
 
@@ -137,7 +137,7 @@ public class OrderService {
         // 4. 실제 주문 수량 계산
         OutOfStockHandlingOption outOfStockHandlingOption = orderForm.getOutOfStockHandlingOption();
 
-        int realOrderQuantity = determineRealOrderQuantity(orderForm.getUserId(), dealProductUuid, orderQuantity, outOfStockHandlingOption);
+        int realOrderQuantity = determineRealOrderQuantity(dealProductUuid, orderQuantity, outOfStockHandlingOption);
 
         // 5. 주문 내역 미리 저장
         try {
@@ -155,75 +155,45 @@ public class OrderService {
     /**
      * determineRealOrderQuantity 는 실제 주문 수량을 결정하는 함수 이다.
      *
-     * 분산락을 이용한 이유는 https://github.com/f-lab-edu/hee-commerce/pull/135 참고
+     * realOrderQuantity 이 필요한 이유는 "부분 주문" 때문이다.
+     * 재고량이 0은 아니지만, 사용자가 주문한 수량에 비해 재고량이 없는 경우가 있다.
+     * 이때, 재고량만큼만 주문하도록 할 수 있도록 "부문 주문"이 가능한데, 사용자가 주문한 수량과 혼동되지 않도록 실제 주문하는 수량이라는 의미를 내포하기 위해서 필요하다.
      *
-     * 락 임대하는 시간(leaseTimeForLock) : 0.5초 -> TODO : 일단 0.5초 인데, 함께 작업해야 하는 작업들의 총 소요시간 파악 후 수정 될 수 있음
-     * 락 획득하기 위한 대기 시간(waitTimeForAcquiringLock) : 1초 -> TODO : 위 락 임대 시간이 수정되면, 수정될 수 있음
+     * 트랜잭션 대신 분산락을 사용했던 이유는 https://github.com/f-lab-edu/hee-commerce/pull/135 참고
      *
-     * Redisson 분산락이 Pub/Sub 방식인데, 재시도 로직이 필요한 이유는 Lock 을 대기하고 있다가, 타임아웃 시간 초과로 Sub 끝난 경우가 발생하기 때문이다.
-     * 재시도는 최대 3번 정도이고, 그래도 실패할 경우, "현재 접속자가 몰려 서비스 이용이 불가능합니다. 잠시 후 다시 시도해주세요." 라는 메시지를 던져준다.
-     * 재고 감소 로직은 결제창 열리기 전에 처리되기 때문에, 사용자에게 재시도 책임을 넘겨줘도 된다고 생각했기 떄문이다.
+     * 분산락 대신 재고 사후 검증 단계를 도입한 이유는 https://github.com/f-lab-edu/hee-commerce/issues/136 참고
+     *
      */
-    private int determineRealOrderQuantity(int userId, UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
-        // 1. lock 획득하기
-        RLock rlock = redisLockHelper.getLock(dealProductUuid+"_lock");
+    private int determineRealOrderQuantity(UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
+        log.debug("dealProductUuid = {}, orderQuantity = {}, outOfStockHandlingOption = {}", dealProductUuid, orderQuantity, outOfStockHandlingOption);
 
-        final int WAIT_TIME_MS_FOR_ACQUIRING_LOCK = 1000; // 락 획득하기 위한 대기시간, 1초
+        // 1. 재고 조회
+        int inventory = inventoryQueryRepository.get(dealProductUuid);
+        log.debug("inventory = {} ", inventory);
 
-        final int LEASE_TIME_MS_FOR_ACQUIRED_LOCK = 500; // 락 임대하는 시간, 0.5초
-
-        final int MAX_RETRIES = 3; // 최대 재시도 횟수
-
-        long RETRY_INTERVAL_MS = 100; // 재시도 간격 (밀리초)
-
-        int retryCount = 0;
-
-        boolean isLockAvailable = false;
-
-        while (retryCount < MAX_RETRIES && !isLockAvailable) {
-            try {
-                isLockAvailable = redisLockHelper.tryLock(rlock, WAIT_TIME_MS_FOR_ACQUIRING_LOCK, LEASE_TIME_MS_FOR_ACQUIRED_LOCK);
-
-                if (!isLockAvailable) {
-                    Thread.sleep(RETRY_INTERVAL_MS); // 재시도 간격 대기
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new RedisLockTryInterruptedException(e);
-            }
-
-            retryCount++;
+        // 2. 재고 사전 검증
+        if(inventory <= 0 || (inventory < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.ALL_CANCEL)) {
+            throw new OrderOverStockException();
         }
 
-        // 2. lock 획득한 후의 로직
-        log.info("[lock 획득] userId = {}, dealProductUuid ={}, orderQuantity ={}", userId, dealProductUuid, orderQuantity);
+        int realOrderQuantity = orderQuantity;
 
-        try {
-            // 1) 재고 조회
-            int inventory = inventoryQueryRepository.get(dealProductUuid);
-
-            // 2) 재고 검증
-            if(inventory <= 0 || (inventory < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.ALL_CANCEL)) {
-                throw new OrderOverStockException();
-            }
-
-            int realOrderQuantity = orderQuantity;
-
-            if(inventory < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.PARTIAL_ORDER) {
-                realOrderQuantity = inventory;
-            }
-
-            // 3) 재고 감소
-            inventoryCommandRepository.decreaseByAmount(dealProductUuid, realOrderQuantity);
-
-            return realOrderQuantity;
-        } finally {
-            // 3. lock 해제
-            if (rlock != null && rlock.isLocked()) {
-                redisLockHelper.unlock(rlock);
-                log.info("[lock 해제] userId = {}, dealProductUuid ={}, orderQuantity ={}", userId, dealProductUuid, orderQuantity);
-            }
+        if(inventory < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.PARTIAL_ORDER) {
+            realOrderQuantity = inventory;
         }
+        log.debug("realOrderQuantity = {}", realOrderQuantity);
+
+        // 3. 재고 감소
+        int inventoryAfterDecrease = inventoryCommandRepository.decreaseByAmount(dealProductUuid, realOrderQuantity);
+        log.debug("inventoryAfterDecrease = {}", inventoryAfterDecrease);
+
+        // 4. 재고 사후 검증
+        if(inventoryAfterDecrease < 0) { // 재고 감소가 되지 않아야 되는데, 감소가 된 경우이다. 재고 조회시의 재고량과 실제 감소시킬 떄의 재고량이 달라진 경우에 발생 함.
+            rollbackReducedInventory(dealProductUuid, realOrderQuantity);
+            throw new OrderOverStockException();
+        }
+
+        return realOrderQuantity;
     }
 
     /**
