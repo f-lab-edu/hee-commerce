@@ -31,14 +31,24 @@ public class InventoryCommandRepository extends InventoryRepository {
     }
 
     public int decreaseByAmount(UUID dealProductUuid, int amount) {
+        validationAmountIsPositive(amount);
+
         String key = super.getRedisKey(dealProductUuid);
 
         return (int) redisStringsRepository.decreaseByAmount(key, Long.valueOf(amount));
     }
 
     public void increaseByAmount(UUID dealProductUuid, int amount) {
+        validationAmountIsPositive(amount);
+
         String key = super.getRedisKey(dealProductUuid);
 
         redisStringsRepository.increaseByAmount(key, Long.valueOf(amount));
+    }
+
+    private void validationAmountIsPositive(int amount) {
+        if(amount <= 0) {
+            throw new AmountIsNotPositiveException();
+        }
     }
 }
