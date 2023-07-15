@@ -8,7 +8,6 @@ import com.hcommerce.heecommerce.deal.DiscountType;
 import com.hcommerce.heecommerce.deal.TimeDealProductDetail;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
@@ -223,24 +222,29 @@ public class OrderService {
      * 이 함수가 필요한 이유는 다음 3가지 때문이다.
      * 1. UUID
      * - UUID 는 DB에 저장될 때 byte[] 로 저장되기 때문에, UUID -> byte[] 타입 변환이 필요하다.
-     * 2. 부분 주문
-     * - 실제 주문 수량과 다르게 주문이 접수되는 경우도 있기 때문이다.
-     * 3. 총 결제 금액
+     * 2. 총 결제 금액
      * - 총 결제 금액을 위변조 방지를 위해 클라이언트에서 받은 값이 아닌 DB에 있는 데이터를 기반으로 계산하기 때문이다.
+     * 3. 부분 주문
+     * - 실제 주문 수량과 다르게 주문이 접수되는 경우도 있기 때문이다.
      */
     private OrderFormSavedInAdvanceEntity createOrderFormSavedInAdvanceEntity(OrderForm orderForm, int realOrderQuantity) {
+        // 1. UUID
+        byte[] uuid = TypeConversionUtils.convertUuidToBinary(orderForm.getOrderUuid());
+
+        // 2. 총 결제 금액
         TimeDealProductDetail timeDealProductDetail = dealProductQueryRepository.getTimeDealProductDetailByDealProductUuid(orderForm.getDealProductUuid());
 
         int totalPaymentAmount = calculateTotalPaymentAmount(timeDealProductDetail.getProductOriginPrice(), realOrderQuantity, timeDealProductDetail.getDealProductDiscountType(), timeDealProductDetail.getDealProductDiscountValue());
 
-        Optional<Integer> originalOrderQuantityForPartialOrder = null; // 부분 주문이 아닌 경우 값으로, Null 값을 가지므로,
+        // 3. 부분 주문
+        Integer originalOrderQuantityForPartialOrder = null; // 부분 주문이 아닌 경우 값으로, Null 값을 가지므로,
 
         if(orderForm.getOutOfStockHandlingOption() == OutOfStockHandlingOption.PARTIAL_ORDER) {
-            originalOrderQuantityForPartialOrder = Optional.of(orderForm.getOrderQuantity());
+            originalOrderQuantityForPartialOrder = orderForm.getOrderQuantity();
         }
 
         return OrderFormSavedInAdvanceEntity.builder()
-            .uuid(TypeConversionUtils.convertUuidToBinary(orderForm.getOrderUuid()))
+            .uuid(uuid)
             .userId(orderForm.getUserId())
             .recipientInfoForm(orderForm.getRecipientInfoForm())
             .outOfStockHandlingOption(orderForm.getOutOfStockHandlingOption())
