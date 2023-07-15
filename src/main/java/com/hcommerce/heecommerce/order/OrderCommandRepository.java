@@ -21,8 +21,17 @@ public class OrderCommandRepository {
         return TypeConversionUtils.convertBinaryToUuid(orderFormSavedInAdvanceEntity.getUuid());
     }
 
-    public UUID updateOrderAfterApprove(byte[] orderUuid, OrderApproveEntity orderApproveEntity) {
-        orderCommandMapper.updateOrderAfterApprove(orderUuid, orderApproveEntity);
+    public UUID updateOrderAfterApprove(OrderAfterApproveDto orderAfterApproveDto) {
+
+        byte[] orderUuid = orderAfterApproveDto.getOrderUuid();
+
+        OrderApproveEntity orderApproveEntity = OrderApproveEntity.builder()
+            .orderUuid(orderUuid)
+            .realOrderQuantity(orderAfterApproveDto.getRealOrderQuantity())
+            .paymentApprovedAt(orderAfterApproveDto.getPaymentApprovedAt())
+            .build();
+
+        orderCommandMapper.updateOrderAfterApprove(orderApproveEntity);
 
         return TypeConversionUtils.convertBinaryToUuid(orderUuid);
     }

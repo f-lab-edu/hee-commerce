@@ -290,14 +290,14 @@ public class OrderService {
             TossPaymentsApproveResultForStorage tossPaymentsApproveResultForStorage = approvePayment(orderApproveForm);
 
             // 4. 주문 관련 데이터 저장
-            byte[] orderUuid = TypeConversionUtils.convertUuidToBinary(UUID.fromString(orderId));
-
-            OrderApproveEntity orderApproveEntity = OrderApproveEntity.builder()
+            OrderAfterApproveDto orderAfterApproveDto = OrderAfterApproveDto.builder()
+                .orderUuid(TypeConversionUtils.convertUuidToBinary(UUID.fromString(orderId)))
                 .realOrderQuantity(orderForm.getRealOrderQuantity())
+                .paymentKey(orderApproveForm.getPaymentKey())
                 .paymentApprovedAt(DateTimeConversionUtils.convertIsoDateTimeToInstant(tossPaymentsApproveResultForStorage.getApprovedAt()))
                 .build();
 
-            orderCommandRepository.updateOrderAfterApprove(orderUuid, orderApproveEntity);
+            orderCommandRepository.updateOrderAfterApprove(orderAfterApproveDto);
 
             return UUID.fromString(orderId);
         } catch (TosspaymentsException tosspaymentsException) {

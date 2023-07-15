@@ -17,4 +17,14 @@
     #{recipientInfoForm.recipientName}, #{recipientInfoForm.recipientPhoneNumber}, #{recipientInfoForm.recipientAddress}, #{recipientInfoForm.recipientDetailAddress}, #{recipientInfoForm.shippingRequest}
     )
   </insert>
+
+  <!-- 주문 승인 후 주문 내역 업데이트 -->
+  <update id="updateOrderAfterApprove">
+    UPDATE `order`
+    SET order_status = #{orderApproveEntity.orderStatus},
+    real_order_quantity = #{orderApproveEntity.realOrderQuantity},
+    payment_key = #{orderApproveEntity.paymentKey},
+    payment_approve_at = #{orderApproveEntity.paymentApprovedAt}
+    WHERE uuid = #{orderApproveEntity.orderUuid}
+  </update>
 </mapper>
