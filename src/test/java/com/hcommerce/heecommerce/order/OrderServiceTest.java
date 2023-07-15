@@ -8,13 +8,16 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
-import com.hcommerce.heecommerce.common.RedisLockHelper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hcommerce.heecommerce.common.utils.TosspaymentsUtils;
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.deal.DealProductQueryRepository;
 import com.hcommerce.heecommerce.deal.DiscountType;
 import com.hcommerce.heecommerce.deal.TimeDealProductDetail;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
+import com.hcommerce.heecommerce.common.fixture.TossConfirmResponse;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
@@ -25,14 +28,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.redisson.api.RedissonClient;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 @DisplayName("OrderService")
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
-
-    @Mock
-    private RedisLockHelper redisLockHelper;
 
     @Mock
     private OrderQueryRepository orderQueryRepository;
@@ -50,7 +53,7 @@ class OrderServiceTest {
     private InventoryCommandRepository inventoryCommandRepository;
 
     @Mock
-    private RedissonClient redissonClient;
+    private RestTemplate restTemplate;
 
     @InjectMocks
     private OrderService orderService;
@@ -390,19 +393,25 @@ class OrderServiceTest {
                 // given
                 OrderApproveForm orderApproveForm = OrderApproveForm.builder()
                     .orderId(UUID.randomUUID().toString())
-                    .amount(1000)
+                    .amount(15000)
                     .paymentKey("tossPaymentsPaymentKey")
                     .build();
 
                 OrderEntityForOrderApproveValidation orderEntityForOrderApproveValidation =
                     OrderEntityForOrderApproveValidation.builder()
                         .realOrderQuantity(3)
-                        .totalPaymentAmount(1000)
+                        .totalPaymentAmount(15000)
                         .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
                         .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
                         .build();
 
                 given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(orderEntityForOrderApproveValidation);
+
+                HttpEntity<String> request = TosspaymentsUtils.createHttpRequestForPaymentApprove(orderApproveForm);
+
+                JsonNode jsonNode = new ObjectMapper().convertValue(TossConfirmResponse.of(), JsonNode.class);
+
+                given(restTemplate.postForEntity(TosspaymentsUtils.TOSS_PAYMENT_CONFIRM_URL, request, JsonNode.class)).willReturn(new ResponseEntity<>(jsonNode, HttpStatus.CREATED));
 
                 // when + then
                 UUID uuid = orderService.approveOrder(orderApproveForm);

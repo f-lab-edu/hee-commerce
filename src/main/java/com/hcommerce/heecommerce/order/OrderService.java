@@ -1,24 +1,27 @@
 package com.hcommerce.heecommerce.order;
 
-import com.hcommerce.heecommerce.common.RedisLockHelper;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.hcommerce.heecommerce.common.utils.DateTimeConversionUtils;
+import com.hcommerce.heecommerce.common.utils.TosspaymentsUtils;
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.deal.DealProductQueryRepository;
 import com.hcommerce.heecommerce.deal.DiscountType;
 import com.hcommerce.heecommerce.deal.TimeDealProductDetail;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
+import com.hcommerce.heecommerce.payment.TosspaymentsException;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Service
 public class OrderService {
-
-    private final RedisLockHelper redisLockHelper;
 
     private final OrderQueryRepository orderQueryRepository;
 
@@ -30,25 +33,23 @@ public class OrderService {
 
     private final DealProductQueryRepository dealProductQueryRepository;
 
-    private final RedissonClient redissonClient;
+    private final RestTemplate restTemplate;
 
     @Autowired
     public OrderService(
-        RedisLockHelper redisLockHelper,
         OrderQueryRepository orderQueryRepository,
         OrderCommandRepository orderCommandRepository,
         InventoryQueryRepository inventoryQueryRepository,
         InventoryCommandRepository inventoryCommandRepository,
         DealProductQueryRepository dealProductQueryRepository,
-        RedissonClient redissonClient
+        RestTemplate restTemplate
     ) {
-        this.redisLockHelper = redisLockHelper;
         this.orderQueryRepository = orderQueryRepository;
         this.orderCommandRepository = orderCommandRepository;
         this.inventoryQueryRepository = inventoryQueryRepository;
         this.inventoryCommandRepository = inventoryCommandRepository;
         this.dealProductQueryRepository = dealProductQueryRepository;
-        this.redissonClient = redissonClient;
+        this.restTemplate = restTemplate;
     }
 
     /**
@@ -112,7 +113,7 @@ public class OrderService {
      * @param amount : 원상복귀해야 하는 재고량
      */
     private void rollbackReducedInventory(UUID dealProductUuid, int amount) {
-        log.debug("[rollback] dealProductUuid = {}, amount = {} ", dealProductUuid, amount);
+        log.error("[rollback] dealProductUuid = {}, amount = {} ", dealProductUuid, amount);
         inventoryCommandRepository.increaseByAmount(dealProductUuid, amount);
     }
 
@@ -280,25 +281,69 @@ public class OrderService {
         // 1. orderApproveForm 검증
         validateOrderApproveForm(orderApproveForm, orderForm);
 
-        // 3. 토스 페이먼트 결제 승인
-        String approvedAt = "2022-01-01T00:00:00+09:00"; // TODO : 임시 데이터
+        UUID dealProductUuid = TypeConversionUtils.convertBinaryToUuid(orderForm.getDealProductUuid());
 
-        // 4. 주문 관련 데이터 저장
-        byte[] orderUuid = TypeConversionUtils.convertUuidToBinary(UUID.fromString(orderId));
+        int realOrderQuantity = orderForm.getRealOrderQuantity();
 
-        OrderApproveEntity orderApproveEntity = OrderApproveEntity.builder()
-            .realOrderQuantity(orderForm.getRealOrderQuantity())
-            .paymentApprovedAt(DateTimeConversionUtils.convertIsoDateTimeToInstant(approvedAt))
-            .build();
+        try {
+            // 3. 토스 페이먼트 결제 승인
+            TossPaymentsApproveResultForStorage tossPaymentsApproveResultForStorage = approvePayment(orderApproveForm);
 
-        orderCommandRepository.updateOrderAfterApprove(orderUuid, orderApproveEntity);
+            // 4. 주문 관련 데이터 저장
+            OrderAfterApproveDto orderAfterApproveDto = OrderAfterApproveDto.builder()
+                .orderUuid(TypeConversionUtils.convertUuidToBinary(UUID.fromString(orderId)))
+                .realOrderQuantity(orderForm.getRealOrderQuantity())
+                .paymentKey(orderApproveForm.getPaymentKey())
+                .paymentApprovedAt(DateTimeConversionUtils.convertIsoDateTimeToInstant(tossPaymentsApproveResultForStorage.getApprovedAt()))
+                .build();
 
-        return UUID.fromString(orderId);
+            orderCommandRepository.updateOrderAfterApprove(orderAfterApproveDto);
+
+            return UUID.fromString(orderId);
+        } catch (TosspaymentsException tosspaymentsException) {
+            log.error("[tosspaymentsException] message = {}, code = {} ", tosspaymentsException.getMessage(), tosspaymentsException.getCode());
+
+            if(TosspaymentsUtils.isRollbackNeededExceptionCode(tosspaymentsException.getCode())) { // 에러에 따라 rollback 해줘야 되는 게 있고, 안해줘도 되는게 있으므로,
+                rollbackReducedInventory(dealProductUuid, realOrderQuantity);
+            }
+
+            throw tosspaymentsException;
+        } catch (Exception e) { // TODO : MySQL 저장 실패시에 대한 저장 Exception 따로 만들어야 되나? 재고량 rollback은 필요 없어 보임. 어째든 토스에서 결제 승인을 했으므로,\
+            log.error("[주문 승인에 따른 주문 데이터 저장 실패] message = {}", e.getMessage());
+            throw e;
+        }
     }
 
     public void validateOrderApproveForm(OrderApproveForm orderApproveForm, OrderEntityForOrderApproveValidation orderForm) {
         if(orderApproveForm.getAmount() != orderForm.getTotalPaymentAmount()) {
             throw new InvalidPaymentAmountException();
         }
+    }
+
+    /**
+     * approvePaymentFromTossPayment 는 토스페이먼츠로부터 결제 승인 요청을 처리하는 함수이다.
+     * 참고 : https://docs.tosspayments.com/reference#%EA%B2%B0%EC%A0%9C-%EC%8A%B9%EC%9D%B8
+     */
+    private TossPaymentsApproveResultForStorage approvePayment(OrderApproveForm orderApproveForm) throws TosspaymentsException {
+        try {
+            HttpEntity<String> request = TosspaymentsUtils.createHttpRequestForPaymentApprove(orderApproveForm);
+
+            ResponseEntity<JsonNode> responseEntity = restTemplate.postForEntity(TosspaymentsUtils.TOSS_PAYMENT_CONFIRM_URL, request, JsonNode.class);
+
+            return createTossPaymentsApproveResultForStorageFromTosspaymentsResponse(responseEntity);
+        } catch (RestClientException e) {
+            log.error("[RestClientException] message = {}", e.getMessage());
+            throw TosspaymentsUtils.createTosspaymentsExceptionToExceptionMessage(e.getMessage());
+        }
+    }
+
+    private TossPaymentsApproveResultForStorage createTossPaymentsApproveResultForStorageFromTosspaymentsResponse(ResponseEntity<JsonNode> responseEntity) {
+        JsonNode successNode = responseEntity.getBody();
+
+        String approvedAt = successNode.get("approvedAt").asText();
+
+        return TossPaymentsApproveResultForStorage.builder()
+                .approvedAt(approvedAt)
+                .build();
     }
 }
