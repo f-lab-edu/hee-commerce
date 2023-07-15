@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <title>결제하기</title>
+  <script src="https://js.tosspayments.com/v1/payment"></script>
+</head>
+<body>
+<p>결제 페이지</p>
+<button onclick="handleClick()">결제하기</button>
+<script>
+
+    function handleClick() {
+        var clientKey = 'test_ck_N5OWRapdA8dD5Ox5Q7A8o1zEqZKL'
+        var tossPayments = TossPayments(clientKey) // 클라이언트 키로 초기화하기
+
+        // UUID 자동 생성
+        function uuidv4() {
+          return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+          );
+        }
+
+        // TODO : 주문 데이터 사전 저장
+
+        // 결제하기
+        tossPayments.requestPayment('카드', { // 결제수단
+            // 결제 정보
+            amount: 15000,
+            orderId: uuidv4(),
+            orderName: '토스 티셔츠 외 2건',
+            customerName: '박토스',
+            successUrl: 'http://localhost:8080/success',
+            failUrl: 'http://localhost:8080/fail',
+            flowMode: 'cardCompany',
+            easyPay: '토스페이'
+          })
+          .catch(function (error) {
+            if (error.code === 'USER_CANCEL') {
+              // 결제 고객이 결제창을 닫았을 때 에러 처리
+            } else if (error.code === 'INVALID_CARD_COMPANY') {
+              // 유효하지 않은 카드 코드에 대한 에러 처리
+            }
+          })
+    }
+</script>
+</body>
+</html>
