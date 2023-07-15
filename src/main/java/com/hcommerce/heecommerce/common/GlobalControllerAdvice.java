@@ -7,8 +7,10 @@ import com.hcommerce.heecommerce.order.OrderNotFoundException;
 import com.hcommerce.heecommerce.order.OrderOverStockException;
 import com.hcommerce.heecommerce.order.RedisLockTryInterruptedException;
 import com.hcommerce.heecommerce.order.TimeDealProductNotFoundException;
+import com.hcommerce.heecommerce.payment.TosspaymentsException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -79,6 +81,19 @@ public class GlobalControllerAdvice {
             .code(HttpStatus.SERVICE_UNAVAILABLE.name())
             .message(e.getMessage())
             .build();
+    }
+
+    /**
+     * @ResponseStatus 어노테이션을 안 붙인 이유는 토스페이먼츠의 에러 코드가 400대일 수도 있고 500일 수도 있어어서, 동적으로 상태코드를 변경할 수 있도록 하기 위해서이다.
+     */
+    @ExceptionHandler
+    public ResponseEntity tosspaymentsExceptionHandler(TosspaymentsException e) {
+        ResponseDto responseDto = ResponseDto.builder()
+                                        .code(e.getCode())
+                                        .message(e.getMessage()+"aaaaa")
+                                        .build();
+
+        return new ResponseEntity(responseDto, e.getTossHttpStatusCode());
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
