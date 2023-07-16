@@ -10,14 +10,14 @@ import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hcommerce.heecommerce.common.fixture.DealProductFixture;
+import com.hcommerce.heecommerce.common.fixture.OrderFixture;
+import com.hcommerce.heecommerce.common.fixture.TossConfirmResponse;
 import com.hcommerce.heecommerce.common.utils.TosspaymentsUtils;
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.deal.DealProductQueryRepository;
-import com.hcommerce.heecommerce.deal.DiscountType;
-import com.hcommerce.heecommerce.deal.TimeDealProductDetail;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
-import com.hcommerce.heecommerce.common.fixture.TossConfirmResponse;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
@@ -77,107 +77,23 @@ class OrderServiceTest {
             @DisplayName("return OrderUuid")
             void It_returns_OrderUuid() throws InterruptedException {
                 // given
-                UUID dealProductUuid = UUID.randomUUID();
+                given_with_valid_dealProductUuid();
 
-                OrderForm orderForm = OrderForm.builder()
-                    .userId(1)
-                    .orderUuid(UUID.randomUUID())
-                    .recipientInfoForm(
-                        RecipientInfoForm.builder()
-                            .recipientName("leecommerce")
-                            .recipientPhoneNumber("01087654321")
-                            .recipientAddress("서울시 ")
-                            .recipientDetailAddress("101호")
-                            .shippingRequest("빠른 배송 부탁드려요!")
-                            .build()
-                    )
-                    .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
-                    .dealProductUuid(dealProductUuid)
-                    .orderQuantity(2)
-                    .paymentMethod(PaymentMethod.CREDIT_CARD)
-                    .build();
+                given_with_maxOrderQuantityPerOrder(OrderFixture.MAX_ORDER_QUANTITY_PER_ORDER);
 
+                // 실제 주문 수량 계산
+                given_when_determineRealOrderQuantity_is_success();
+
+                // 주문 내역 미리 저장
                 UUID expectedOrderUuid = UUID.randomUUID();
 
-                given(orderCommandRepository.saveOrderInAdvance(any())).willReturn(expectedOrderUuid);
-
-                boolean HAS_DEAL_PRODUCT_UUID = true;
-
-                given(dealProductQueryRepository.hasDealProductUuid(dealProductUuid)).willReturn(HAS_DEAL_PRODUCT_UUID);
-
-                given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
-
-                TimeDealProductDetail timeDealProductDetail = TimeDealProductDetail.builder()
-                    .dealProductUuid(dealProductUuid)
-                    .dealProductTile("1000원 할인 상품 1")
-                    .productMainImgUrl("/test.png")
-                    .productDetailImgUrls(new String[]{"/detail_test1.png", "/detail_test2.png", "/detail_test3.png", "/detail_test4.png", "/detail_test5.png"})
-                    .productOriginPrice(3000)
-                    .dealProductDiscountType(DiscountType.FIXED_AMOUNT)
-                    .dealProductDiscountValue(1000)
-                    .dealProductDealQuantity(3)
-                    .maxOrderQuantityPerOrder(10)
-                    .startedAt(STARTED_AT)
-                    .finishedAt(FINISHED_AT)
-                    .build();
-
-                given(dealProductQueryRepository.getTimeDealProductDetailByDealProductUuid(any())).willReturn(timeDealProductDetail);
-
-                given(inventoryQueryRepository.get(any())).willReturn(3);
-
-                given(inventoryCommandRepository.decreaseByAmount(any(), anyInt())).willReturn(1);
+                given_when_saveOrderInAdvance_is_success(expectedOrderUuid);
 
                 // when
-                UUID uuid = orderService.placeOrderInAdvance(orderForm);
+                UUID actualUuid = orderService.placeOrderInAdvance(OrderFixture.orderForm);
 
                 // then
-                assertEquals(expectedOrderUuid, uuid);
-            }
-        }
-
-        @Nested
-        @DisplayName("when Invalid inventory decrease occurs")
-        class Context_With_Invalid_Inventory_Decrease_Occurs {
-            @Test
-            @DisplayName("rollbacks inventory and throws OrderOverStockException")
-            void It_Rollbacks_inventory_And_throws_OrderOverStockException() {
-                // given
-                UUID dealProductUuid = UUID.randomUUID();
-
-                OrderForm orderForm = OrderForm.builder()
-                    .userId(1)
-                    .orderUuid(UUID.randomUUID())
-                    .recipientInfoForm(
-                        RecipientInfoForm.builder()
-                            .recipientName("leecommerce")
-                            .recipientPhoneNumber("01087654321")
-                            .recipientAddress("서울시 ")
-                            .recipientDetailAddress("101호")
-                            .shippingRequest("빠른 배송 부탁드려요!")
-                            .build()
-                    )
-                    .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
-                    .dealProductUuid(dealProductUuid)
-                    .orderQuantity(2)
-                    .paymentMethod(PaymentMethod.CREDIT_CARD)
-                    .build();
-
-                boolean HAS_DEAL_PRODUCT_UUID = true;
-
-                given(dealProductQueryRepository.hasDealProductUuid(dealProductUuid)).willReturn(HAS_DEAL_PRODUCT_UUID);
-
-                given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
-
-                given(inventoryQueryRepository.get(any())).willReturn(3);
-
-                given(inventoryCommandRepository.decreaseByAmount(any(), anyInt())).willReturn(-1);
-
-                // when
-                assertThrows(OrderOverStockException.class, () -> {
-                    orderService.placeOrderInAdvance(orderForm);
-                });
-
-                verify(inventoryCommandRepository).increaseByAmount(dealProductUuid, 2);
+                assertEquals(expectedOrderUuid, actualUuid);
             }
         }
 
@@ -188,30 +104,34 @@ class OrderServiceTest {
             @DisplayName("throws TimeDealProductNotFoundException")
             void It_throws_TimeDealProductNotFoundException() {
                 // given
-                UUID NOT_EXIST_DEAL_PRODUCT_UUID = UUID.randomUUID();
-
-                OrderForm orderForm = OrderForm.builder()
-                    .userId(1)
-                    .orderUuid(UUID.randomUUID())
-                    .recipientInfoForm(
-                        RecipientInfoForm.builder()
-                            .recipientName("leecommerce")
-                            .recipientPhoneNumber("01087654321")
-                            .recipientAddress("서울시 ")
-                            .recipientDetailAddress("101호")
-                            .shippingRequest("빠른 배송 부탁드려요!")
-                            .build()
-                    )
-                    .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
-                    .dealProductUuid(NOT_EXIST_DEAL_PRODUCT_UUID)
-                    .orderQuantity(2)
-                    .paymentMethod(PaymentMethod.CREDIT_CARD)
-                    .build();
-
-                given(dealProductQueryRepository.hasDealProductUuid(NOT_EXIST_DEAL_PRODUCT_UUID)).willReturn(false);
+                given_with_invalid_dealProductUuid();
 
                 // when + then
                 assertThrows(TimeDealProductNotFoundException.class, () -> {
+                    orderService.placeOrderInAdvance(OrderFixture.orderForm);
+                });
+            }
+        }
+
+
+        @Nested
+        @DisplayName("with orderQuantity > maxOrderQuantityPerOrder")
+        class Context_With_OrderQuantity_Exceeds_MaxOrderQuantityPerOrder {
+            @Test
+            @DisplayName("throws MaxOrderQuantityExceededException")
+            void It_throws_MaxOrderQuantityExceededException() {
+                // given
+                given_with_valid_dealProductUuid();
+
+                given_with_maxOrderQuantityPerOrder(OrderFixture.MAX_ORDER_QUANTITY_PER_ORDER);
+
+                OrderForm orderForm = OrderFixture.rebuilder()
+                    .orderQuantity(OrderFixture.ORDER_QUANTITY_OVER_MAX_ORDER_QUANTITY_PER_ORDER)
+                    .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
+                    .build();
+
+                // when + then
+                assertThrows(MaxOrderQuantityExceededException.class, () -> {
                     orderService.placeOrderInAdvance(orderForm);
                 });
             }
@@ -226,51 +146,16 @@ class OrderServiceTest {
                 @Test
                 @DisplayName("throws OrderOverStockException")
                 void It_throws_OrderOverStockException() {
-                    final int ORDER_QUANTITY = 2;
+                    given_with_valid_dealProductUuid();
 
-                    final int MAX_ORDER_QUANTITY_PER_ORDER = 3;
+                    given_with_maxOrderQuantityPerOrder(OrderFixture.MAX_ORDER_QUANTITY_PER_ORDER);
 
-                    final int INVENTORY = 1;
+                    given_with_inventory(OrderFixture.INVENTORY);
 
-
-                    // given
-                    OrderForm orderForm = OrderForm.builder()
-                        .userId(1)
-                        .orderUuid(UUID.randomUUID())
-                        .recipientInfoForm(
-                            RecipientInfoForm.builder()
-                                .recipientName("leecommerce")
-                                .recipientPhoneNumber("01087654321")
-                                .recipientAddress("서울시 ")
-                                .recipientDetailAddress("101호")
-                                .shippingRequest("빠른 배송 부탁드려요!")
-                                .build()
-                        )
+                    OrderForm orderForm = OrderFixture.rebuilder()
+                        .orderQuantity(OrderFixture.ORDER_QUANTITY_OVER_INVENTORY)
                         .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
-                        .dealProductUuid(UUID.randomUUID())
-                        .orderQuantity(ORDER_QUANTITY)
-                        .paymentMethod(PaymentMethod.CREDIT_CARD)
                         .build();
-
-                    TimeDealProductDetail timeDealProductDetail = TimeDealProductDetail.builder()
-                        .dealProductUuid(UUID.randomUUID())
-                        .dealProductTile("1000원 할인 상품 1")
-                        .productMainImgUrl("/test.png")
-                        .productDetailImgUrls(new String[]{"/detail_test1.png", "/detail_test2.png", "/detail_test3.png", "/detail_test4.png", "/detail_test5.png"})
-                        .productOriginPrice(3000)
-                        .dealProductDiscountType(DiscountType.FIXED_AMOUNT)
-                        .dealProductDiscountValue(1000)
-                        .dealProductDealQuantity(INVENTORY)
-                        .maxOrderQuantityPerOrder(MAX_ORDER_QUANTITY_PER_ORDER)
-                        .startedAt(STARTED_AT)
-                        .finishedAt(FINISHED_AT)
-                        .build();
-
-                    given(dealProductQueryRepository.hasDealProductUuid(any())).willReturn(true);
-
-                    given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(MAX_ORDER_QUANTITY_PER_ORDER);
-
-                    given(inventoryQueryRepository.get(any())).willReturn(INVENTORY);
 
                     // when + then
                     assertThrows(OrderOverStockException.class, () -> {
@@ -285,56 +170,22 @@ class OrderServiceTest {
                 @Test
                 @DisplayName("does not throws OrderOverStockException")
                 void It_Does_Not_OrderOverStockException() {
-                    // given
+                    given_with_valid_dealProductUuid();
+
+                    given_with_maxOrderQuantityPerOrder(OrderFixture.MAX_ORDER_QUANTITY_PER_ORDER);
+
+                    given_with_inventory(OrderFixture.INVENTORY);
+
+                    given_with_inventory_after_decrease(OrderFixture.INVENTORY_AFTER_DECREASE);
+
                     UUID uuidFixture = UUID.randomUUID();
 
-                    final int ORDER_QUANTITY = 2;
+                    given_when_saveOrderInAdvance_is_success(uuidFixture);
 
-                    final int MAX_ORDER_QUANTITY_PER_ORDER = 3;
-
-                    final int INVENTORY = 1;
-
-                    OrderForm orderForm = OrderForm.builder()
-                        .userId(1)
-                        .orderUuid(UUID.randomUUID())
-                        .recipientInfoForm(
-                            RecipientInfoForm.builder()
-                                .recipientName("leecommerce")
-                                .recipientPhoneNumber("01087654321")
-                                .recipientAddress("서울시 ")
-                                .recipientDetailAddress("101호")
-                                .shippingRequest("빠른 배송 부탁드려요!")
-                                .build()
-                        )
+                    OrderForm orderForm = OrderFixture.rebuilder()
+                        .orderQuantity(OrderFixture.ORDER_QUANTITY_OVER_INVENTORY)
                         .outOfStockHandlingOption(OutOfStockHandlingOption.PARTIAL_ORDER)
-                        .dealProductUuid(uuidFixture)
-                        .orderQuantity(ORDER_QUANTITY)
-                        .paymentMethod(PaymentMethod.CREDIT_CARD)
                         .build();
-
-                    given(dealProductQueryRepository.hasDealProductUuid(uuidFixture)).willReturn(true);
-
-                    given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(3);
-
-                    given(inventoryQueryRepository.get(any())).willReturn(INVENTORY);
-
-                    TimeDealProductDetail timeDealProductDetail = TimeDealProductDetail.builder()
-                        .dealProductUuid(uuidFixture)
-                        .dealProductTile("1000원 할인 상품 1")
-                        .productMainImgUrl("/test.png")
-                        .productDetailImgUrls(new String[]{"/detail_test1.png", "/detail_test2.png", "/detail_test3.png", "/detail_test4.png", "/detail_test5.png"})
-                        .productOriginPrice(3000)
-                        .dealProductDiscountType(DiscountType.FIXED_AMOUNT)
-                        .dealProductDiscountValue(1000)
-                        .dealProductDealQuantity(INVENTORY)
-                        .maxOrderQuantityPerOrder(MAX_ORDER_QUANTITY_PER_ORDER)
-                        .startedAt(STARTED_AT)
-                        .finishedAt(FINISHED_AT)
-                        .build();
-
-                    given(dealProductQueryRepository.getTimeDealProductDetailByDealProductUuid(any())).willReturn(timeDealProductDetail);
-
-                    given(inventoryCommandRepository.decreaseByAmount(any(), anyInt())).willReturn(1);
 
                     // when + then
                     assertDoesNotThrow(() -> {
@@ -345,39 +196,65 @@ class OrderServiceTest {
         }
 
         @Nested
-        @DisplayName("with orderQuantity > maxOrderQuantityPerOrder")
-        class Context_With_OrderQuantity_Exceeds_MaxOrderQuantityPerOrder {
+        @DisplayName("when Invalid inventory decrease occurs")
+        class Context_With_Invalid_Inventory_Decrease_Occurs {
             @Test
-            @DisplayName("throws MaxOrderQuantityExceededException")
-            void It_throws_MaxOrderQuantityExceededException() {
+            @DisplayName("rollbacks inventory and throws OrderOverStockException")
+            void It_Rollbacks_inventory_And_throws_OrderOverStockException() {
                 // given
-                OrderForm orderForm = OrderForm.builder()
-                    .userId(1)
-                    .orderUuid(UUID.randomUUID())
-                    .recipientInfoForm(
-                        RecipientInfoForm.builder()
-                            .recipientName("leecommerce")
-                            .recipientPhoneNumber("01087654321")
-                            .recipientAddress("서울시 ")
-                            .recipientDetailAddress("101호")
-                            .shippingRequest("빠른 배송 부탁드려요!")
-                            .build()
-                    )
-                    .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
-                    .dealProductUuid(UUID.randomUUID())
-                    .orderQuantity(2)
-                    .paymentMethod(PaymentMethod.CREDIT_CARD)
+                given_with_valid_dealProductUuid();
+
+                given_with_maxOrderQuantityPerOrder(OrderFixture.MAX_ORDER_QUANTITY_PER_ORDER);
+
+                given_with_inventory(OrderFixture.INVENTORY);
+
+                given_with_inventory_after_decrease(OrderFixture.INVALID_INVENTORY_AFTER_DECREASE);
+
+                UUID ROLLBACK_NEEDED_DEAL_PRODUCT_UUID = UUID.randomUUID();
+
+                OrderForm orderForm = OrderFixture.rebuilder()
+                    .dealProductUuid(ROLLBACK_NEEDED_DEAL_PRODUCT_UUID)
                     .build();
 
-                given(dealProductQueryRepository.hasDealProductUuid(any())).willReturn(true);
-
-                given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(1);
-
-                // when + then
-                assertThrows(MaxOrderQuantityExceededException.class, () -> {
+                // when
+                assertThrows(OrderOverStockException.class, () -> {
                     orderService.placeOrderInAdvance(orderForm);
                 });
+
+                verify(inventoryCommandRepository).increaseByAmount(ROLLBACK_NEEDED_DEAL_PRODUCT_UUID, OrderFixture.ORDER_QUANTITY);
             }
+        }
+
+        private void given_with_valid_dealProductUuid() {
+            given(dealProductQueryRepository.hasDealProductUuid(any())).willReturn(true);
+        }
+
+        private void given_with_invalid_dealProductUuid() {
+            given(dealProductQueryRepository.hasDealProductUuid(any())).willReturn(false);
+        }
+
+        private void given_with_maxOrderQuantityPerOrder(int maxOrderQuantityPerOrder) {
+            given(dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(any())).willReturn(maxOrderQuantityPerOrder);
+        }
+
+        private void given_when_determineRealOrderQuantity_is_success() {
+            given_with_inventory(OrderFixture.INVENTORY);
+
+            given_with_inventory_after_decrease(OrderFixture.INVENTORY_AFTER_DECREASE);
+        }
+
+        private void given_with_inventory(int inventory) {
+            given(inventoryQueryRepository.get(any())).willReturn(inventory);
+        }
+
+        private void given_with_inventory_after_decrease(int inventoryAfterDecrease) {
+            given(inventoryCommandRepository.decreaseByAmount(any(), anyInt())).willReturn(inventoryAfterDecrease);
+        }
+
+        private void given_when_saveOrderInAdvance_is_success(UUID orderUuid) {
+            given(dealProductQueryRepository.getTimeDealProductDetailByDealProductUuid(any())).willReturn(DealProductFixture.timeDealProductDetail);
+
+            given(orderCommandRepository.saveOrderInAdvance(any())).willReturn(orderUuid);
         }
     }
 

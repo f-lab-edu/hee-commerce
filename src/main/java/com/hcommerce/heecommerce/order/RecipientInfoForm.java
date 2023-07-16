@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-class RecipientInfoForm {
+public class RecipientInfoForm {
 
     @NotNull(message = "수령인 이름을 입력해주세요.")
     private final String recipientName;
