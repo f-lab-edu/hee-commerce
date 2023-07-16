@@ -278,15 +278,16 @@ class OrderServiceTest {
                     .paymentKey("tossPaymentsPaymentKey")
                     .build();
 
-                OrderEntityForOrderApproveValidation orderEntityForOrderApproveValidation =
-                    OrderEntityForOrderApproveValidation.builder()
+                OrderForOrderApproveValidationEntity orderForOrderApproveValidationEntity =
+                    OrderForOrderApproveValidationEntity.builder()
                         .realOrderQuantity(3)
                         .totalPaymentAmount(15000)
                         .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
                         .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
                         .build();
 
-                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(orderEntityForOrderApproveValidation);
+                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(
+                    orderForOrderApproveValidationEntity);
 
                 HttpEntity<String> request = TosspaymentsUtils.createHttpRequestForPaymentApprove(orderApproveForm);
 
@@ -314,15 +315,16 @@ class OrderServiceTest {
                     .paymentKey("tossPaymentsPaymentKey")
                     .build();
 
-                OrderEntityForOrderApproveValidation orderEntityForOrderApproveValidation =
-                    OrderEntityForOrderApproveValidation.builder()
+                OrderForOrderApproveValidationEntity orderForOrderApproveValidationEntity =
+                    OrderForOrderApproveValidationEntity.builder()
                         .realOrderQuantity(3)
                         .totalPaymentAmount(20000)
                         .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
                         .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
                         .build();
 
-                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(orderEntityForOrderApproveValidation);
+                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(
+                    orderForOrderApproveValidationEntity);
 
                 // when + then
                 assertThrows(InvalidPaymentAmountException.class, () -> {

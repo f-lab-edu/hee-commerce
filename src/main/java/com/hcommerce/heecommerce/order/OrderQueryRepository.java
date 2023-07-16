@@ -15,7 +15,7 @@ public class OrderQueryRepository {
         this.orderQueryMapper = orderQueryMapper;
     }
 
-    public OrderEntityForOrderApproveValidation findOrderEntityForOrderApproveValidation(String orderId) {
+    public OrderForOrderApproveValidationEntity findOrderEntityForOrderApproveValidation(String orderId) {
 
         UUID orderUuid = UUID.fromString(orderId);
 

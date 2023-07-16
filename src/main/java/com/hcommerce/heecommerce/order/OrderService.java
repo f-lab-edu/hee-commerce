@@ -280,7 +280,7 @@ public class OrderService {
         String orderId = orderApproveForm.getOrderId();
 
         // 0. DB에서 검증에 필요한 데이터 가져오기
-        OrderEntityForOrderApproveValidation orderForm = orderQueryRepository.findOrderEntityForOrderApproveValidation(orderApproveForm.getOrderId());
+        OrderForOrderApproveValidationEntity orderForm = orderQueryRepository.findOrderEntityForOrderApproveValidation(orderApproveForm.getOrderId());
 
         // 1. orderApproveForm 검증
         validateOrderApproveForm(orderApproveForm, orderForm);
@@ -318,7 +318,7 @@ public class OrderService {
         }
     }
 
-    public void validateOrderApproveForm(OrderApproveForm orderApproveForm, OrderEntityForOrderApproveValidation orderForm) {
+    public void validateOrderApproveForm(OrderApproveForm orderApproveForm, OrderForOrderApproveValidationEntity orderForm) {
         if(orderApproveForm.getAmount() != orderForm.getTotalPaymentAmount()) {
             throw new InvalidPaymentAmountException();
         }

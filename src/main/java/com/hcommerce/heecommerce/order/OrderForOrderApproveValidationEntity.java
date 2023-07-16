@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class OrderEntityForOrderApproveValidation {
+public class OrderForOrderApproveValidationEntity {
 
     private final byte[] dealProductUuid;
     private final int realOrderQuantity;
@@ -12,7 +12,7 @@ public class OrderEntityForOrderApproveValidation {
     private final OutOfStockHandlingOption outOfStockHandlingOption;
 
     @Builder
-    public OrderEntityForOrderApproveValidation(
+    public OrderForOrderApproveValidationEntity(
         byte[] dealProductUuid,
         int realOrderQuantity,
         int totalPaymentAmount,
