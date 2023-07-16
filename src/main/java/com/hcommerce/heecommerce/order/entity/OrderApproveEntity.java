@@ -1,5 +1,6 @@
-package com.hcommerce.heecommerce.order;
+package com.hcommerce.heecommerce.order.entity;
 
+import com.hcommerce.heecommerce.order.OrderStatus;
 import java.time.Instant;
 import lombok.Builder;
 import lombok.Getter;

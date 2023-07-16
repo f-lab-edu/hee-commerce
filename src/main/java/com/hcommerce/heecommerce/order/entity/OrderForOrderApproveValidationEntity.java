@@ -1,5 +1,6 @@
-package com.hcommerce.heecommerce.order;
+package com.hcommerce.heecommerce.order.entity;
 
+import com.hcommerce.heecommerce.order.OutOfStockHandlingOption;
 import lombok.Builder;
 import lombok.Getter;
 
