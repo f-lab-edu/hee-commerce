@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.hcommerce.heecommerce.order.OrderCommandMapper">
+<mapper namespace="com.hcommerce.heecommerce.order.mapper.OrderCommandMapper">
 
   <!-- 검증을 위해 주문 내역 사전 저장  -->
   <insert id="saveOrderInAdvance">

@@ -1,4 +1,4 @@
-package com.hcommerce.heecommerce.order;
+package com.hcommerce.heecommerce.order.mapper;
 
 import com.hcommerce.heecommerce.order.entity.OrderApproveEntity;
 import com.hcommerce.heecommerce.order.entity.OrderFormSavedInAdvanceEntity;

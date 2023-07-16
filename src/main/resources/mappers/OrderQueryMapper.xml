@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.hcommerce.heecommerce.order.order.OrderQueryMapper">
+<mapper namespace="com.hcommerce.heecommerce.order.mapper.OrderQueryMapper">
 
   <!-- 주문 검증을 위해 주문 조회  -->
   <select id="findOrderEntityForOrderApproveValidation" resultType="OrderForOrderApproveValidationEntity">
