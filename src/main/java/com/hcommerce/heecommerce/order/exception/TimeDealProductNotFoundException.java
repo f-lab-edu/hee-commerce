@@ -1,4 +1,4 @@
-package com.hcommerce.heecommerce.order;
+package com.hcommerce.heecommerce.order.exception;
 
 import java.util.UUID;
 import org.springframework.http.HttpStatus;

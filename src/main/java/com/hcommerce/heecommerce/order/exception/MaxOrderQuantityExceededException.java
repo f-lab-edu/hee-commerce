@@ -1,4 +1,4 @@
-package com.hcommerce.heecommerce.order;
+package com.hcommerce.heecommerce.order.exception;
 
 
 public class MaxOrderQuantityExceededException extends RuntimeException {
