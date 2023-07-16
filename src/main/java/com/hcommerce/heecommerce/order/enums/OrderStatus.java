@@ -1,4 +1,4 @@
-package com.hcommerce.heecommerce.order;
+package com.hcommerce.heecommerce.order.enums;
 
 /**
  * OrderStatus 는 주문 상태를 관리하는 Enum 클래스이다.

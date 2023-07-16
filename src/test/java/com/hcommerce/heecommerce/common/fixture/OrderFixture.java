@@ -1,8 +1,8 @@
 package com.hcommerce.heecommerce.common.fixture;
 
 import com.hcommerce.heecommerce.order.OrderForm;
-import com.hcommerce.heecommerce.order.OutOfStockHandlingOption;
-import com.hcommerce.heecommerce.order.PaymentMethod;
+import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
+import com.hcommerce.heecommerce.order.enums.PaymentMethod;
 import com.hcommerce.heecommerce.order.RecipientInfoForm;
 import java.util.UUID;
 

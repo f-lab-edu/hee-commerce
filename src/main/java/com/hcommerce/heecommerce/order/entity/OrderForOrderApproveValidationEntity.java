@@ -1,6 +1,6 @@
 package com.hcommerce.heecommerce.order.entity;
 
-import com.hcommerce.heecommerce.order.OutOfStockHandlingOption;
+import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import lombok.Builder;
 import lombok.Getter;
 
