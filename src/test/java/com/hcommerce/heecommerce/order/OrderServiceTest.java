@@ -10,14 +10,22 @@ import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hcommerce.heecommerce.common.fixture.DealProductFixture;
-import com.hcommerce.heecommerce.common.fixture.OrderFixture;
-import com.hcommerce.heecommerce.common.fixture.TossConfirmResponse;
+import com.hcommerce.heecommerce.fixture.DealProductFixture;
+import com.hcommerce.heecommerce.fixture.OrderFixture;
+import com.hcommerce.heecommerce.fixture.TossConfirmResponse;
 import com.hcommerce.heecommerce.common.utils.TosspaymentsUtils;
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.deal.DealProductQueryRepository;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
+import com.hcommerce.heecommerce.order.dto.OrderApproveForm;
+import com.hcommerce.heecommerce.order.dto.OrderForm;
+import com.hcommerce.heecommerce.order.entity.OrderForOrderApproveValidationEntity;
+import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
+import com.hcommerce.heecommerce.order.exception.InvalidPaymentAmountException;
+import com.hcommerce.heecommerce.order.exception.MaxOrderQuantityExceededException;
+import com.hcommerce.heecommerce.order.exception.OrderOverStockException;
+import com.hcommerce.heecommerce.order.exception.TimeDealProductNotFoundException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
@@ -274,15 +282,16 @@ class OrderServiceTest {
                     .paymentKey("tossPaymentsPaymentKey")
                     .build();
 
-                OrderEntityForOrderApproveValidation orderEntityForOrderApproveValidation =
-                    OrderEntityForOrderApproveValidation.builder()
+                OrderForOrderApproveValidationEntity orderForOrderApproveValidationEntity =
+                    OrderForOrderApproveValidationEntity.builder()
                         .realOrderQuantity(3)
                         .totalPaymentAmount(15000)
                         .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
                         .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
                         .build();
 
-                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(orderEntityForOrderApproveValidation);
+                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(
+                    orderForOrderApproveValidationEntity);
 
                 HttpEntity<String> request = TosspaymentsUtils.createHttpRequestForPaymentApprove(orderApproveForm);
 
@@ -310,15 +319,16 @@ class OrderServiceTest {
                     .paymentKey("tossPaymentsPaymentKey")
                     .build();
 
-                OrderEntityForOrderApproveValidation orderEntityForOrderApproveValidation =
-                    OrderEntityForOrderApproveValidation.builder()
+                OrderForOrderApproveValidationEntity orderForOrderApproveValidationEntity =
+                    OrderForOrderApproveValidationEntity.builder()
                         .realOrderQuantity(3)
                         .totalPaymentAmount(20000)
                         .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
                         .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
                         .build();
 
-                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(orderEntityForOrderApproveValidation);
+                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(
+                    orderForOrderApproveValidationEntity);
 
                 // when + then
                 assertThrows(InvalidPaymentAmountException.class, () -> {

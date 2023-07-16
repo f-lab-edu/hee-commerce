@@ -3,7 +3,7 @@ package com.hcommerce.heecommerce.common.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hcommerce.heecommerce.order.OrderApproveForm;
+import com.hcommerce.heecommerce.order.dto.OrderApproveForm;
 import com.hcommerce.heecommerce.payment.TosspaymentsException;
 import java.util.Arrays;
 import java.util.Base64;

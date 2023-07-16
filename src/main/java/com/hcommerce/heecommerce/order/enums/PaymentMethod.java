@@ -1,4 +1,4 @@
-package com.hcommerce.heecommerce.order;
+package com.hcommerce.heecommerce.order.enums;
 
 public enum PaymentMethod {
     CREDIT_CARD,

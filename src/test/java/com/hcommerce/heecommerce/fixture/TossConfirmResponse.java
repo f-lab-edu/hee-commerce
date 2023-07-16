@@ -1,4 +1,4 @@
-package com.hcommerce.heecommerce.common.fixture;
+package com.hcommerce.heecommerce.fixture;
 
 public record TossConfirmResponse(
     String tossId,

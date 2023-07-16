@@ -1,12 +1,11 @@
 package com.hcommerce.heecommerce.common;
 
 import com.hcommerce.heecommerce.common.dto.ResponseDto;
-import com.hcommerce.heecommerce.order.InvalidPaymentAmountException;
-import com.hcommerce.heecommerce.order.MaxOrderQuantityExceededException;
-import com.hcommerce.heecommerce.order.OrderNotFoundException;
-import com.hcommerce.heecommerce.order.OrderOverStockException;
-import com.hcommerce.heecommerce.order.RedisLockTryInterruptedException;
-import com.hcommerce.heecommerce.order.TimeDealProductNotFoundException;
+import com.hcommerce.heecommerce.order.exception.InvalidPaymentAmountException;
+import com.hcommerce.heecommerce.order.exception.MaxOrderQuantityExceededException;
+import com.hcommerce.heecommerce.order.exception.OrderNotFoundException;
+import com.hcommerce.heecommerce.order.exception.OrderOverStockException;
+import com.hcommerce.heecommerce.order.exception.TimeDealProductNotFoundException;
 import com.hcommerce.heecommerce.payment.TosspaymentsException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -70,15 +69,6 @@ public class GlobalControllerAdvice {
     public ResponseDto invalidPaymentAmountExceptionHandler(InvalidPaymentAmountException e) {
         return ResponseDto.builder()
             .code(HttpStatus.BAD_REQUEST.name())
-            .message(e.getMessage())
-            .build();
-    }
-
-    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
-    @ExceptionHandler
-    public ResponseDto runtimeInterruptedExceptionHandler(RedisLockTryInterruptedException e) {
-        return ResponseDto.builder()
-            .code(HttpStatus.SERVICE_UNAVAILABLE.name())
             .message(e.getMessage())
             .build();
     }

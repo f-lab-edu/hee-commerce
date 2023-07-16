@@ -1,4 +1,4 @@
-package com.hcommerce.heecommerce.order;
+package com.hcommerce.heecommerce.order.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

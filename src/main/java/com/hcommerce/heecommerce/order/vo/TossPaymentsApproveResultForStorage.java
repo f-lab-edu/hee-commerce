@@ -1,4 +1,4 @@
-package com.hcommerce.heecommerce.order;
+package com.hcommerce.heecommerce.order.vo;
 
 import lombok.Builder;
 import lombok.Getter;

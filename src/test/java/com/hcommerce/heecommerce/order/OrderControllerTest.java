@@ -7,6 +7,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcommerce.heecommerce.EnableMockMvc;
+import com.hcommerce.heecommerce.order.dto.OrderApproveForm;
+import com.hcommerce.heecommerce.order.dto.OrderForm;
+import com.hcommerce.heecommerce.order.dto.RecipientInfoForm;
+import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
+import com.hcommerce.heecommerce.order.enums.PaymentMethod;
+import com.hcommerce.heecommerce.order.exception.OrderOverStockException;
+import com.hcommerce.heecommerce.order.exception.TimeDealProductNotFoundException;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -120,7 +127,8 @@ class OrderControllerTest {
                     .build();
 
                 // given
-                given(orderService.placeOrderInAdvance(any())).willThrow(TimeDealProductNotFoundException.class);
+                given(orderService.placeOrderInAdvance(any())).willThrow(
+                    TimeDealProductNotFoundException.class);
 
                 // when
                 String content = objectMapper.writeValueAsString(orderFormWithNotExistDealProductUuid);
@@ -147,7 +155,8 @@ class OrderControllerTest {
                 @DisplayName("returns 409 error")
                 void It_returns_409_Error() throws Exception {
                     // given
-                    given(orderService.placeOrderInAdvance(any())).willThrow(OrderOverStockException.class);
+                    given(orderService.placeOrderInAdvance(any())).willThrow(
+                        OrderOverStockException.class);
 
                     UUID UUID_WITH_ORDER_QUANTITY_EXCEEDING_INVENTORY = UUID.randomUUID();
 

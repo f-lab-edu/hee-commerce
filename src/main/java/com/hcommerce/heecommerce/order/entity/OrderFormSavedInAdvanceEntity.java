@@ -1,5 +1,9 @@
-package com.hcommerce.heecommerce.order;
+package com.hcommerce.heecommerce.order.entity;
 
+import com.hcommerce.heecommerce.order.enums.OrderStatus;
+import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
+import com.hcommerce.heecommerce.order.enums.PaymentMethod;
+import com.hcommerce.heecommerce.order.dto.RecipientInfoForm;
 import lombok.Builder;
 import lombok.Getter;
 

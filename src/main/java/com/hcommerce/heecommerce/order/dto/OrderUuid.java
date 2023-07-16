@@ -1,4 +1,4 @@
-package com.hcommerce.heecommerce.order;
+package com.hcommerce.heecommerce.order.dto;
 
 import java.util.UUID;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.hcommerce.heecommerce.order;
+package com.hcommerce.heecommerce.order.dto;
 
 import jakarta.validation.constraints.NotNull;
 import java.beans.ConstructorProperties;

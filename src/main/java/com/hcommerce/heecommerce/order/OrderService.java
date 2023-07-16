@@ -9,6 +9,17 @@ import com.hcommerce.heecommerce.deal.DiscountType;
 import com.hcommerce.heecommerce.deal.TimeDealProductDetail;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
+import com.hcommerce.heecommerce.order.dto.OrderAfterApproveDto;
+import com.hcommerce.heecommerce.order.dto.OrderApproveForm;
+import com.hcommerce.heecommerce.order.dto.OrderForm;
+import com.hcommerce.heecommerce.order.entity.OrderForOrderApproveValidationEntity;
+import com.hcommerce.heecommerce.order.entity.OrderFormSavedInAdvanceEntity;
+import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
+import com.hcommerce.heecommerce.order.exception.InvalidPaymentAmountException;
+import com.hcommerce.heecommerce.order.exception.MaxOrderQuantityExceededException;
+import com.hcommerce.heecommerce.order.exception.OrderOverStockException;
+import com.hcommerce.heecommerce.order.exception.TimeDealProductNotFoundException;
+import com.hcommerce.heecommerce.order.vo.TossPaymentsApproveResultForStorage;
 import com.hcommerce.heecommerce.payment.TosspaymentsException;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -276,7 +287,7 @@ public class OrderService {
         String orderId = orderApproveForm.getOrderId();
 
         // 0. DB에서 검증에 필요한 데이터 가져오기
-        OrderEntityForOrderApproveValidation orderForm = orderQueryRepository.findOrderEntityForOrderApproveValidation(orderApproveForm.getOrderId());
+        OrderForOrderApproveValidationEntity orderForm = orderQueryRepository.findOrderEntityForOrderApproveValidation(orderApproveForm.getOrderId());
 
         // 1. orderApproveForm 검증
         validateOrderApproveForm(orderApproveForm, orderForm);
@@ -314,7 +325,7 @@ public class OrderService {
         }
     }
 
-    public void validateOrderApproveForm(OrderApproveForm orderApproveForm, OrderEntityForOrderApproveValidation orderForm) {
+    public void validateOrderApproveForm(OrderApproveForm orderApproveForm, OrderForOrderApproveValidationEntity orderForm) {
         if(orderApproveForm.getAmount() != orderForm.getTotalPaymentAmount()) {
             throw new InvalidPaymentAmountException();
         }
