@@ -1,4 +1,4 @@
-package com.hcommerce.heecommerce.common.fixture;
+package com.hcommerce.heecommerce.fixture;
 
 import com.hcommerce.heecommerce.order.dto.OrderForm;
 import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;

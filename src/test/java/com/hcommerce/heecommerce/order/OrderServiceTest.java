@@ -10,9 +10,9 @@ import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hcommerce.heecommerce.common.fixture.DealProductFixture;
-import com.hcommerce.heecommerce.common.fixture.OrderFixture;
-import com.hcommerce.heecommerce.common.fixture.TossConfirmResponse;
+import com.hcommerce.heecommerce.fixture.DealProductFixture;
+import com.hcommerce.heecommerce.fixture.OrderFixture;
+import com.hcommerce.heecommerce.fixture.TossConfirmResponse;
 import com.hcommerce.heecommerce.common.utils.TosspaymentsUtils;
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.deal.DealProductQueryRepository;
