@@ -1,7 +1,7 @@
 package com.hcommerce.heecommerce.order;
 
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
-import com.hcommerce.heecommerce.order.entity.OrderForOrderApproveValidationEntity;
+import com.hcommerce.heecommerce.order.dto.OrderForOrderApproveValidationDto;
 import com.hcommerce.heecommerce.order.mapper.OrderQueryMapper;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ public class OrderQueryRepository {
         this.orderQueryMapper = orderQueryMapper;
     }
 
-    public OrderForOrderApproveValidationEntity findOrderEntityForOrderApproveValidation(String orderId) {
+    public OrderForOrderApproveValidationDto findOrderEntityForOrderApproveValidation(String orderId) {
 
         UUID orderUuid = UUID.fromString(orderId);
 

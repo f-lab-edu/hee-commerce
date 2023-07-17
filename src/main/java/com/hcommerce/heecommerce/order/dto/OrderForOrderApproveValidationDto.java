@@ -1,11 +1,11 @@
-package com.hcommerce.heecommerce.order.entity;
+package com.hcommerce.heecommerce.order.dto;
 
 import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class OrderForOrderApproveValidationEntity {
+public class OrderForOrderApproveValidationDto {
 
     private final byte[] dealProductUuid;
     private final int realOrderQuantity;
@@ -13,7 +13,7 @@ public class OrderForOrderApproveValidationEntity {
     private final OutOfStockHandlingOption outOfStockHandlingOption;
 
     @Builder
-    public OrderForOrderApproveValidationEntity(
+    public OrderForOrderApproveValidationDto(
         byte[] dealProductUuid,
         int realOrderQuantity,
         int totalPaymentAmount,
