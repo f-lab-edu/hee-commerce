@@ -20,7 +20,7 @@ import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import com.hcommerce.heecommerce.order.dto.OrderApproveForm;
 import com.hcommerce.heecommerce.order.dto.OrderForm;
-import com.hcommerce.heecommerce.order.entity.OrderForOrderApproveValidationEntity;
+import com.hcommerce.heecommerce.order.dto.OrderForOrderApproveValidationDto;
 import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import com.hcommerce.heecommerce.order.exception.InvalidPaymentAmountException;
 import com.hcommerce.heecommerce.order.exception.MaxOrderQuantityExceededException;
@@ -282,8 +282,8 @@ class OrderServiceTest {
                     .paymentKey("tossPaymentsPaymentKey")
                     .build();
 
-                OrderForOrderApproveValidationEntity orderForOrderApproveValidationEntity =
-                    OrderForOrderApproveValidationEntity.builder()
+                OrderForOrderApproveValidationDto orderForOrderApproveValidationDto =
+                    OrderForOrderApproveValidationDto.builder()
                         .realOrderQuantity(3)
                         .totalPaymentAmount(15000)
                         .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
@@ -291,7 +291,7 @@ class OrderServiceTest {
                         .build();
 
                 given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(
-                    orderForOrderApproveValidationEntity);
+                    orderForOrderApproveValidationDto);
 
                 HttpEntity<String> request = TosspaymentsUtils.createHttpRequestForPaymentApprove(orderApproveForm);
 
@@ -319,8 +319,8 @@ class OrderServiceTest {
                     .paymentKey("tossPaymentsPaymentKey")
                     .build();
 
-                OrderForOrderApproveValidationEntity orderForOrderApproveValidationEntity =
-                    OrderForOrderApproveValidationEntity.builder()
+                OrderForOrderApproveValidationDto orderForOrderApproveValidationDto =
+                    OrderForOrderApproveValidationDto.builder()
                         .realOrderQuantity(3)
                         .totalPaymentAmount(20000)
                         .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
@@ -328,7 +328,7 @@ class OrderServiceTest {
                         .build();
 
                 given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(
-                    orderForOrderApproveValidationEntity);
+                    orderForOrderApproveValidationDto);
 
                 // when + then
                 assertThrows(InvalidPaymentAmountException.class, () -> {
