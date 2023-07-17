@@ -19,7 +19,7 @@ import com.hcommerce.heecommerce.order.exception.InvalidPaymentAmountException;
 import com.hcommerce.heecommerce.order.exception.MaxOrderQuantityExceededException;
 import com.hcommerce.heecommerce.order.exception.OrderOverStockException;
 import com.hcommerce.heecommerce.order.exception.TimeDealProductNotFoundException;
-import com.hcommerce.heecommerce.order.vo.TossPaymentsApproveResultForStorage;
+import com.hcommerce.heecommerce.order.model.TossPaymentsApproveResultForStorage;
 import com.hcommerce.heecommerce.payment.TosspaymentsException;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
