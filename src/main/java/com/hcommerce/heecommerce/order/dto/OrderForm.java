@@ -36,6 +36,9 @@ public class OrderForm {
     @NotNull(message = "결제 유형을 입력해주세요.")
     private final PaymentMethod paymentMethod;
 
+    /**
+     * @ConstructorProperties 를 사용하는 이유 : https://github.com/f-lab-edu/hee-commerce/issues/150 참고
+     */
     @Builder
     @ConstructorProperties({
         "orderUuid",
