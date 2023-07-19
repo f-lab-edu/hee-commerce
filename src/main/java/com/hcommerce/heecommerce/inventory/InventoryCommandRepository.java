@@ -39,12 +39,12 @@ public class InventoryCommandRepository {
         return (int) redisStringsRepository.decreaseByAmount(key, Long.valueOf(amount));
     }
 
-    public void increaseByAmount(UUID dealProductUuid, int amount) {
+    public int increaseByAmount(UUID dealProductUuid, int amount) {
         validationAmountIsPositive(amount);
 
         String key = RedisUtils.getInventoryKey(dealProductUuid);
 
-        redisStringsRepository.increaseByAmount(key, Long.valueOf(amount));
+        return (int) redisStringsRepository.increaseByAmount(key, Long.valueOf(amount));
     }
 
     private void validationAmountIsPositive(int amount) {
