@@ -1,12 +1,12 @@
-package com.hcommerce.heecommerce.inventory;
+package com.hcommerce.heecommerce.common.utils;
 
 import java.util.UUID;
 
-public class InventoryRepository {
+public class RedisUtils {
 
     private final static String INVENTORY_REDIS_KEY_PREFIX = "timeDealProductInventory:";
 
-    protected String getRedisKey(UUID dealProductUuid) {
+    public static String getInventoryKey(UUID dealProductUuid) {
         return INVENTORY_REDIS_KEY_PREFIX + dealProductUuid;
     }
 }

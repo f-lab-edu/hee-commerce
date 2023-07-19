@@ -1,6 +1,7 @@
 package com.hcommerce.heecommerce.inventory;
 
 import com.hcommerce.heecommerce.common.dao.RedisStringsRepository;
+import com.hcommerce.heecommerce.common.utils.RedisUtils;
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -11,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class InventoryQueryRepository extends InventoryRepository {
+public class InventoryQueryRepository {
 
     private final RedisStringsRepository redisStringsRepository;
 
@@ -21,7 +22,7 @@ public class InventoryQueryRepository extends InventoryRepository {
     }
 
     public int get(UUID dealProductUuid) {
-        String key = super.getRedisKey(dealProductUuid);
+        String key = RedisUtils.getInventoryKey(dealProductUuid);
 
         return Integer.valueOf(redisStringsRepository.get(key));
     }
@@ -42,7 +43,7 @@ public class InventoryQueryRepository extends InventoryRepository {
         while (iterator.hasNext()) {
             String uuid = iterator.next();
 
-            redisKeys.add(super.getRedisKey(UUID.fromString(uuid)));
+            redisKeys.add(RedisUtils.getInventoryKey(UUID.fromString(uuid)));
         }
 
         return redisKeys;
