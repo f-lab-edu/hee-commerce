@@ -3,6 +3,7 @@ package com.hcommerce.heecommerce.deal;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.hcommerce.heecommerce.common.dao.RedisHashRepository;
 import com.hcommerce.heecommerce.common.dao.RedisSortSetRepository;
+import com.hcommerce.heecommerce.common.utils.RedisUtils;
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import com.hcommerce.heecommerce.product.ProductsSort;
@@ -19,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class DealProductQueryRepository extends DealProductRepository {
+public class DealProductQueryRepository {
 
     private final RedisSortSetRepository<String> redisSortSetRepository;
 
@@ -83,7 +84,7 @@ public class DealProductQueryRepository extends DealProductRepository {
      * TODO : 기재하기
      */
     private Set<String> getTimeDealProductUuids(String dealOpenDate, int pageNumber) {
-        String timeDealProductIdsSetKey = super.getRedisKeyForDealProductUuids(dealOpenDate, pageNumber);
+        String timeDealProductIdsSetKey = RedisUtils.getKeyForTimeDealProductUuids(dealOpenDate, pageNumber);
 
         return redisSortSetRepository.getAll(timeDealProductIdsSetKey); // 해당 key에 해당하는 데이터가 없으면? Null로 됨
     }
@@ -92,7 +93,7 @@ public class DealProductQueryRepository extends DealProductRepository {
      * getTimeDealProductEntities 는 특정 날짜에 해당하는 timeDealProductEntity 목록을 가져오는 함수이다.
      */
     private List<TimeDealProductEntity> getTimeDealProductEntities(String dealOpenDate) {
-        String redisKey = super.getRedisKey(dealOpenDate);
+        String redisKey = RedisUtils.getKeyForTimeDealProductsByDealOpenDate(dealOpenDate);
 
         return redisHashRepository.getAllByKey(redisKey, new TypeReference<TimeDealProductEntity>() {});
     }
@@ -178,9 +179,9 @@ public class DealProductQueryRepository extends DealProductRepository {
     private TimeDealProductEntity getTimeDealProductEntity(UUID dealProductUuid) {
         String dealOpenDate = getDateForCurrentDealProducts();
 
-        String key = super.getRedisKey(dealOpenDate);
+        String key = RedisUtils.getKeyForTimeDealProductsByDealOpenDate(dealOpenDate);
 
-        String hashKey = super.getRedisHashKey(dealProductUuid);
+        String hashKey = RedisUtils.getRedisHashKeyForTimeDealProduct(dealProductUuid);
 
         return redisHashRepository.getOneByKeyAndHashKey(key, hashKey, new TypeReference<TimeDealProductEntity>() {});
     }
@@ -246,9 +247,9 @@ public class DealProductQueryRepository extends DealProductRepository {
     public boolean hasDealProductUuid(UUID dealProductUuid) {
         String dealOpenDate = getDateForCurrentDealProducts();
 
-        String key = super.getRedisKey(dealOpenDate);;
+        String key = RedisUtils.getKeyForTimeDealProductsByDealOpenDate(dealOpenDate);;
 
-        String hashKey = super.getRedisHashKey(dealProductUuid);
+        String hashKey = RedisUtils.getRedisHashKeyForTimeDealProduct(dealProductUuid);
 
         return redisHashRepository.hasKey(key, hashKey);
     }

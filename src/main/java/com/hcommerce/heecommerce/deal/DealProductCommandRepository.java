@@ -2,6 +2,7 @@ package com.hcommerce.heecommerce.deal;
 
 import com.hcommerce.heecommerce.common.dao.RedisHashRepository;
 import com.hcommerce.heecommerce.common.dao.RedisSortSetRepository;
+import com.hcommerce.heecommerce.common.utils.RedisUtils;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -21,7 +22,7 @@ import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class DealProductCommandRepository extends DealProductRepository {
+public class DealProductCommandRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -151,7 +152,7 @@ public class DealProductCommandRepository extends DealProductRepository {
     }
 
     private void saveDealProductUuids(String dealOpenDate, String value, int score, long expirationInSeconds) {
-        String key = super.getRedisKeyForDealProductUuids(dealOpenDate, 0);
+        String key = RedisUtils.getKeyForTimeDealProductUuids(dealOpenDate, 0);
 
         redisSortSetRepository.addWithExpirationTime(
             key, value, score,
@@ -160,9 +161,9 @@ public class DealProductCommandRepository extends DealProductRepository {
     }
 
     private void saveDealProductEntity(String dealOpenDate, UUID dealProductUuid, TimeDealProductEntity timeDealProductEntity, long expirationInSeconds) {
-        String redisKey = super.getRedisKey(dealOpenDate);
+        String redisKey = RedisUtils.getKeyForTimeDealProductsByDealOpenDate(dealOpenDate);
 
-        String hashKey = super.getRedisHashKey(dealProductUuid);
+        String hashKey = RedisUtils.getRedisHashKeyForTimeDealProduct(dealProductUuid);
 
         redisHashRepository.putWithExpirationTime(
             redisKey, hashKey, timeDealProductEntity,
