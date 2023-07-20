@@ -125,9 +125,15 @@ public class OrderService {
      * @param dealProductUuid : 원상복귀해야 하는 딜 상품 key
      * @param amount : 원상복귀해야 하는 재고량
      */
-    private void rollbackReducedInventory(UUID dealProductUuid, int amount) {
-        log.error("[rollback] dealProductUuid = {}, amount = {} ", dealProductUuid, amount);
-        inventoryCommandRepository.increaseByAmount(dealProductUuid, amount);
+    private void rollbackReducedInventory(InventoryEventType inventoryEventType, UUID dealProductUuid, UUID orderUuid, int amount) {
+        log.error("[rollback] inventoryEventType = {}, dealProductUuid = {}, orderUuid = {}, amount = {} ", inventoryEventType, dealProductUuid, orderUuid, amount);
+
+        inventoryCommandRepository.increase(InventoryIncreaseDecreaseDto.builder()
+            .dealProductUuid(dealProductUuid)
+            .orderUuid(orderUuid)
+            .inventory(amount)
+            .inventoryEventType(inventoryEventType)
+            .build());
     }
 
     /**
@@ -160,7 +166,7 @@ public class OrderService {
 
             return orderUuidSavedInAdvance;
         } catch (Exception e) {
-            rollbackReducedInventory(dealProductUuid, realOrderQuantity);
+            log.error("[saveOrderInAdvance] orderUuid = {}", orderForm.getOrderUuid());
             throw e;
         }
     }
@@ -208,7 +214,7 @@ public class OrderService {
 
         // 4. 재고 사후 검증
         if(inventoryAfterDecrease < 0) { // 재고 감소가 되지 않아야 되는데, 감소가 된 경우이다. 재고 조회시의 재고량과 실제 감소시킬 떄의 재고량이 달라진 경우에 발생 함.
-            rollbackReducedInventory(dealProductUuid, realOrderQuantity);
+            rollbackReducedInventory(InventoryEventType.ROLLBACK_BY_POST_VALIDATION_FAILED, dealProductUuid, orderUuid, realOrderQuantity);
             throw new OrderOverStockException();
         }
 
@@ -300,10 +306,6 @@ public class OrderService {
         // 1. orderApproveForm 검증
         validateOrderApproveForm(orderApproveForm, orderForm);
 
-        UUID dealProductUuid = TypeConversionUtils.convertBinaryToUuid(orderForm.getDealProductUuid());
-
-        int realOrderQuantity = orderForm.getRealOrderQuantity();
-
         try {
             // 3. 토스 페이먼트 결제 승인
             TossPaymentsApproveResultForStorage tossPaymentsApproveResultForStorage = approvePayment(orderApproveForm);
@@ -319,13 +321,8 @@ public class OrderService {
             orderCommandRepository.updateOrderAfterApprove(orderAfterApproveDto);
 
             return UUID.fromString(orderId);
-        } catch (TosspaymentsException tosspaymentsException) {
+        } catch (TosspaymentsException tosspaymentsException) { // TODO : 주문 실패에 따른 재고 데이터의 일관성과 정합성을 맞춰주는 작업은 스케줄러 하나 만들어서 주기(예 : 10초 또는 1분)마다 이미 저장된 주문이 15분 이내로 결제 완료 안된 경우는 재고 업데이트 해주는 걸로 해볼 예정
             log.error("[tosspaymentsException] message = {}, code = {} ", tosspaymentsException.getMessage(), tosspaymentsException.getCode());
-
-            if(TosspaymentsUtils.isRollbackNeededExceptionCode(tosspaymentsException.getCode())) { // 에러에 따라 rollback 해줘야 되는 게 있고, 안해줘도 되는게 있으므로,
-                rollbackReducedInventory(dealProductUuid, realOrderQuantity);
-            }
-
             throw tosspaymentsException;
         } catch (Exception e) { // TODO : MySQL 저장 실패시에 대한 저장 Exception 따로 만들어야 되나? 재고량 rollback은 필요 없어 보임. 어째든 토스에서 결제 승인을 했으므로,
             log.error("[주문 승인에 따른 주문 데이터 저장 실패] message = {}", e.getMessage());

@@ -64,7 +64,27 @@ public class InventoryCommandRepository {
         return (int) redisStringsRepository.decreaseByAmount(key, Long.valueOf(amount));
     }
 
-    public int increaseByAmount(UUID dealProductUuid, int amount) {
+    public int increase(InventoryIncreaseDecreaseDto inventoryIncreaseDecreaseDto) {
+        int inventory = inventoryIncreaseDecreaseDto.getInventory();
+
+        int inventoryAfterIncrease = increaseByAmount(inventoryIncreaseDecreaseDto.getDealProductUuid(), inventory);
+
+        int inventoryBeforeIncrease = inventoryAfterIncrease - inventory;
+
+        InventoryEventHistorySaveDto inventoryEventHistorySaveDto = InventoryEventHistorySaveDto.builder()
+            .dealProductUuid(inventoryIncreaseDecreaseDto.getDealProductUuid())
+            .orderUuid(inventoryIncreaseDecreaseDto.getOrderUuid())
+            .inventory(+inventoryIncreaseDecreaseDto.getInventory())
+            .previousDealQuantity(inventoryBeforeIncrease)
+            .inventoryEventType(inventoryIncreaseDecreaseDto.getInventoryEventType())
+            .build();
+
+        inventoryEventHistoryRepository.save(inventoryEventHistorySaveDto);
+
+        return inventoryAfterIncrease;
+    }
+
+    private int increaseByAmount(UUID dealProductUuid, int amount) {
         validationAmountIsPositive(amount);
 
         String key = RedisUtils.getInventoryKey(dealProductUuid);

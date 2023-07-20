@@ -228,7 +228,7 @@ class OrderServiceTest {
                     orderService.placeOrderInAdvance(orderForm);
                 });
 
-                verify(inventoryCommandRepository).increaseByAmount(ROLLBACK_NEEDED_DEAL_PRODUCT_UUID, OrderFixture.ORDER_QUANTITY);
+                verify(inventoryCommandRepository).increase(any());
             }
         }
 
