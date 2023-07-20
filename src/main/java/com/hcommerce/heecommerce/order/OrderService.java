@@ -9,10 +9,12 @@ import com.hcommerce.heecommerce.deal.DiscountType;
 import com.hcommerce.heecommerce.deal.TimeDealProductDetail;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
+import com.hcommerce.heecommerce.inventory.dto.InventoryIncreaseDecreaseDto;
+import com.hcommerce.heecommerce.inventory.enums.InventoryEventType;
 import com.hcommerce.heecommerce.order.dto.OrderAfterApproveDto;
 import com.hcommerce.heecommerce.order.dto.OrderApproveForm;
-import com.hcommerce.heecommerce.order.dto.OrderForm;
 import com.hcommerce.heecommerce.order.dto.OrderForOrderApproveValidationDto;
+import com.hcommerce.heecommerce.order.dto.OrderForm;
 import com.hcommerce.heecommerce.order.entity.OrderFormSavedInAdvanceEntity;
 import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import com.hcommerce.heecommerce.order.exception.InvalidPaymentAmountException;
@@ -148,7 +150,7 @@ public class OrderService {
         // 4. 실제 주문 수량 계산
         OutOfStockHandlingOption outOfStockHandlingOption = orderForm.getOutOfStockHandlingOption();
 
-        int realOrderQuantity = determineRealOrderQuantity(dealProductUuid, orderQuantity, outOfStockHandlingOption);
+        int realOrderQuantity = determineRealOrderQuantity(dealProductUuid, orderForm.getOrderUuid(), orderQuantity, outOfStockHandlingOption);
 
         // 5. 주문 내역 미리 저장
         try {
@@ -175,7 +177,7 @@ public class OrderService {
      * 분산락 대신 재고 사후 검증 단계를 도입한 이유는 https://github.com/f-lab-edu/hee-commerce/issues/136 참고
      *
      */
-    private int determineRealOrderQuantity(UUID dealProductUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
+    private int determineRealOrderQuantity(UUID dealProductUuid, UUID orderUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
         log.debug("dealProductUuid = {}, orderQuantity = {}, outOfStockHandlingOption = {}", dealProductUuid, orderQuantity, outOfStockHandlingOption);
 
         // 1. 재고 조회
@@ -195,7 +197,13 @@ public class OrderService {
         log.debug("realOrderQuantity = {}", realOrderQuantity);
 
         // 3. 재고 감소
-        int inventoryAfterDecrease = inventoryCommandRepository.decreaseByAmount(dealProductUuid, realOrderQuantity);
+        int inventoryAfterDecrease = inventoryCommandRepository.decrease(InventoryIncreaseDecreaseDto.builder()
+            .dealProductUuid(dealProductUuid)
+            .orderUuid(orderUuid)
+            .inventory(realOrderQuantity)
+            .inventoryEventType(InventoryEventType.ORDER)
+            .build());
+
         log.debug("inventoryAfterDecrease = {}", inventoryAfterDecrease);
 
         // 4. 재고 사후 검증
@@ -319,7 +327,7 @@ public class OrderService {
             }
 
             throw tosspaymentsException;
-        } catch (Exception e) { // TODO : MySQL 저장 실패시에 대한 저장 Exception 따로 만들어야 되나? 재고량 rollback은 필요 없어 보임. 어째든 토스에서 결제 승인을 했으므로,\
+        } catch (Exception e) { // TODO : MySQL 저장 실패시에 대한 저장 Exception 따로 만들어야 되나? 재고량 rollback은 필요 없어 보임. 어째든 토스에서 결제 승인을 했으므로,
             log.error("[주문 승인에 따른 주문 데이터 저장 실패] message = {}", e.getMessage());
             throw e;
         }

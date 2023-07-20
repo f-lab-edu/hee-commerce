@@ -2,6 +2,8 @@ package com.hcommerce.heecommerce.inventory;
 
 import com.hcommerce.heecommerce.common.dao.RedisStringsRepository;
 import com.hcommerce.heecommerce.common.utils.RedisUtils;
+import com.hcommerce.heecommerce.inventory.dto.InventoryEventHistorySaveDto;
+import com.hcommerce.heecommerce.inventory.dto.InventoryIncreaseDecreaseDto;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -9,13 +11,16 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class InventoryCommandRepository {
 
+    private final InventoryEventHistoryRepository inventoryEventHistoryRepository;
 
     private final RedisStringsRepository redisStringsRepository;
 
     @Autowired
     public InventoryCommandRepository(
+        InventoryEventHistoryRepository inventoryEventHistoryRepository,
         RedisStringsRepository redisStringsRepository
     ) {
+        this.inventoryEventHistoryRepository = inventoryEventHistoryRepository;
         this.redisStringsRepository = redisStringsRepository;
     }
 
@@ -31,7 +36,27 @@ public class InventoryCommandRepository {
         redisStringsRepository.delete(key);
     }
 
-    public int decreaseByAmount(UUID dealProductUuid, int amount) {
+    public int decrease(InventoryIncreaseDecreaseDto inventoryIncreaseDecreaseDto) {
+        int inventory = inventoryIncreaseDecreaseDto.getInventory();
+
+        int inventoryAfterDecrease = decreaseByAmount(inventoryIncreaseDecreaseDto.getDealProductUuid(), inventory);
+
+        int inventoryBeforeDecrease = inventoryAfterDecrease - inventory;
+
+        InventoryEventHistorySaveDto inventoryEventHistorySaveDto = InventoryEventHistorySaveDto.builder()
+            .dealProductUuid(inventoryIncreaseDecreaseDto.getDealProductUuid())
+            .orderUuid(inventoryIncreaseDecreaseDto.getOrderUuid())
+            .inventory(-inventoryIncreaseDecreaseDto.getInventory())
+            .previousDealQuantity(inventoryBeforeDecrease)
+            .inventoryEventType(inventoryIncreaseDecreaseDto.getInventoryEventType())
+            .build();
+
+        inventoryEventHistoryRepository.save(inventoryEventHistorySaveDto);
+
+        return inventoryAfterDecrease;
+    }
+
+    private int decreaseByAmount(UUID dealProductUuid, int amount) {
         validationAmountIsPositive(amount);
 
         String key = RedisUtils.getInventoryKey(dealProductUuid);
