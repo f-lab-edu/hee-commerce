@@ -66,60 +66,6 @@ public class OrderService {
     }
 
     /**
-     * calculateRealOrderQuantity 는 실제 주문 수량을 계산하는 함수이다.
-     *
-     * 실제 주문 수량은 감소시킨 후의 재고량, 주문량, 재고 부족 처리 옵션에 따라 달라지고, 경우의 수는 다음과 같다.
-     * case 1) 재고량이 0 이하인 경우(예 : 감소시킨 후의 재고량 : -4, 주문량 : 3) : 주문 불가
-     * case 2-1) 재고량은 0은 아니지만, 재고량이 주문량보다 적은 경우(예 : 감소시킨 후의 재고량 : -2, 주문량 : 3 -> 기존 재고량 : 1) + ALL_CANCEL : 주문 불가
-     * case 2-2) 재고량은 0은 아니지만, 재고량이 주문량보다 적은 경우(예 : 감소시킨 후의 재고량 : -2, 주문량 : 3 -> 기존 재고량 : 1) + PARTIAL_ORDER : 주문 가능
-     * case 3) 재고량이 주문량보다 많은 경우(예 : 감소시킨 후의 재고량 : 1, 주문량 : 3 -> 기존 재고 : 4) : 주문 가능
-     *
-     * @param inventoryAfterDecrease : 감소시킨 후의 재고량
-     * @param orderQuantity : 주문량
-     * @param outOfStockHandlingOption : 재고 부족 처리 옵션
-     * @return realOrderQuantity : 실제 주문량
-     *
-     * realOrderQuantity 이 필요한 이유는 "부분 주문" 때문이다.
-     * 재고량이 0은 아니지만, 사용자가 주문한 수량에 비해 재고량이 없는 경우가 있다.
-     * 이때, 재고량만큼만 주문하도록 할 수 있도록 "부문 주문"이 가능한데, 사용자가 주문한 수량과 혼동되지 않도록 실제 주문하는 수량이라는 의미를 내포하기 위해서 필요하다.
-     */
-    private int calculateRealOrderQuantity(int inventoryAfterDecrease, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
-
-        int inventoryBeforeDecrease = orderQuantity + inventoryAfterDecrease;
-
-        if(
-            inventoryBeforeDecrease <= 0 || // case 1
-            inventoryBeforeDecrease < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.ALL_CANCEL // case 2-1
-        ) {
-            throw new OrderOverStockException();
-        }
-
-        int realOrderQuantity = 0;
-
-        if(inventoryBeforeDecrease < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.PARTIAL_ORDER) { // case 2-2
-            realOrderQuantity = inventoryBeforeDecrease; // 기존 재고량 만큼만 주문
-        }
-
-        if(inventoryAfterDecrease >= 0) { // case 3
-            realOrderQuantity = orderQuantity;
-        }
-
-        return realOrderQuantity;
-    }
-
-    private void saveOrder() {
-        // 5-1) 결제 내역
-        // 총 결제 금액
-        // 결제 유형
-        // 결제 날짜
-        // 카드 정보 등등
-
-        // 5-2) 주문 데이터
-
-        // 5-3) 재고
-    }
-
-    /**
      * rollbackReducedInventory 는 임의로 감소시킨 재고량을 다시 원상복귀하기 위한 함수이다.
      * 함수로 만든 이유는 다양한 원인으로 재고량을 rollback 시켜줘야 하므로, 함수로 만들어 재활용하고 싶었기 때문이다.
      * @param dealProductUuid : 원상복귀해야 하는 딜 상품 key
