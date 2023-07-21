@@ -3,6 +3,10 @@ package com.hcommerce.heecommerce.deal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 
+import com.hcommerce.heecommerce.deal.dto.DealProductSummary;
+import com.hcommerce.heecommerce.deal.dto.TimeDealProductDetail;
+import com.hcommerce.heecommerce.deal.enums.DealType;
+import com.hcommerce.heecommerce.deal.enums.DiscountType;
 import com.hcommerce.heecommerce.product.ProductsSort;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

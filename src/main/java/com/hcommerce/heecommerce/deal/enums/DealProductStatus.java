@@ -1,4 +1,4 @@
-package com.hcommerce.heecommerce.deal;
+package com.hcommerce.heecommerce.deal.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

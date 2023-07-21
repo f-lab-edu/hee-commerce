@@ -1,5 +1,6 @@
-package com.hcommerce.heecommerce.deal;
+package com.hcommerce.heecommerce.deal.entity;
 
+import com.hcommerce.heecommerce.deal.enums.DiscountType;
 import java.beans.ConstructorProperties;
 import java.time.Instant;
 import java.util.UUID;
