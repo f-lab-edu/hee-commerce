@@ -1,4 +1,4 @@
-package com.hcommerce.heecommerce.inventory;
+package com.hcommerce.heecommerce.inventory.exception;
 
 public class AmountIsNotPositiveException extends RuntimeException {
     public AmountIsNotPositiveException() {

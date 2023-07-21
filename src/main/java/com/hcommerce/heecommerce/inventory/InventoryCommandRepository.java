@@ -4,6 +4,7 @@ import com.hcommerce.heecommerce.common.dao.RedisStringsRepository;
 import com.hcommerce.heecommerce.common.utils.RedisUtils;
 import com.hcommerce.heecommerce.inventory.dto.InventoryEventHistorySaveDto;
 import com.hcommerce.heecommerce.inventory.dto.InventoryIncreaseDecreaseDto;
+import com.hcommerce.heecommerce.inventory.exception.AmountIsNotPositiveException;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
