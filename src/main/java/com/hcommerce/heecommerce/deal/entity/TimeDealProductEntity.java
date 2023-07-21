@@ -1,4 +1,4 @@
-package com.hcommerce.heecommerce.deal;
+package com.hcommerce.heecommerce.deal.entity;
 
 import com.hcommerce.heecommerce.deal.enums.DiscountType;
 import java.beans.ConstructorProperties;

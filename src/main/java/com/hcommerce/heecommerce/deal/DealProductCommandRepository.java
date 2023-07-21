@@ -3,6 +3,7 @@ package com.hcommerce.heecommerce.deal;
 import com.hcommerce.heecommerce.common.dao.RedisHashRepository;
 import com.hcommerce.heecommerce.common.dao.RedisSortSetRepository;
 import com.hcommerce.heecommerce.common.utils.RedisUtils;
+import com.hcommerce.heecommerce.deal.entity.TimeDealProductEntity;
 import com.hcommerce.heecommerce.deal.enums.DiscountType;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import java.time.Instant;
