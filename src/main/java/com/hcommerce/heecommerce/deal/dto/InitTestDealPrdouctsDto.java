@@ -1,4 +1,4 @@
-package com.hcommerce.heecommerce.deal;
+package com.hcommerce.heecommerce.deal.dto;
 
 import java.beans.ConstructorProperties;
 import lombok.Getter;

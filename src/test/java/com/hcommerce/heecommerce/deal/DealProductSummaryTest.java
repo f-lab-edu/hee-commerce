@@ -1,5 +1,6 @@
 package com.hcommerce.heecommerce.deal;
 
+import com.hcommerce.heecommerce.deal.dto.DealProductSummary;
 import com.hcommerce.heecommerce.deal.enums.DiscountType;
 import com.hcommerce.heecommerce.product.ProductsSort;
 import java.time.Instant;

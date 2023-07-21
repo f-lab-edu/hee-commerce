@@ -2,6 +2,10 @@ package com.hcommerce.heecommerce.deal;
 
 import com.hcommerce.heecommerce.common.dto.PageDto;
 import com.hcommerce.heecommerce.common.dto.ResponseDto;
+import com.hcommerce.heecommerce.deal.dto.DealProductSummary;
+import com.hcommerce.heecommerce.deal.dto.DealProductSummaryForUI;
+import com.hcommerce.heecommerce.deal.dto.InitTestDealPrdouctsDto;
+import com.hcommerce.heecommerce.deal.dto.TimeDealProductDetail;
 import com.hcommerce.heecommerce.deal.enums.DealType;
 import com.hcommerce.heecommerce.product.ProductsSort;
 import java.util.List;
