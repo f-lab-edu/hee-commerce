@@ -1,6 +1,6 @@
 package com.hcommerce.heecommerce.fixture;
 
-import com.hcommerce.heecommerce.deal.DiscountType;
+import com.hcommerce.heecommerce.deal.enums.DiscountType;
 import com.hcommerce.heecommerce.deal.TimeDealProductDetail;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

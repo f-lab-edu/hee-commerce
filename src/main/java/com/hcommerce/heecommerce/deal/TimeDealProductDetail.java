@@ -1,5 +1,6 @@
 package com.hcommerce.heecommerce.deal;
 
+import com.hcommerce.heecommerce.deal.enums.DiscountType;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.Builder;

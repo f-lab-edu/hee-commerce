@@ -1,5 +1,6 @@
 package com.hcommerce.heecommerce.deal;
 
+import com.hcommerce.heecommerce.deal.enums.DealType;
 import com.hcommerce.heecommerce.product.ProductsSort;
 import java.util.List;
 import java.util.UUID;

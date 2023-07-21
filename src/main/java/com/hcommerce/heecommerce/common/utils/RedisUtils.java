@@ -1,6 +1,6 @@
 package com.hcommerce.heecommerce.common.utils;
 
-import com.hcommerce.heecommerce.deal.DealType;
+import com.hcommerce.heecommerce.deal.enums.DealType;
 import java.util.UUID;
 
 public class RedisUtils {

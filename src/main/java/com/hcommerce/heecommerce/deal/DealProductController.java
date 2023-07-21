@@ -2,6 +2,7 @@ package com.hcommerce.heecommerce.deal;
 
 import com.hcommerce.heecommerce.common.dto.PageDto;
 import com.hcommerce.heecommerce.common.dto.ResponseDto;
+import com.hcommerce.heecommerce.deal.enums.DealType;
 import com.hcommerce.heecommerce.product.ProductsSort;
 import java.util.List;
 import java.util.UUID;

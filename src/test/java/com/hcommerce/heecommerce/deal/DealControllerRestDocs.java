@@ -10,6 +10,8 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 
+import com.hcommerce.heecommerce.deal.enums.DealProductStatus;
+import com.hcommerce.heecommerce.deal.enums.DealType;
 import com.hcommerce.heecommerce.product.ProductsSort;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.restdocs.payload.JsonFieldType;
@@ -20,7 +22,7 @@ public class DealControllerRestDocs {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 pathParameters(
-                    parameterWithName("dealType").description("딜 유형 ("+DealType.getAllValuesAsString()+")")
+                    parameterWithName("dealType").description("딜 유형 ("+ DealType.getAllValuesAsString()+")")
                 ),
                 queryParameters(
                         parameterWithName("pageNumber").description("페이지 번호"),
@@ -41,7 +43,7 @@ public class DealControllerRestDocs {
                         fieldWithPath("data.items[].dealProductDiscountType").type(JsonFieldType.STRING).description("딜 상품 할인 유형"),
                         fieldWithPath("data.items[].dealProductDiscountValue").type(JsonFieldType.NUMBER).description("딜 상품 할인가"),
                         fieldWithPath("data.items[].dealProductDealQuantity").type(JsonFieldType.NUMBER).description("딜 상품 재고 수량"),
-                        fieldWithPath("data.items[].dealProductStatus").type(JsonFieldType.STRING).description("딜 상품 상태 ("+DealProductStatus.getAllValuesAsString()+")"),
+                        fieldWithPath("data.items[].dealProductStatus").type(JsonFieldType.STRING).description("딜 상품 상태 ("+ DealProductStatus.getAllValuesAsString()+")"),
                         fieldWithPath("data.items[].startedAt").type(JsonFieldType.STRING).description("딜 상품 시작 시간(예 : 2023-07-01T01:00:00Z)"),
                         fieldWithPath("data.items[].finishedAt").type(JsonFieldType.STRING).description("딜 상품 종료 시간(예 : 2023-07-01T02:00:00Z)")
                     )

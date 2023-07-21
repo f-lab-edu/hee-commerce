@@ -1,5 +1,7 @@
 package com.hcommerce.heecommerce.deal;
 
+import com.hcommerce.heecommerce.deal.enums.DealProductStatus;
+import com.hcommerce.heecommerce.deal.enums.DiscountType;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
