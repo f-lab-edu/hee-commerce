@@ -1,5 +1,8 @@
 package com.hcommerce.heecommerce.fixture;
 
+import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
+import com.hcommerce.heecommerce.order.dto.OrderApproveForm;
+import com.hcommerce.heecommerce.order.dto.OrderForOrderApproveValidationDto;
 import com.hcommerce.heecommerce.order.dto.OrderForm;
 import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import com.hcommerce.heecommerce.order.enums.PaymentMethod;
@@ -36,6 +39,9 @@ public class OrderFixture {
 
     public static final int INVALID_INVENTORY_AFTER_DECREASE = -1;
 
+    public static final int INVALID_AMOUNT = 1000;
+
+    // 주문 사전 저장 Form
     private static OrderForm.OrderFormBuilder orderFormBuilder() {
         return OrderForm.builder()
             .userId(USER_ID)
@@ -55,4 +61,26 @@ public class OrderFixture {
     public static final OrderForm.OrderFormBuilder rebuilder() {
         return orderFormBuilder();
     }
+
+    // 주문 승인 Form
+    private static OrderApproveForm.OrderApproveFormBuilder orderApproveFormBuilder() {
+        return OrderApproveForm.builder()
+            .orderId(ORDER_UUID.toString())
+            .amount(15000)
+            .paymentKey("tossPaymentsPaymentKey");
+    }
+
+    public static final OrderApproveForm orderApproveForm = orderApproveFormBuilder().build();
+
+    public static final OrderApproveForm.OrderApproveFormBuilder orderApproveFormRebuilder() {
+        return orderApproveFormBuilder();
+    }
+
+    // 주문 승인 유효성 검사를 위한 DTO
+    public static final OrderForOrderApproveValidationDto orderForOrderApproveValidationDto = OrderForOrderApproveValidationDto.builder()
+                                                                                                        .realOrderQuantity(3)
+                                                                                                        .totalPaymentAmount(15000)
+                                                                                                        .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
+                                                                                                        .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
+                                                                                                        .build();
 }
