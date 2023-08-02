@@ -12,6 +12,7 @@ import com.hcommerce.heecommerce.order.dto.OrderForm;
 import com.hcommerce.heecommerce.order.dto.RecipientInfoForm;
 import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import com.hcommerce.heecommerce.order.enums.PaymentMethod;
+import com.hcommerce.heecommerce.order.exception.InvalidPaymentAmountException;
 import com.hcommerce.heecommerce.order.exception.OrderOverStockException;
 import com.hcommerce.heecommerce.order.exception.TimeDealProductNotFoundException;
 import java.util.UUID;
@@ -146,6 +147,54 @@ class OrderControllerTest {
         }
 
         @Nested
+        @DisplayName("with orderQuantity > maxOrderQuantityPerOrder")
+        class Context_With_OrderQuantity_Exceeds_MaxOrderQuantityPerOrder {
+            @Test
+            @DisplayName("returns 409 error")
+            void It_returns_409_Error() throws Exception {
+                // given
+                given(orderService.placeOrderInAdvance(any())).willThrow(OrderOverStockException.class);
+
+                UUID UUID_WITH_ORDER_QUANTITY_EXCEEDING_INVENTORY = UUID.randomUUID();
+
+                int ORDER_QUANTITY_EXCEEDING_INVENTORY = 5;
+
+                OutOfStockHandlingOption ALL_CANCEL = OutOfStockHandlingOption.ALL_CANCEL;
+
+                OrderForm orderForm = OrderForm.builder()
+                    .userId(1)
+                    .orderUuid(UUID.randomUUID())
+                    .recipientInfoForm(
+                        RecipientInfoForm.builder()
+                            .recipientName("leecommerce")
+                            .recipientPhoneNumber("01087654321")
+                            .recipientAddress("서울시 ")
+                            .recipientDetailAddress("101호")
+                            .shippingRequest("빠른 배송 부탁드려요!")
+                            .build()
+                    )
+                    .outOfStockHandlingOption(ALL_CANCEL)
+                    .dealProductUuid(UUID_WITH_ORDER_QUANTITY_EXCEEDING_INVENTORY)
+                    .orderQuantity(ORDER_QUANTITY_EXCEEDING_INVENTORY)
+                    .paymentMethod(PaymentMethod.CREDIT_CARD)
+                    .build();
+
+                String content = objectMapper.writeValueAsString(orderForm);
+
+                // when
+                ResultActions resultActions = mockMvc.perform(
+                    post("/orders/place-in-advance")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content)
+                );
+
+                // then
+                resultActions.andExpect(status().isConflict());
+            }
+        }
+
+        @Nested
         @DisplayName("with orderQuantity > inventory")
         class Context_With_OrderQuantity_Exceeds_Inventory {
             @Nested
@@ -246,13 +295,12 @@ class OrderControllerTest {
             }
         }
 
-
         @Nested
-        @DisplayName("with orderQuantity > maxOrderQuantityPerOrder")
-        class Context_With_OrderQuantity_Exceeds_MaxOrderQuantityPerOrder {
+        @DisplayName("when Invalid inventory decrease occurs")
+        class Context_With_Invalid_Inventory_Decrease_Occurs {
             @Test
             @DisplayName("returns 409 error")
-            void It_returns_409_Error() throws Exception {
+            void It_Returns_409_Error() throws Exception {
                 // given
                 given(orderService.placeOrderInAdvance(any())).willThrow(OrderOverStockException.class);
 
@@ -299,32 +347,65 @@ class OrderControllerTest {
     @Nested
     @DisplayName("POST /orders/approve")
     class Describe_ApproveOrder_API {
-        @Test
-        @DisplayName("returns 201")
-        void It_returns_201() throws Exception {
-            OrderApproveForm orderForm = OrderApproveForm.builder()
-                .paymentKey("5zJ4xY7m0kODnyRpQWGrN2xqGlNvLrKwv1M9ENjbeoPaZdL6")
-                .orderId(UUID.randomUUID().toString())
-                .amount(15000)
-                .build();
+        @Nested
+        @DisplayName("with valid orderApproveForm")
+        class Context_With_valid_orderApproveForm {
+            @Test
+            @DisplayName("returns 201")
+            void It_returns_201() throws Exception {
+                OrderApproveForm orderForm = OrderApproveForm.builder()
+                    .paymentKey("5zJ4xY7m0kODnyRpQWGrN2xqGlNvLrKwv1M9ENjbeoPaZdL6")
+                    .orderId(UUID.randomUUID().toString())
+                    .amount(15000)
+                    .build();
 
-            // given
-            given(orderService.approveOrder(any())).willReturn(UUID.randomUUID());
+                // given
+                given(orderService.approveOrder(any())).willReturn(UUID.randomUUID());
 
-            // when
-            String content = objectMapper.writeValueAsString(orderForm);
+                // when
+                String content = objectMapper.writeValueAsString(orderForm);
 
-            ResultActions resultActions = mockMvc.perform(
-                post("/orders/approve")
-                    .accept(MediaType.APPLICATION_JSON)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(content)
-            );
+                ResultActions resultActions = mockMvc.perform(
+                    post("/orders/approve")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content)
+                );
 
-            // then
-            resultActions.andExpect(status().isCreated())
-                .andDo(OrderControllerRestDocs.approveOrder());
+                // then
+                resultActions.andExpect(status().isCreated())
+                    .andDo(OrderControllerRestDocs.approveOrder());
+            }
+        }
 
+        @Nested
+        @DisplayName("with invalid amount")
+        class Context_With_Invalid_Amount {
+            @Test
+            @DisplayName("returns 400 error")
+            void It_Returns_400_error() throws Exception {
+                // given
+                given(orderService.approveOrder(any())).willThrow(InvalidPaymentAmountException.class);
+
+                OrderApproveForm orderForm = OrderApproveForm.builder()
+                    .paymentKey("tosspaymentKey")
+                    .orderId(UUID.randomUUID().toString())
+                    .amount(15000)
+                    .build();
+
+                // when
+                String content = objectMapper.writeValueAsString(orderForm);
+
+                ResultActions resultActions = mockMvc.perform(
+                    post("/orders/approve")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content)
+                );
+
+                // then
+                resultActions.andExpect(status().isBadRequest());
+            }
         }
     }
 }
