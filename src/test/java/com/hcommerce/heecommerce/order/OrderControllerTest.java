@@ -238,17 +238,13 @@ class OrderControllerTest {
             @Test
             @DisplayName("returns 201")
             void It_returns_201() throws Exception {
-                OrderApproveForm orderForm = OrderApproveForm.builder()
-                    .paymentKey("5zJ4xY7m0kODnyRpQWGrN2xqGlNvLrKwv1M9ENjbeoPaZdL6")
-                    .orderId(UUID.randomUUID().toString())
-                    .amount(15000)
-                    .build();
-
                 // given
                 given(orderService.approveOrder(any())).willReturn(UUID.randomUUID());
 
                 // when
-                String content = objectMapper.writeValueAsString(orderForm);
+                OrderApproveForm orderApproveForm = OrderFixture.orderApproveForm;
+
+                String content = objectMapper.writeValueAsString(orderApproveForm);
 
                 ResultActions resultActions = mockMvc.perform(
                     post("/orders/approve")
@@ -272,14 +268,11 @@ class OrderControllerTest {
                 // given
                 given(orderService.approveOrder(any())).willThrow(InvalidPaymentAmountException.class);
 
-                OrderApproveForm orderForm = OrderApproveForm.builder()
-                    .paymentKey("tosspaymentKey")
-                    .orderId(UUID.randomUUID().toString())
-                    .amount(15000)
-                    .build();
 
                 // when
-                String content = objectMapper.writeValueAsString(orderForm);
+                OrderApproveForm orderApproveForm = OrderFixture.orderApproveForm;
+
+                String content = objectMapper.writeValueAsString(orderApproveForm);
 
                 ResultActions resultActions = mockMvc.perform(
                     post("/orders/approve")
