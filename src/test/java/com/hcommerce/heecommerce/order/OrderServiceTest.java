@@ -275,11 +275,7 @@ class OrderServiceTest {
             @DisplayName("returns orderUuid")
             void It_returns_orderUuid() {
                 // given
-                OrderApproveForm orderApproveForm = OrderApproveForm.builder()
-                    .orderId(UUID.randomUUID().toString())
-                    .amount(15000)
-                    .paymentKey("tossPaymentsPaymentKey")
-                    .build();
+                OrderApproveForm orderApproveForm = OrderFixture.orderApproveForm;
 
                 OrderForOrderApproveValidationDto orderForOrderApproveValidationDto =
                     OrderForOrderApproveValidationDto.builder()
@@ -312,16 +308,14 @@ class OrderServiceTest {
             @DisplayName("throws InvalidPaymentAmountException")
             void It_throws_InvalidPaymentAmountException() {
                 // given
-                OrderApproveForm orderApproveForm = OrderApproveForm.builder()
-                    .orderId(UUID.randomUUID().toString())
-                    .amount(1000)
-                    .paymentKey("tossPaymentsPaymentKey")
-                    .build();
+                OrderApproveForm orderApproveForm =  OrderFixture.orderApproveFormRebuilder()
+                                                            .amount(OrderFixture.INVALID_AMOUNT)
+                                                            .build();
 
                 OrderForOrderApproveValidationDto orderForOrderApproveValidationDto =
                     OrderForOrderApproveValidationDto.builder()
                         .realOrderQuantity(3)
-                        .totalPaymentAmount(20000)
+                        .totalPaymentAmount(15000)
                         .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
                         .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
                         .build();
