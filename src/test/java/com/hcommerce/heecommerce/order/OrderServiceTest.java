@@ -10,7 +10,6 @@ import static org.mockito.Mockito.verify;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcommerce.heecommerce.common.utils.TosspaymentsUtils;
-import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.deal.DealProductQueryRepository;
 import com.hcommerce.heecommerce.fixture.DealProductFixture;
 import com.hcommerce.heecommerce.fixture.OrderFixture;
@@ -277,16 +276,9 @@ class OrderServiceTest {
                 // given
                 OrderApproveForm orderApproveForm = OrderFixture.orderApproveForm;
 
-                OrderForOrderApproveValidationDto orderForOrderApproveValidationDto =
-                    OrderForOrderApproveValidationDto.builder()
-                        .realOrderQuantity(3)
-                        .totalPaymentAmount(15000)
-                        .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
-                        .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
-                        .build();
+                OrderForOrderApproveValidationDto orderForOrderApproveValidationDto = OrderFixture.orderForOrderApproveValidationDto;
 
-                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(
-                    orderForOrderApproveValidationDto);
+                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(orderForOrderApproveValidationDto);
 
                 HttpEntity<String> request = TosspaymentsUtils.createHttpRequestForPaymentApprove(orderApproveForm);
 
@@ -308,24 +300,17 @@ class OrderServiceTest {
             @DisplayName("throws InvalidPaymentAmountException")
             void It_throws_InvalidPaymentAmountException() {
                 // given
-                OrderApproveForm orderApproveForm =  OrderFixture.orderApproveFormRebuilder()
-                                                            .amount(OrderFixture.INVALID_AMOUNT)
-                                                            .build();
+                OrderApproveForm orderApproveFormWithInValidAmount =  OrderFixture.orderApproveFormRebuilder()
+                                                                                .amount(OrderFixture.INVALID_AMOUNT)
+                                                                                .build();
 
-                OrderForOrderApproveValidationDto orderForOrderApproveValidationDto =
-                    OrderForOrderApproveValidationDto.builder()
-                        .realOrderQuantity(3)
-                        .totalPaymentAmount(15000)
-                        .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
-                        .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
-                        .build();
+                OrderForOrderApproveValidationDto orderForOrderApproveValidationDto = OrderFixture.orderForOrderApproveValidationDto;
 
-                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(
-                    orderForOrderApproveValidationDto);
+                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(orderForOrderApproveValidationDto);
 
                 // when + then
                 assertThrows(InvalidPaymentAmountException.class, () -> {
-                    orderService.approveOrder(orderApproveForm);
+                    orderService.approveOrder(orderApproveFormWithInValidAmount);
                 });
             }
         }
