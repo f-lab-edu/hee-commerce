@@ -67,19 +67,36 @@ include::{snippets}/get-deal-product-detail-by-deal-product-uuid/http-response.a
 include::{snippets}/get-deal-product-detail-by-deal-product-uuid/response-fields.adoc[]
 
 
-
 == 주문
-=== 주문 생성
+=== 주문 사전 저장
 ==== Request
 ===== Example
-include::{snippets}/place-order/http-request.adoc[]
+include::{snippets}/place-order-in-advance/http-request.adoc[]
 
 ===== Structure
-include::{snippets}/place-order/request-fields.adoc[]
+include::{snippets}/place-order-in-advance/request-fields.adoc[]
+
 
 ==== Response
 ===== Example
-include::{snippets}/place-order/http-response.adoc[]
+include::{snippets}/place-order-in-advance/http-response.adoc[]
 
 ===== Structure
-include::{snippets}/place-order/response-fields.adoc[]
+include::{snippets}/place-order-in-advance/response-fields.adoc[]
+
+=== 주문 승인
+==== Request
+===== Example
+include::{snippets}/approve-order/http-request.adoc[]
+
+===== Structure
+include::{snippets}/approve-order/request-fields.adoc[]
+
+
+==== Response
+===== Example
+include::{snippets}/approve-order/http-response.adoc[]
+
+===== Structure
+include::{snippets}/approve-order/response-fields.adoc[]
+
