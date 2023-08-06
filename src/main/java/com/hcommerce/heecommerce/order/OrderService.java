@@ -105,9 +105,14 @@ public class OrderService {
         orderForm.validateOrderQuantityInMaxOrderQuantityPerOrder(maxOrderQuantityPerOrder);
 
         // 4. 실제 주문 수량 계산
-        OutOfStockHandlingOption outOfStockHandlingOption = orderForm.getOutOfStockHandlingOption();
+        // (1) 재고 조회
+        int inventory = inventoryQueryRepository.get(dealProductUuid);
 
-        int realOrderQuantity = determineRealOrderQuantity(dealProductUuid, orderForm.getOrderUuid(), orderQuantity, outOfStockHandlingOption);
+        // (2) 재고 사전 검증
+        orderForm.preValidateOrderQuantityInInventory(inventory);
+
+        // (3) 실제 주문 가능 수량 계산
+        int realOrderQuantity = determineRealOrderQuantity(inventory, dealProductUuid, orderForm.getOrderUuid(), orderQuantity, orderForm.getOutOfStockHandlingOption());
 
         // 5. 주문 내역 미리 저장
         try {
@@ -135,18 +140,7 @@ public class OrderService {
      * 분산락 대신 재고 사후 검증 단계를 도입한 이유는 https://github.com/f-lab-edu/hee-commerce/issues/136 참고
      *
      */
-    private int determineRealOrderQuantity(UUID dealProductUuid, UUID orderUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
-        log.debug("dealProductUuid = {}, orderQuantity = {}, outOfStockHandlingOption = {}", dealProductUuid, orderQuantity, outOfStockHandlingOption);
-
-        // 1. 재고 조회
-        int inventory = inventoryQueryRepository.get(dealProductUuid);
-        log.debug("inventory = {} ", inventory);
-
-        // 2. 재고 사전 검증
-        if(inventory <= 0 || (inventory < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.ALL_CANCEL)) {
-            throw new OrderOverStockException();
-        }
-
+    private int determineRealOrderQuantity(int inventory, UUID dealProductUuid, UUID orderUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
         int realOrderQuantity = orderQuantity;
 
         if(inventory < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.PARTIAL_ORDER) {

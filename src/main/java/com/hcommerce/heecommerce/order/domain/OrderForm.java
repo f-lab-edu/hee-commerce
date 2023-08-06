@@ -5,6 +5,7 @@ import com.hcommerce.heecommerce.order.dto.RecipientInfoForm;
 import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import com.hcommerce.heecommerce.order.enums.PaymentMethod;
 import com.hcommerce.heecommerce.order.exception.MaxOrderQuantityExceededException;
+import com.hcommerce.heecommerce.order.exception.OrderOverStockException;
 import com.hcommerce.heecommerce.order.exception.TimeDealProductNotFoundException;
 import java.util.UUID;
 import lombok.Builder;
@@ -73,6 +74,15 @@ public class OrderForm {
     public void validateOrderQuantityInMaxOrderQuantityPerOrder(int maxOrderQuantityPerOrder) {
         if(this.orderQuantity > maxOrderQuantityPerOrder) {
             throw new MaxOrderQuantityExceededException(maxOrderQuantityPerOrder);
+        }
+    }
+
+    /**
+     * preValidateOrderQuantityInInventory 는 주문 수량이 주문 가능한지에 대해 검증하는 함수이다.
+     */
+    public void preValidateOrderQuantityInInventory(int inventory) {
+        if(inventory <= 0 || (this.orderQuantity > inventory && this.outOfStockHandlingOption == OutOfStockHandlingOption.ALL_CANCEL)) {
+            throw new OrderOverStockException();
         }
     }
 }
