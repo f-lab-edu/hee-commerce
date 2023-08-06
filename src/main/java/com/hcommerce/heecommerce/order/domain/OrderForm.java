@@ -4,6 +4,7 @@ import com.hcommerce.heecommerce.order.dto.OrderFormDto;
 import com.hcommerce.heecommerce.order.dto.RecipientInfoForm;
 import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import com.hcommerce.heecommerce.order.enums.PaymentMethod;
+import com.hcommerce.heecommerce.order.exception.TimeDealProductNotFoundException;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
@@ -54,5 +55,14 @@ public class OrderForm {
             .orderQuantity(orderFormDto.getOrderQuantity())
             .paymentMethod(orderFormDto.getPaymentMethod())
             .build();
+    }
+
+    /**
+     * validateHasDealProductUuid 는 DB에 존재하는 dealProductUuid 인지 검사하는 함수이다.
+     */
+    public void validateHasDealProductUuid(boolean hasDealProductUuid) {
+        if(!hasDealProductUuid) {
+            throw new TimeDealProductNotFoundException(this.dealProductUuid);
+        }
     }
 }

@@ -5,8 +5,8 @@ import com.hcommerce.heecommerce.common.utils.DateTimeConversionUtils;
 import com.hcommerce.heecommerce.common.utils.TosspaymentsUtils;
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.deal.DealProductQueryRepository;
-import com.hcommerce.heecommerce.deal.enums.DiscountType;
 import com.hcommerce.heecommerce.deal.dto.TimeDealProductDetail;
+import com.hcommerce.heecommerce.deal.enums.DiscountType;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import com.hcommerce.heecommerce.inventory.dto.InventoryIncreaseDecreaseDto;
@@ -21,7 +21,6 @@ import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import com.hcommerce.heecommerce.order.exception.InvalidPaymentAmountException;
 import com.hcommerce.heecommerce.order.exception.MaxOrderQuantityExceededException;
 import com.hcommerce.heecommerce.order.exception.OrderOverStockException;
-import com.hcommerce.heecommerce.order.exception.TimeDealProductNotFoundException;
 import com.hcommerce.heecommerce.order.model.TossPaymentsApproveResultForStorage;
 import com.hcommerce.heecommerce.payment.TosspaymentsException;
 import java.util.UUID;
@@ -94,7 +93,9 @@ public class OrderService {
         int orderQuantity = orderForm.getOrderQuantity();
 
         // 1. DB에 존재하는 dealProductUuid 인지
-        validateHasDealProductUuid(dealProductUuid);
+        boolean hasDealProductUuid = dealProductQueryRepository.hasDealProductUuid(dealProductUuid);
+
+        orderForm.validateHasDealProductUuid(hasDealProductUuid);
 
         // 2. DB에 존재하는 userId 인지
         // TODO : 회원 기능 추가 후 구현
@@ -169,17 +170,6 @@ public class OrderService {
         }
 
         return realOrderQuantity;
-    }
-
-    /**
-     * validateHasDealProductUuid 는 DB에 존재하는 dealProductUuid 인지 검사하는 함수이다.
-     */
-    private void validateHasDealProductUuid(UUID dealProductUuid) {
-        boolean hasDealProductUuid = dealProductQueryRepository.hasDealProductUuid(dealProductUuid);
-
-        if(!hasDealProductUuid) {
-            throw new TimeDealProductNotFoundException(dealProductUuid);
-        }
     }
 
     /**
