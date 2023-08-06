@@ -12,7 +12,7 @@ import lombok.Getter;
 import org.hibernate.validator.constraints.Range;
 
 @Getter
-public class OrderForm {
+public class OrderFormDto {
 
     @NotNull(message = "주문 ID는 필수입니다.")
     private final UUID orderUuid;
@@ -46,7 +46,7 @@ public class OrderForm {
         "orderQuantity",
         "paymentType"
     })
-    public OrderForm(
+    public OrderFormDto(
         UUID orderUuid,
         int userId,
         RecipientInfoForm recipientInfoForm,

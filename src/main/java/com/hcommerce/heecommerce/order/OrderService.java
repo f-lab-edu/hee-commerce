@@ -14,7 +14,7 @@ import com.hcommerce.heecommerce.inventory.enums.InventoryEventType;
 import com.hcommerce.heecommerce.order.dto.OrderAfterApproveDto;
 import com.hcommerce.heecommerce.order.dto.OrderApproveForm;
 import com.hcommerce.heecommerce.order.dto.OrderForOrderApproveValidationDto;
-import com.hcommerce.heecommerce.order.dto.OrderForm;
+import com.hcommerce.heecommerce.order.dto.OrderFormDto;
 import com.hcommerce.heecommerce.order.entity.OrderFormSavedInAdvanceEntity;
 import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import com.hcommerce.heecommerce.order.exception.InvalidPaymentAmountException;
@@ -85,10 +85,10 @@ public class OrderService {
     /**
      * placeOrderInAdvance 는 주문 승인 전에 검증을 위해 미리 주문 내역을 저장하는 함수이다.
      */
-    public UUID placeOrderInAdvance(OrderForm orderForm) {
-        UUID dealProductUuid = orderForm.getDealProductUuid();
+    public UUID placeOrderInAdvance(OrderFormDto orderFormDto) {
+        UUID dealProductUuid = orderFormDto.getDealProductUuid();
 
-        int orderQuantity = orderForm.getOrderQuantity();
+        int orderQuantity = orderFormDto.getOrderQuantity();
 
         // 1. DB에 존재하는 dealProductUuid 인지
         validateHasDealProductUuid(dealProductUuid);
@@ -100,19 +100,20 @@ public class OrderService {
         validateOrderQuantityInMaxOrderQuantityPerOrder(dealProductUuid, orderQuantity);
 
         // 4. 실제 주문 수량 계산
-        OutOfStockHandlingOption outOfStockHandlingOption = orderForm.getOutOfStockHandlingOption();
+        OutOfStockHandlingOption outOfStockHandlingOption = orderFormDto.getOutOfStockHandlingOption();
 
-        int realOrderQuantity = determineRealOrderQuantity(dealProductUuid, orderForm.getOrderUuid(), orderQuantity, outOfStockHandlingOption);
+        int realOrderQuantity = determineRealOrderQuantity(dealProductUuid, orderFormDto.getOrderUuid(), orderQuantity, outOfStockHandlingOption);
 
         // 5. 주문 내역 미리 저장
         try {
-            OrderFormSavedInAdvanceEntity orderFormSavedInAdvanceEntity = createOrderFormSavedInAdvanceEntity(orderForm, realOrderQuantity);
+            OrderFormSavedInAdvanceEntity orderFormSavedInAdvanceEntity = createOrderFormSavedInAdvanceEntity(
+                orderFormDto, realOrderQuantity);
 
             UUID orderUuidSavedInAdvance = orderCommandRepository.saveOrderInAdvance(orderFormSavedInAdvanceEntity);
 
             return orderUuidSavedInAdvance;
         } catch (Exception e) {
-            log.error("[saveOrderInAdvance] orderUuid = {}", orderForm.getOrderUuid());
+            log.error("[saveOrderInAdvance] orderUuid = {}", orderFormDto.getOrderUuid());
             throw e;
         }
     }
@@ -199,32 +200,34 @@ public class OrderService {
      * 3. 부분 주문
      * - 실제 주문 수량과 다르게 주문이 접수되는 경우도 있기 때문이다.
      */
-    private OrderFormSavedInAdvanceEntity createOrderFormSavedInAdvanceEntity(OrderForm orderForm, int realOrderQuantity) {
+    private OrderFormSavedInAdvanceEntity createOrderFormSavedInAdvanceEntity(
+        OrderFormDto orderFormDto, int realOrderQuantity) {
         // 1. UUID
-        byte[] uuid = TypeConversionUtils.convertUuidToBinary(orderForm.getOrderUuid());
+        byte[] uuid = TypeConversionUtils.convertUuidToBinary(orderFormDto.getOrderUuid());
 
         // 2. 총 결제 금액
-        TimeDealProductDetail timeDealProductDetail = dealProductQueryRepository.getTimeDealProductDetailByDealProductUuid(orderForm.getDealProductUuid());
+        TimeDealProductDetail timeDealProductDetail = dealProductQueryRepository.getTimeDealProductDetailByDealProductUuid(
+            orderFormDto.getDealProductUuid());
 
         int totalPaymentAmount = calculateTotalPaymentAmount(timeDealProductDetail.getProductOriginPrice(), realOrderQuantity, timeDealProductDetail.getDealProductDiscountType(), timeDealProductDetail.getDealProductDiscountValue());
 
         // 3. 부분 주문
         Integer originalOrderQuantityForPartialOrder = null; // 부분 주문이 아닌 경우 값으로, Null 값을 가지므로,
 
-        if(orderForm.getOutOfStockHandlingOption() == OutOfStockHandlingOption.PARTIAL_ORDER) {
-            originalOrderQuantityForPartialOrder = orderForm.getOrderQuantity();
+        if(orderFormDto.getOutOfStockHandlingOption() == OutOfStockHandlingOption.PARTIAL_ORDER) {
+            originalOrderQuantityForPartialOrder = orderFormDto.getOrderQuantity();
         }
 
         return OrderFormSavedInAdvanceEntity.builder()
             .uuid(uuid)
-            .userId(orderForm.getUserId())
-            .recipientInfoForm(orderForm.getRecipientInfoForm())
-            .outOfStockHandlingOption(orderForm.getOutOfStockHandlingOption())
-            .dealProductUuid(TypeConversionUtils.convertUuidToBinary(orderForm.getDealProductUuid()))
+            .userId(orderFormDto.getUserId())
+            .recipientInfoForm(orderFormDto.getRecipientInfoForm())
+            .outOfStockHandlingOption(orderFormDto.getOutOfStockHandlingOption())
+            .dealProductUuid(TypeConversionUtils.convertUuidToBinary(orderFormDto.getDealProductUuid()))
             .totalPaymentAmount(totalPaymentAmount)
             .originalOrderQuantityForPartialOrder(originalOrderQuantityForPartialOrder)
             .realOrderQuantity(realOrderQuantity)
-            .paymentMethod(orderForm.getPaymentMethod())
+            .paymentMethod(orderFormDto.getPaymentMethod())
             .build();
     }
 

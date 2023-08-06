@@ -3,7 +3,7 @@ package com.hcommerce.heecommerce.fixture;
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.order.dto.OrderApproveForm;
 import com.hcommerce.heecommerce.order.dto.OrderForOrderApproveValidationDto;
-import com.hcommerce.heecommerce.order.dto.OrderForm;
+import com.hcommerce.heecommerce.order.dto.OrderFormDto;
 import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import com.hcommerce.heecommerce.order.enums.PaymentMethod;
 import com.hcommerce.heecommerce.order.dto.RecipientInfoForm;
@@ -42,8 +42,8 @@ public class OrderFixture {
     public static final int INVALID_AMOUNT = 1000;
 
     // 주문 사전 저장 Form
-    private static OrderForm.OrderFormBuilder orderFormBuilder() {
-        return OrderForm.builder()
+    private static OrderFormDto.OrderFormDtoBuilder orderFormDtoBuilder() {
+        return OrderFormDto.builder()
             .userId(USER_ID)
             .orderUuid(ORDER_UUID)
             .recipientInfoForm(recipientInfoForm)
@@ -53,13 +53,13 @@ public class OrderFixture {
             .paymentMethod(PaymentMethod.CREDIT_CARD);
     }
 
-    public static final OrderForm orderForm = orderFormBuilder().build();
+    public static final OrderFormDto ORDER_FORM_DTO = orderFormDtoBuilder().build();
 
     /**
      * rebuilder 는 상황에 따라 필드 값을 수정할 수 있도록 하기 위해 만든 함수이다.
      */
-    public static final OrderForm.OrderFormBuilder rebuilder() {
-        return orderFormBuilder();
+    public static final OrderFormDto.OrderFormDtoBuilder rebuilder() {
+        return orderFormDtoBuilder();
     }
 
     // 주문 승인 Form

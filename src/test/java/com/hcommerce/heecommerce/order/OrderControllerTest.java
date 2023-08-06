@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcommerce.heecommerce.EnableMockMvc;
 import com.hcommerce.heecommerce.fixture.OrderFixture;
 import com.hcommerce.heecommerce.order.dto.OrderApproveForm;
-import com.hcommerce.heecommerce.order.dto.OrderForm;
+import com.hcommerce.heecommerce.order.dto.OrderFormDto;
 import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import com.hcommerce.heecommerce.order.exception.InvalidPaymentAmountException;
 import com.hcommerce.heecommerce.order.exception.OrderOverStockException;
@@ -58,17 +58,17 @@ class OrderControllerTest {
     class Describe_PlaceOrderInAdvance_API {
         @Nested
         @DisplayName("with valid orderForm")
-        class Context_With_Valid_OrderForm {
+        class Context_With_Valid_OrderFormDto {
             @Test
             @DisplayName("returns 201")
             void It_returns_201() throws Exception {
                 // given
                 given(orderService.placeOrderInAdvance(any())).willReturn(UUID.randomUUID());
 
-                OrderForm orderForm = OrderFixture.orderForm;
+                OrderFormDto orderFormDto = OrderFixture.ORDER_FORM_DTO;
 
                 // when
-                String content = objectMapper.writeValueAsString(orderForm);
+                String content = objectMapper.writeValueAsString(orderFormDto);
 
                 ResultActions resultActions = mockMvc.perform(
                     post("/orders/place-in-advance")
@@ -92,7 +92,7 @@ class OrderControllerTest {
 
                 UUID NOT_EXIST_DEAL_PRODUCT_UUID = UUID.randomUUID();
 
-                OrderForm orderFormWithNotExistDealProductUuid = OrderFixture.rebuilder()
+                OrderFormDto orderFormDtoWithNotExistDealProductUuid = OrderFixture.rebuilder()
                     .dealProductUuid(NOT_EXIST_DEAL_PRODUCT_UUID)
                     .build();
 
@@ -101,7 +101,8 @@ class OrderControllerTest {
                     TimeDealProductNotFoundException.class);
 
                 // when
-                String content = objectMapper.writeValueAsString(orderFormWithNotExistDealProductUuid);
+                String content = objectMapper.writeValueAsString(
+                    orderFormDtoWithNotExistDealProductUuid);
 
                 ResultActions resultActions = mockMvc.perform(
                     post("/orders/place-in-advance")
@@ -124,9 +125,9 @@ class OrderControllerTest {
                 // given
                 given(orderService.placeOrderInAdvance(any())).willThrow(OrderOverStockException.class);
 
-                OrderForm orderForm = OrderFixture.orderForm;;
+                OrderFormDto orderFormDto = OrderFixture.ORDER_FORM_DTO;;
 
-                String content = objectMapper.writeValueAsString(orderForm);
+                String content = objectMapper.writeValueAsString(orderFormDto);
 
                 // when
                 ResultActions resultActions = mockMvc.perform(
@@ -154,11 +155,11 @@ class OrderControllerTest {
                     given(orderService.placeOrderInAdvance(any())).willThrow(
                         OrderOverStockException.class);
 
-                    OrderForm orderForm = OrderFixture.rebuilder()
+                    OrderFormDto orderFormDto = OrderFixture.rebuilder()
                                                 .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
                                                 .build();
 
-                    String content = objectMapper.writeValueAsString(orderForm);
+                    String content = objectMapper.writeValueAsString(orderFormDto);
 
                     // when
                     ResultActions resultActions = mockMvc.perform(
@@ -180,13 +181,13 @@ class OrderControllerTest {
                 @DisplayName("returns 201")
                 void It_returns_201() throws Exception {
                     // given
-                    OrderForm orderForm = OrderFixture.rebuilder()
+                    OrderFormDto orderFormDto = OrderFixture.rebuilder()
                                                 .outOfStockHandlingOption(OutOfStockHandlingOption.PARTIAL_ORDER)
                                                 .build();
 
-                    given(orderService.placeOrderInAdvance(orderForm)).willReturn(UUID.randomUUID());
+                    given(orderService.placeOrderInAdvance(orderFormDto)).willReturn(UUID.randomUUID());
 
-                    String content = objectMapper.writeValueAsString(orderForm);
+                    String content = objectMapper.writeValueAsString(orderFormDto);
 
                     // when
                     ResultActions resultActions = mockMvc.perform(
@@ -211,9 +212,9 @@ class OrderControllerTest {
                 // given
                 given(orderService.placeOrderInAdvance(any())).willThrow(OrderOverStockException.class);
 
-                OrderForm orderForm = OrderFixture.orderForm;
+                OrderFormDto orderFormDto = OrderFixture.ORDER_FORM_DTO;
 
-                String content = objectMapper.writeValueAsString(orderForm);
+                String content = objectMapper.writeValueAsString(orderFormDto);
 
                 // when
                 ResultActions resultActions = mockMvc.perform(
