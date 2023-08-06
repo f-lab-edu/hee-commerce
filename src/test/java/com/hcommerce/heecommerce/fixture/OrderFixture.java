@@ -72,6 +72,13 @@ public class OrderFixture {
     /**
      * rebuilder 는 상황에 따라 필드 값을 수정할 수 있도록 하기 위해 만든 함수이다.
      */
+    public static final OrderForm.OrderFormBuilder OrderFormRebuilder() {
+        return orderFormBuilder();
+    }
+
+    /**
+     * rebuilder 는 상황에 따라 필드 값을 수정할 수 있도록 하기 위해 만든 함수이다.
+     */
     public static final OrderFormDto.OrderFormDtoBuilder rebuilder() {
         return orderFormDtoBuilder();
     }

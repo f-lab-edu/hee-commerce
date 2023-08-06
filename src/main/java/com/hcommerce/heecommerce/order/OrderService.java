@@ -19,7 +19,6 @@ import com.hcommerce.heecommerce.order.dto.OrderFormDto;
 import com.hcommerce.heecommerce.order.entity.OrderFormSavedInAdvanceEntity;
 import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import com.hcommerce.heecommerce.order.exception.InvalidPaymentAmountException;
-import com.hcommerce.heecommerce.order.exception.MaxOrderQuantityExceededException;
 import com.hcommerce.heecommerce.order.exception.OrderOverStockException;
 import com.hcommerce.heecommerce.order.model.TossPaymentsApproveResultForStorage;
 import com.hcommerce.heecommerce.payment.TosspaymentsException;
@@ -101,7 +100,9 @@ public class OrderService {
         // TODO : 회원 기능 추가 후 구현
 
         // 3. 최대 주문 수량에 맞는 orderQuantity 인지
-        validateOrderQuantityInMaxOrderQuantityPerOrder(dealProductUuid, orderQuantity);
+        int maxOrderQuantityPerOrder = dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(dealProductUuid);
+
+        orderForm.validateOrderQuantityInMaxOrderQuantityPerOrder(maxOrderQuantityPerOrder);
 
         // 4. 실제 주문 수량 계산
         OutOfStockHandlingOption outOfStockHandlingOption = orderForm.getOutOfStockHandlingOption();
@@ -170,17 +171,6 @@ public class OrderService {
         }
 
         return realOrderQuantity;
-    }
-
-    /**
-     * validateOrderQuantityInMaxOrderQuantityPerOrder 는 최대 주문 수량에 맞는지에 대해 검증하는 함수이다.
-     */
-    private void validateOrderQuantityInMaxOrderQuantityPerOrder(UUID dealProductUuid, int orderQuantity) {
-        int maxOrderQuantityPerOrder = dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(dealProductUuid);
-
-        if(orderQuantity > maxOrderQuantityPerOrder) {
-            throw new MaxOrderQuantityExceededException(maxOrderQuantityPerOrder);
-        }
     }
 
     /**

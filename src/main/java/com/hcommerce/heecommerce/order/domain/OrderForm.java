@@ -4,6 +4,7 @@ import com.hcommerce.heecommerce.order.dto.OrderFormDto;
 import com.hcommerce.heecommerce.order.dto.RecipientInfoForm;
 import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import com.hcommerce.heecommerce.order.enums.PaymentMethod;
+import com.hcommerce.heecommerce.order.exception.MaxOrderQuantityExceededException;
 import com.hcommerce.heecommerce.order.exception.TimeDealProductNotFoundException;
 import java.util.UUID;
 import lombok.Builder;
@@ -63,6 +64,15 @@ public class OrderForm {
     public void validateHasDealProductUuid(boolean hasDealProductUuid) {
         if(!hasDealProductUuid) {
             throw new TimeDealProductNotFoundException(this.dealProductUuid);
+        }
+    }
+
+    /**
+     * validateOrderQuantityInMaxOrderQuantityPerOrder 는 최대 주문 수량에 맞는지에 대해 검증하는 함수이다.
+     */
+    public void validateOrderQuantityInMaxOrderQuantityPerOrder(int maxOrderQuantityPerOrder) {
+        if(this.orderQuantity > maxOrderQuantityPerOrder) {
+            throw new MaxOrderQuantityExceededException(maxOrderQuantityPerOrder);
         }
     }
 }
