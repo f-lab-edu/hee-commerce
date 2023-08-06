@@ -78,11 +78,23 @@ public class OrderForm {
     }
 
     /**
-     * preValidateOrderQuantityInInventory 는 주문 수량이 주문 가능한지에 대해 검증하는 함수이다.
+     * determineRealOrderQuantity 는 실제 주문 수량을 결정하는 함수 이다.
+     *
+     * realOrderQuantity 이 필요한 이유는 "부분 주문" 때문이다.
+     * 재고량이 0은 아니지만, 사용자가 주문한 수량에 비해 재고량이 없는 경우가 있다.
+     * 이때, 재고량만큼만 주문하도록 할 수 있도록 "부문 주문"이 가능한데, 사용자가 주문한 수량과 혼동되지 않도록 실제 주문하는 수량이라는 의미를 내포하기 위해서 필요하다.
      */
-    public void preValidateOrderQuantityInInventory(int inventory) {
+    public int determineRealOrderQuantity(int inventory) {
         if(inventory <= 0 || (this.orderQuantity > inventory && this.outOfStockHandlingOption == OutOfStockHandlingOption.ALL_CANCEL)) {
             throw new OrderOverStockException();
         }
+
+        int realOrderQuantity = this.orderQuantity;
+
+        if(this.orderQuantity > inventory && this.outOfStockHandlingOption == OutOfStockHandlingOption.PARTIAL_ORDER) {
+            realOrderQuantity = inventory;
+        }
+
+        return realOrderQuantity;
     }
 }

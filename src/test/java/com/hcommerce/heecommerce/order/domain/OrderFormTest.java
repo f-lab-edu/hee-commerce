@@ -1,6 +1,7 @@
 package com.hcommerce.heecommerce.order.domain;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.hcommerce.heecommerce.fixture.OrderFixture;
@@ -90,42 +91,45 @@ class OrderFormTest {
     }
 
     @Nested
-    @DisplayName("preValidateOrderQuantityInInventory")
-    class Describe_PreValidateOrderQuantityInInventory {
+    @DisplayName("determineRealOrderQuantity")
+    class Describe_DetermineRealOrderQuantity {
         @Nested
-        @DisplayName("with inventory > 0")
-        class Context_With_inventory_Is_More_Than_0 {
+        @DisplayName("with orderQuantity < inventory")
+        class Context_With_OrderQuantity_Is_Less_Than_Inventory {
             @Test
-            @DisplayName("does not throws OrderOverStockException")
-            void It_Does_Not_Throws_OrderOverStockException() {
+            @DisplayName("returns orderQuantity")
+            void It_Returns_OrderQuantity() {
                 OrderForm orderForm = OrderFixture.ORDER_FORM;
 
-                assertDoesNotThrow(() -> {
-                    int inventory = OrderFixture.INVENTORY;
+                int inventory = OrderFixture.INVENTORY;
 
-                    orderForm.preValidateOrderQuantityInInventory(inventory);
-                });
+                int realOrderQuantity = orderForm.determineRealOrderQuantity(inventory);
+
+                assertEquals(orderForm.getOrderQuantity(), realOrderQuantity);
             }
         }
 
         @Nested
-        @DisplayName("with inventory <= 0")
-        class Context_With_inventory_Is_Less_Than_0 {
+        @DisplayName("with orderQuantity > inventory and this.outOfStockHandlingOption = OutOfStockHandlingOption.PARTIAL_ORDER")
+        class Context_With_orderQuantity_Is_More_Than_Inventory_AND_OutOfStockHandlingOption_Is_PARTIAL_ORDER {
             @Test
-            @DisplayName("throws OrderOverStockException")
-            void It_throws_OrderOverStockException() {
-                OrderForm orderForm = OrderFixture.ORDER_FORM;
+            @DisplayName("returns inventory")
+            void It_Returns_Inventory() {
+                OrderForm orderForm = OrderFixture.OrderFormRebuilder()
+                    .orderQuantity(OrderFixture.ORDER_QUANTITY_OVER_INVENTORY)
+                    .outOfStockHandlingOption(OutOfStockHandlingOption.PARTIAL_ORDER)
+                    .build();
 
-                assertThrows(OrderOverStockException.class, () -> {
-                    int inventory = 0;
+                int inventory = OrderFixture.INVENTORY;
 
-                    orderForm.preValidateOrderQuantityInInventory(inventory);
-                });
+                int realOrderQuantity = orderForm.determineRealOrderQuantity(inventory);
+
+                assertEquals(inventory, realOrderQuantity);
             }
         }
 
         @Nested
-        @DisplayName("with this.orderQuantity > inventory and this.outOfStockHandlingOption == OutOfStockHandlingOption.ALL_CANCEL")
+        @DisplayName("with orderQuantity > inventory and outOfStockHandlingOption = OutOfStockHandlingOption.ALL_CANCEL")
         class Context_With_orderQuantity_Is_More_Than_Inventory_AND_OutOfStockHandlingOption_Is_ALL_CANCEL {
             @Test
             @DisplayName("throws OrderOverStockException")
@@ -138,7 +142,23 @@ class OrderFormTest {
                 assertThrows(OrderOverStockException.class, () -> {
                     int inventory = OrderFixture.INVENTORY;
 
-                    orderForm.preValidateOrderQuantityInInventory(inventory);
+                    orderForm.determineRealOrderQuantity(inventory);
+                });
+            }
+        }
+
+        @Nested
+        @DisplayName("with inventory <= 0")
+        class   Context_With_inventory_Is_Less_Than_0 {
+            @Test
+            @DisplayName("throws OrderOverStockException")
+            void It_throws_OrderOverStockException() {
+                OrderForm orderForm = OrderFixture.ORDER_FORM;
+
+                assertThrows(OrderOverStockException.class, () -> {
+                    int inventory = 0;
+
+                    orderForm.determineRealOrderQuantity(inventory);
                 });
             }
         }
