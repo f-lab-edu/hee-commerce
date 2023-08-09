@@ -7,6 +7,7 @@ import com.hcommerce.heecommerce.order.enums.PaymentMethod;
 import com.hcommerce.heecommerce.order.exception.MaxOrderQuantityExceededException;
 import com.hcommerce.heecommerce.order.exception.OrderOverStockException;
 import com.hcommerce.heecommerce.order.exception.TimeDealProductNotFoundException;
+import com.hcommerce.heecommerce.user.exception.UserNotFoundException;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
@@ -65,6 +66,15 @@ public class OrderForm {
     public void validateHasDealProductUuid(boolean hasDealProductUuid) {
         if(!hasDealProductUuid) {
             throw new TimeDealProductNotFoundException(this.dealProductUuid);
+        }
+    }
+
+    /**
+     * validateHasUserId 는 DB에 존재하는 UserId 인지 검사하는 함수이다.
+     */
+    public void validateHasUserId(boolean hasUserId) {
+        if(!hasUserId) {
+            throw new UserNotFoundException(this.userId);
         }
     }
 

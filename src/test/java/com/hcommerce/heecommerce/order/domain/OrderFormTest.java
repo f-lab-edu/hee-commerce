@@ -9,6 +9,7 @@ import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import com.hcommerce.heecommerce.order.exception.MaxOrderQuantityExceededException;
 import com.hcommerce.heecommerce.order.exception.OrderOverStockException;
 import com.hcommerce.heecommerce.order.exception.TimeDealProductNotFoundException;
+import com.hcommerce.heecommerce.user.exception.UserNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,42 @@ class OrderFormTest {
                     boolean hasDealProductUuid = false;
 
                     orderForm.validateHasDealProductUuid(hasDealProductUuid);
+                });
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("validateHasUserId")
+    class Describe_ValidateHasUserId {
+        @Nested
+        @DisplayName("when hasUserId is true")
+        class Context_When_HasUserId_Is_True {
+            @Test
+            @DisplayName("does not throws UserNotFoundException")
+            void It_Does_Not_Throws_UserNotFoundException() {
+                OrderForm orderForm = OrderFixture.ORDER_FORM;
+
+                assertDoesNotThrow(() -> {
+                    boolean hasUserId = true;
+
+                    orderForm.validateHasUserId(hasUserId);
+                });
+            }
+        }
+
+        @Nested
+        @DisplayName("when hasDealProductUuid is false")
+        class Context_When_HasDealProductUuid_Is_False {
+            @Test
+            @DisplayName("throws TimeDealProductNotFoundException")
+            void It_throws_TimeDealProductNotFoundException() {
+                OrderForm orderForm = OrderFixture.ORDER_FORM;
+
+                assertThrows(UserNotFoundException.class, () -> {
+                    boolean hasUserId = false;
+
+                    orderForm.validateHasUserId(hasUserId);
                 });
             }
         }
