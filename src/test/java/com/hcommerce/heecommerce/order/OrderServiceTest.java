@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -24,6 +25,8 @@ import com.hcommerce.heecommerce.order.exception.InvalidPaymentAmountException;
 import com.hcommerce.heecommerce.order.exception.MaxOrderQuantityExceededException;
 import com.hcommerce.heecommerce.order.exception.OrderOverStockException;
 import com.hcommerce.heecommerce.order.exception.TimeDealProductNotFoundException;
+import com.hcommerce.heecommerce.user.UserQueryRepository;
+import com.hcommerce.heecommerce.user.exception.UserNotFoundException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
@@ -42,6 +45,9 @@ import org.springframework.web.client.RestTemplate;
 @DisplayName("OrderService")
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
+
+    @Mock
+    private UserQueryRepository userQueryRepository;
 
     @Mock
     private OrderQueryRepository orderQueryRepository;
@@ -85,6 +91,8 @@ class OrderServiceTest {
                 // given
                 given_with_valid_dealProductUuid();
 
+                given_with_valid_userId();
+
                 given_with_maxOrderQuantityPerOrder(OrderFixture.MAX_ORDER_QUANTITY_PER_ORDER);
 
                 // 실제 주문 수량 계산
@@ -119,6 +127,28 @@ class OrderServiceTest {
             }
         }
 
+        @Nested
+        @DisplayName("with invalid userId")
+        class Context_With_Invalid_UserId {
+            @Test
+            @DisplayName("throws UserNotFoundException")
+            void It_throws_UserNotFoundException() {
+                // given
+                given_with_valid_dealProductUuid();
+
+                given_with_invalid_userId();
+
+                OrderFormDto orderFormDto = OrderFixture.rebuilder()
+                                                .userId(0)
+                                                .build();
+
+                // when + then
+                assertThrows(UserNotFoundException.class, () -> {
+                    orderService.placeOrderInAdvance(orderFormDto);
+                });
+            }
+        }
+
 
         @Nested
         @DisplayName("with orderQuantity > maxOrderQuantityPerOrder")
@@ -128,6 +158,8 @@ class OrderServiceTest {
             void It_throws_MaxOrderQuantityExceededException() {
                 // given
                 given_with_valid_dealProductUuid();
+
+                given_with_valid_userId();
 
                 given_with_maxOrderQuantityPerOrder(OrderFixture.MAX_ORDER_QUANTITY_PER_ORDER);
 
@@ -154,6 +186,8 @@ class OrderServiceTest {
                 void It_throws_OrderOverStockException() {
                     given_with_valid_dealProductUuid();
 
+                    given_with_valid_userId();
+
                     given_with_maxOrderQuantityPerOrder(OrderFixture.MAX_ORDER_QUANTITY_PER_ORDER);
 
                     given_with_inventory(OrderFixture.INVENTORY);
@@ -177,6 +211,8 @@ class OrderServiceTest {
                 @DisplayName("does not throws OrderOverStockException")
                 void It_Does_Not_OrderOverStockException() {
                     given_with_valid_dealProductUuid();
+
+                    given_with_valid_userId();
 
                     given_with_maxOrderQuantityPerOrder(OrderFixture.MAX_ORDER_QUANTITY_PER_ORDER);
 
@@ -210,6 +246,8 @@ class OrderServiceTest {
                 // given
                 given_with_valid_dealProductUuid();
 
+                given_with_valid_userId();
+
                 given_with_maxOrderQuantityPerOrder(OrderFixture.MAX_ORDER_QUANTITY_PER_ORDER);
 
                 given_with_inventory(OrderFixture.INVENTORY);
@@ -237,6 +275,14 @@ class OrderServiceTest {
 
         private void given_with_invalid_dealProductUuid() {
             given(dealProductQueryRepository.hasDealProductUuid(any())).willReturn(false);
+        }
+
+        private void given_with_valid_userId() {
+            given(userQueryRepository.hasUserId(anyInt())).willReturn(true);
+        }
+
+        private void given_with_invalid_userId() {
+            given(userQueryRepository.hasUserId(anyInt())).willReturn(false);
         }
 
         private void given_with_maxOrderQuantityPerOrder(int maxOrderQuantityPerOrder) {
