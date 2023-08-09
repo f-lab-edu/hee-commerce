@@ -22,6 +22,7 @@ import com.hcommerce.heecommerce.order.exception.InvalidPaymentAmountException;
 import com.hcommerce.heecommerce.order.exception.OrderOverStockException;
 import com.hcommerce.heecommerce.order.model.TossPaymentsApproveResultForStorage;
 import com.hcommerce.heecommerce.payment.TosspaymentsException;
+import com.hcommerce.heecommerce.user.UserQueryRepository;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,8 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 @Service
 public class OrderService {
+
+    private final UserQueryRepository userQueryRepository;
 
     private final OrderQueryRepository orderQueryRepository;
 
@@ -49,6 +52,7 @@ public class OrderService {
 
     @Autowired
     public OrderService(
+        UserQueryRepository userQueryRepository,
         OrderQueryRepository orderQueryRepository,
         OrderCommandRepository orderCommandRepository,
         InventoryQueryRepository inventoryQueryRepository,
@@ -56,6 +60,7 @@ public class OrderService {
         DealProductQueryRepository dealProductQueryRepository,
         RestTemplate restTemplate
     ) {
+        this.userQueryRepository = userQueryRepository;
         this.orderQueryRepository = orderQueryRepository;
         this.orderCommandRepository = orderCommandRepository;
         this.inventoryQueryRepository = inventoryQueryRepository;
@@ -80,6 +85,10 @@ public class OrderService {
         orderForm.validateHasDealProductUuid(hasDealProductUuid);
 
         // 2. DB에 존재하는 userId 인지
+        boolean hasUserId = userQueryRepository.hasUserId(orderForm.getUserId());
+
+        orderForm.validateHasUserId(hasUserId);
+
         // TODO : 회원 기능 추가 후 구현
 
         // 3. 최대 주문 수량에 맞는 orderQuantity 인지

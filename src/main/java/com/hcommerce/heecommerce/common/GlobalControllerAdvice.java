@@ -7,6 +7,7 @@ import com.hcommerce.heecommerce.order.exception.OrderNotFoundException;
 import com.hcommerce.heecommerce.order.exception.OrderOverStockException;
 import com.hcommerce.heecommerce.order.exception.TimeDealProductNotFoundException;
 import com.hcommerce.heecommerce.payment.TosspaymentsException;
+import com.hcommerce.heecommerce.user.exception.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class GlobalControllerAdvice {
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler
+    public ResponseDto userNotFoundExceptionHandler(UserNotFoundException e) {
+        return ResponseDto.builder()
+            .code(HttpStatus.NOT_FOUND.name())
+            .message(e.getMessage())
+            .build();
+    }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler
