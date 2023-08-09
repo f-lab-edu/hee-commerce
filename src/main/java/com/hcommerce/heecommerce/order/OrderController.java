@@ -2,7 +2,7 @@ package com.hcommerce.heecommerce.order;
 
 import com.hcommerce.heecommerce.common.dto.ResponseDto;
 import com.hcommerce.heecommerce.order.dto.OrderApproveForm;
-import com.hcommerce.heecommerce.order.dto.OrderForm;
+import com.hcommerce.heecommerce.order.dto.OrderFormDto;
 import com.hcommerce.heecommerce.order.dto.OrderUuid;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -25,14 +25,14 @@ public class OrderController {
 
     /**
      * 검증을 위한 주문 데이터 사전 저장
-     * @param orderForm
+     * @param orderFormDto
      * @return
      */
     @PostMapping("/orders/place-in-advance")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseDto placeOrderInAdvance(@Valid @RequestBody OrderForm orderForm) {
+    public ResponseDto placeOrderInAdvance(@Valid @RequestBody OrderFormDto orderFormDto) {
 
-        UUID orderUuid = orderService.placeOrderInAdvance(orderForm);
+        UUID orderUuid = orderService.placeOrderInAdvance(orderFormDto);
 
         return ResponseDto.builder()
             .code(HttpStatus.CREATED.name())

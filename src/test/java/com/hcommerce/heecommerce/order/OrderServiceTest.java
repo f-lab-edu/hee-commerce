@@ -18,7 +18,7 @@ import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import com.hcommerce.heecommerce.order.dto.OrderApproveForm;
 import com.hcommerce.heecommerce.order.dto.OrderForOrderApproveValidationDto;
-import com.hcommerce.heecommerce.order.dto.OrderForm;
+import com.hcommerce.heecommerce.order.dto.OrderFormDto;
 import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import com.hcommerce.heecommerce.order.exception.InvalidPaymentAmountException;
 import com.hcommerce.heecommerce.order.exception.MaxOrderQuantityExceededException;
@@ -78,7 +78,7 @@ class OrderServiceTest {
     class Describe_PlaceOrderInAdvance {
         @Nested
         @DisplayName("with valid orderForm")
-        class Context_With_Valid_OrderForm {
+        class Context_With_Valid_OrderFormDto {
             @Test
             @DisplayName("return OrderUuid")
             void It_returns_OrderUuid() throws InterruptedException {
@@ -96,7 +96,7 @@ class OrderServiceTest {
                 given_when_saveOrderInAdvance_is_success(expectedOrderUuid);
 
                 // when
-                UUID actualUuid = orderService.placeOrderInAdvance(OrderFixture.orderForm);
+                UUID actualUuid = orderService.placeOrderInAdvance(OrderFixture.ORDER_FORM_DTO);
 
                 // then
                 assertEquals(expectedOrderUuid, actualUuid);
@@ -114,7 +114,7 @@ class OrderServiceTest {
 
                 // when + then
                 assertThrows(TimeDealProductNotFoundException.class, () -> {
-                    orderService.placeOrderInAdvance(OrderFixture.orderForm);
+                    orderService.placeOrderInAdvance(OrderFixture.ORDER_FORM_DTO);
                 });
             }
         }
@@ -131,14 +131,14 @@ class OrderServiceTest {
 
                 given_with_maxOrderQuantityPerOrder(OrderFixture.MAX_ORDER_QUANTITY_PER_ORDER);
 
-                OrderForm orderForm = OrderFixture.rebuilder()
+                OrderFormDto orderFormDto = OrderFixture.rebuilder()
                     .orderQuantity(OrderFixture.ORDER_QUANTITY_OVER_MAX_ORDER_QUANTITY_PER_ORDER)
                     .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
                     .build();
 
                 // when + then
                 assertThrows(MaxOrderQuantityExceededException.class, () -> {
-                    orderService.placeOrderInAdvance(orderForm);
+                    orderService.placeOrderInAdvance(orderFormDto);
                 });
             }
         }
@@ -158,14 +158,14 @@ class OrderServiceTest {
 
                     given_with_inventory(OrderFixture.INVENTORY);
 
-                    OrderForm orderForm = OrderFixture.rebuilder()
+                    OrderFormDto orderFormDto = OrderFixture.rebuilder()
                         .orderQuantity(OrderFixture.ORDER_QUANTITY_OVER_INVENTORY)
                         .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
                         .build();
 
                     // when + then
                     assertThrows(OrderOverStockException.class, () -> {
-                        orderService.placeOrderInAdvance(orderForm);
+                        orderService.placeOrderInAdvance(orderFormDto);
                     });
                 }
             }
@@ -188,14 +188,14 @@ class OrderServiceTest {
 
                     given_when_saveOrderInAdvance_is_success(uuidFixture);
 
-                    OrderForm orderForm = OrderFixture.rebuilder()
+                    OrderFormDto orderFormDto = OrderFixture.rebuilder()
                         .orderQuantity(OrderFixture.ORDER_QUANTITY_OVER_INVENTORY)
                         .outOfStockHandlingOption(OutOfStockHandlingOption.PARTIAL_ORDER)
                         .build();
 
                     // when + then
                     assertDoesNotThrow(() -> {
-                        orderService.placeOrderInAdvance(orderForm);
+                        orderService.placeOrderInAdvance(orderFormDto);
                     });
                 }
             }
@@ -218,13 +218,13 @@ class OrderServiceTest {
 
                 UUID ROLLBACK_NEEDED_DEAL_PRODUCT_UUID = UUID.randomUUID();
 
-                OrderForm orderForm = OrderFixture.rebuilder()
+                OrderFormDto orderFormDto = OrderFixture.rebuilder()
                     .dealProductUuid(ROLLBACK_NEEDED_DEAL_PRODUCT_UUID)
                     .build();
 
                 // when
                 assertThrows(OrderOverStockException.class, () -> {
-                    orderService.placeOrderInAdvance(orderForm);
+                    orderService.placeOrderInAdvance(orderFormDto);
                 });
 
                 verify(inventoryCommandRepository).increase(any());

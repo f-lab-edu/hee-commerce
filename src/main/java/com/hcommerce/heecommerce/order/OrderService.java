@@ -5,22 +5,21 @@ import com.hcommerce.heecommerce.common.utils.DateTimeConversionUtils;
 import com.hcommerce.heecommerce.common.utils.TosspaymentsUtils;
 import com.hcommerce.heecommerce.common.utils.TypeConversionUtils;
 import com.hcommerce.heecommerce.deal.DealProductQueryRepository;
-import com.hcommerce.heecommerce.deal.enums.DiscountType;
 import com.hcommerce.heecommerce.deal.dto.TimeDealProductDetail;
+import com.hcommerce.heecommerce.deal.enums.DiscountType;
 import com.hcommerce.heecommerce.inventory.InventoryCommandRepository;
 import com.hcommerce.heecommerce.inventory.InventoryQueryRepository;
 import com.hcommerce.heecommerce.inventory.dto.InventoryIncreaseDecreaseDto;
 import com.hcommerce.heecommerce.inventory.enums.InventoryEventType;
+import com.hcommerce.heecommerce.order.domain.OrderForm;
 import com.hcommerce.heecommerce.order.dto.OrderAfterApproveDto;
 import com.hcommerce.heecommerce.order.dto.OrderApproveForm;
 import com.hcommerce.heecommerce.order.dto.OrderForOrderApproveValidationDto;
-import com.hcommerce.heecommerce.order.dto.OrderForm;
+import com.hcommerce.heecommerce.order.dto.OrderFormDto;
 import com.hcommerce.heecommerce.order.entity.OrderFormSavedInAdvanceEntity;
 import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import com.hcommerce.heecommerce.order.exception.InvalidPaymentAmountException;
-import com.hcommerce.heecommerce.order.exception.MaxOrderQuantityExceededException;
 import com.hcommerce.heecommerce.order.exception.OrderOverStockException;
-import com.hcommerce.heecommerce.order.exception.TimeDealProductNotFoundException;
 import com.hcommerce.heecommerce.order.model.TossPaymentsApproveResultForStorage;
 import com.hcommerce.heecommerce.payment.TosspaymentsException;
 import java.util.UUID;
@@ -66,6 +65,76 @@ public class OrderService {
     }
 
     /**
+     * placeOrderInAdvance 는 주문 승인 전에 검증을 위해 미리 주문 내역을 저장하는 함수이다.
+     */
+    public UUID placeOrderInAdvance(OrderFormDto orderFormDto) {
+        OrderForm orderForm = OrderForm.from(orderFormDto);
+
+        UUID dealProductUuid = orderForm.getDealProductUuid();
+
+        UUID orderUuid = orderForm.getOrderUuid();
+
+        // 1. DB에 존재하는 dealProductUuid 인지
+        boolean hasDealProductUuid = dealProductQueryRepository.hasDealProductUuid(dealProductUuid);
+
+        orderForm.validateHasDealProductUuid(hasDealProductUuid);
+
+        // 2. DB에 존재하는 userId 인지
+        // TODO : 회원 기능 추가 후 구현
+
+        // 3. 최대 주문 수량에 맞는 orderQuantity 인지
+        int maxOrderQuantityPerOrder = dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(dealProductUuid);
+
+        orderForm.validateOrderQuantityInMaxOrderQuantityPerOrder(maxOrderQuantityPerOrder);
+
+        // 4. 실제 주문 수량 계산
+        // (1) 재고 조회
+        int inventory = inventoryQueryRepository.get(dealProductUuid);
+
+        // (2) 실제 주문 가능 수량 계산
+        int realOrderQuantity = orderForm.determineRealOrderQuantity(inventory);
+
+        // (3) 재고 감소
+        int inventoryAfterDecrease = inventoryCommandRepository.decrease(
+                                                                    InventoryIncreaseDecreaseDto.builder()
+                                                                    .dealProductUuid(dealProductUuid)
+                                                                    .orderUuid(orderUuid)
+                                                                    .inventory(realOrderQuantity)
+                                                                    .inventoryEventType(InventoryEventType.ORDER)
+                                                                    .build()
+                                                                );
+
+        // (4) 재고 사후 검증
+        postValidateOrderQuantityInInventory(inventoryAfterDecrease, dealProductUuid, orderUuid, realOrderQuantity);
+
+        // 5. 주문 내역 미리 저장
+        try {
+            OrderFormSavedInAdvanceEntity orderFormSavedInAdvanceEntity = createOrderFormSavedInAdvanceEntity(
+                orderForm, realOrderQuantity);
+
+            UUID orderUuidSavedInAdvance = orderCommandRepository.saveOrderInAdvance(orderFormSavedInAdvanceEntity);
+
+            return orderUuidSavedInAdvance;
+        } catch (Exception e) {
+            log.error("[saveOrderInAdvance] orderUuid = {}", orderForm.getOrderUuid());
+            throw e;
+        }
+    }
+
+    /**
+     * postValidateOrderQuantityInInventory 는 재고 사후 검증을 하는 함수이다.
+     *
+     * 분산락 대신 재고 사후 검증 단계를 도입한 이유는 https://github.com/f-lab-edu/hee-commerce/issues/136 참고
+     * 추가로, 분산락이 필요했던 이유는 https://github.com/f-lab-edu/hee-commerce/pull/135 참고
+     */
+    private void postValidateOrderQuantityInInventory(int inventoryAfterDecrease, UUID dealProductUuid, UUID orderUuid, int realOrderQuantity) {
+        if(inventoryAfterDecrease < 0) { // 재고 감소가 되지 않아야 되는데, 감소가 된 경우이다. 재고 조회시의 재고량과 실제 감소시킬 떄의 재고량이 달라진 경우에 발생 함.
+            rollbackReducedInventory(InventoryEventType.ROLLBACK_BY_POST_VALIDATION_FAILED, dealProductUuid, orderUuid, realOrderQuantity);
+            throw new OrderOverStockException();
+        }
+    }
+
+    /**
      * rollbackReducedInventory 는 임의로 감소시킨 재고량을 다시 원상복귀하기 위한 함수이다.
      * 함수로 만든 이유는 다양한 원인으로 재고량을 rollback 시켜줘야 하므로, 함수로 만들어 재활용하고 싶었기 때문이다.
      * @param dealProductUuid : 원상복귀해야 하는 딜 상품 key
@@ -83,113 +152,6 @@ public class OrderService {
     }
 
     /**
-     * placeOrderInAdvance 는 주문 승인 전에 검증을 위해 미리 주문 내역을 저장하는 함수이다.
-     */
-    public UUID placeOrderInAdvance(OrderForm orderForm) {
-        UUID dealProductUuid = orderForm.getDealProductUuid();
-
-        int orderQuantity = orderForm.getOrderQuantity();
-
-        // 1. DB에 존재하는 dealProductUuid 인지
-        validateHasDealProductUuid(dealProductUuid);
-
-        // 2. DB에 존재하는 userId 인지
-        // TODO : 회원 기능 추가 후 구현
-
-        // 3. 최대 주문 수량에 맞는 orderQuantity 인지
-        validateOrderQuantityInMaxOrderQuantityPerOrder(dealProductUuid, orderQuantity);
-
-        // 4. 실제 주문 수량 계산
-        OutOfStockHandlingOption outOfStockHandlingOption = orderForm.getOutOfStockHandlingOption();
-
-        int realOrderQuantity = determineRealOrderQuantity(dealProductUuid, orderForm.getOrderUuid(), orderQuantity, outOfStockHandlingOption);
-
-        // 5. 주문 내역 미리 저장
-        try {
-            OrderFormSavedInAdvanceEntity orderFormSavedInAdvanceEntity = createOrderFormSavedInAdvanceEntity(orderForm, realOrderQuantity);
-
-            UUID orderUuidSavedInAdvance = orderCommandRepository.saveOrderInAdvance(orderFormSavedInAdvanceEntity);
-
-            return orderUuidSavedInAdvance;
-        } catch (Exception e) {
-            log.error("[saveOrderInAdvance] orderUuid = {}", orderForm.getOrderUuid());
-            throw e;
-        }
-    }
-
-    /**
-     * determineRealOrderQuantity 는 실제 주문 수량을 결정하는 함수 이다.
-     *
-     * realOrderQuantity 이 필요한 이유는 "부분 주문" 때문이다.
-     * 재고량이 0은 아니지만, 사용자가 주문한 수량에 비해 재고량이 없는 경우가 있다.
-     * 이때, 재고량만큼만 주문하도록 할 수 있도록 "부문 주문"이 가능한데, 사용자가 주문한 수량과 혼동되지 않도록 실제 주문하는 수량이라는 의미를 내포하기 위해서 필요하다.
-     *
-     * 트랜잭션 대신 분산락을 사용했던 이유는 https://github.com/f-lab-edu/hee-commerce/pull/135 참고
-     *
-     * 분산락 대신 재고 사후 검증 단계를 도입한 이유는 https://github.com/f-lab-edu/hee-commerce/issues/136 참고
-     *
-     */
-    private int determineRealOrderQuantity(UUID dealProductUuid, UUID orderUuid, int orderQuantity, OutOfStockHandlingOption outOfStockHandlingOption) {
-        log.debug("dealProductUuid = {}, orderQuantity = {}, outOfStockHandlingOption = {}", dealProductUuid, orderQuantity, outOfStockHandlingOption);
-
-        // 1. 재고 조회
-        int inventory = inventoryQueryRepository.get(dealProductUuid);
-        log.debug("inventory = {} ", inventory);
-
-        // 2. 재고 사전 검증
-        if(inventory <= 0 || (inventory < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.ALL_CANCEL)) {
-            throw new OrderOverStockException();
-        }
-
-        int realOrderQuantity = orderQuantity;
-
-        if(inventory < orderQuantity && outOfStockHandlingOption == OutOfStockHandlingOption.PARTIAL_ORDER) {
-            realOrderQuantity = inventory;
-        }
-        log.debug("realOrderQuantity = {}", realOrderQuantity);
-
-        // 3. 재고 감소
-        int inventoryAfterDecrease = inventoryCommandRepository.decrease(InventoryIncreaseDecreaseDto.builder()
-            .dealProductUuid(dealProductUuid)
-            .orderUuid(orderUuid)
-            .inventory(realOrderQuantity)
-            .inventoryEventType(InventoryEventType.ORDER)
-            .build());
-
-        log.debug("inventoryAfterDecrease = {}", inventoryAfterDecrease);
-
-        // 4. 재고 사후 검증
-        if(inventoryAfterDecrease < 0) { // 재고 감소가 되지 않아야 되는데, 감소가 된 경우이다. 재고 조회시의 재고량과 실제 감소시킬 떄의 재고량이 달라진 경우에 발생 함.
-            rollbackReducedInventory(InventoryEventType.ROLLBACK_BY_POST_VALIDATION_FAILED, dealProductUuid, orderUuid, realOrderQuantity);
-            throw new OrderOverStockException();
-        }
-
-        return realOrderQuantity;
-    }
-
-    /**
-     * validateHasDealProductUuid 는 DB에 존재하는 dealProductUuid 인지 검사하는 함수이다.
-     */
-    private void validateHasDealProductUuid(UUID dealProductUuid) {
-        boolean hasDealProductUuid = dealProductQueryRepository.hasDealProductUuid(dealProductUuid);
-
-        if(!hasDealProductUuid) {
-            throw new TimeDealProductNotFoundException(dealProductUuid);
-        }
-    }
-
-    /**
-     * validateOrderQuantityInMaxOrderQuantityPerOrder 는 최대 주문 수량에 맞는지에 대해 검증하는 함수이다.
-     */
-    private void validateOrderQuantityInMaxOrderQuantityPerOrder(UUID dealProductUuid, int orderQuantity) {
-        int maxOrderQuantityPerOrder = dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(dealProductUuid);
-
-        if(orderQuantity > maxOrderQuantityPerOrder) {
-            throw new MaxOrderQuantityExceededException(maxOrderQuantityPerOrder);
-        }
-    }
-
-    /**
      * createOrderFormSavedInAdvanceEntity 는 OrderFormSavedInAdvanceEntity 를 만드는 함수 이다.
      * 이 함수가 필요한 이유는 다음 3가지 때문이다.
      * 1. UUID
@@ -199,12 +161,14 @@ public class OrderService {
      * 3. 부분 주문
      * - 실제 주문 수량과 다르게 주문이 접수되는 경우도 있기 때문이다.
      */
-    private OrderFormSavedInAdvanceEntity createOrderFormSavedInAdvanceEntity(OrderForm orderForm, int realOrderQuantity) {
+    private OrderFormSavedInAdvanceEntity createOrderFormSavedInAdvanceEntity(
+        OrderForm orderForm, int realOrderQuantity) {
         // 1. UUID
         byte[] uuid = TypeConversionUtils.convertUuidToBinary(orderForm.getOrderUuid());
 
         // 2. 총 결제 금액
-        TimeDealProductDetail timeDealProductDetail = dealProductQueryRepository.getTimeDealProductDetailByDealProductUuid(orderForm.getDealProductUuid());
+        TimeDealProductDetail timeDealProductDetail = dealProductQueryRepository.getTimeDealProductDetailByDealProductUuid(
+            orderForm.getDealProductUuid());
 
         int totalPaymentAmount = calculateTotalPaymentAmount(timeDealProductDetail.getProductOriginPrice(), realOrderQuantity, timeDealProductDetail.getDealProductDiscountType(), timeDealProductDetail.getDealProductDiscountValue());
 
