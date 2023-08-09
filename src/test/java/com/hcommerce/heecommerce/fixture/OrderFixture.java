@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public class OrderFixture {
 
-    public static final int USER_ID = 1;
+    public static final int USER_ID = UserFixture.ID;
 
     public static final UUID ORDER_UUID = UUID.randomUUID();
 
