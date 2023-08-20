@@ -1,6 +1,7 @@
 package com.hcommerce.heecommerce.order;
 
 import com.hcommerce.heecommerce.common.dto.ResponseDto;
+import com.hcommerce.heecommerce.order.domain.OrderForm;
 import com.hcommerce.heecommerce.order.dto.OrderApproveForm;
 import com.hcommerce.heecommerce.order.dto.OrderFormDto;
 import com.hcommerce.heecommerce.order.dto.OrderUuid;
@@ -32,7 +33,9 @@ public class OrderController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto placeOrderInAdvance(@Valid @RequestBody OrderFormDto orderFormDto) {
 
-        UUID orderUuid = orderService.placeOrderInAdvance(orderFormDto);
+        OrderForm orderForm = OrderForm.of(orderFormDto, 1); // TODO : 임의 데이터 넣어줌. auth 완성 후 수정 예정
+
+        UUID orderUuid = orderService.placeOrderInAdvance(orderForm);
 
         return ResponseDto.builder()
             .code(HttpStatus.CREATED.name())

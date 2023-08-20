@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcommerce.heecommerce.EnableMockMvc;
 import com.hcommerce.heecommerce.fixture.OrderFixture;
 import com.hcommerce.heecommerce.fixture.UserFixture;
+import com.hcommerce.heecommerce.order.domain.OrderForm;
 import com.hcommerce.heecommerce.order.dto.OrderApproveForm;
 import com.hcommerce.heecommerce.order.dto.OrderFormDto;
 import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
@@ -213,13 +214,14 @@ class OrderControllerTest {
                 @DisplayName("returns 201")
                 void It_returns_201() throws Exception {
                     // given
-                    OrderFormDto orderFormDto = OrderFixture.rebuilder()
+                    OrderForm orderForm = OrderFixture.OrderFormRebuilder()
                                                 .outOfStockHandlingOption(OutOfStockHandlingOption.PARTIAL_ORDER)
                                                 .build();
 
-                    given(orderService.placeOrderInAdvance(orderFormDto)).willReturn(UUID.randomUUID());
 
-                    String content = objectMapper.writeValueAsString(orderFormDto);
+                    given(orderService.placeOrderInAdvance(orderForm)).willReturn(UUID.randomUUID());
+
+                    String content = objectMapper.writeValueAsString(orderForm);
 
                     // when
                     ResultActions resultActions = mockMvc.perform(

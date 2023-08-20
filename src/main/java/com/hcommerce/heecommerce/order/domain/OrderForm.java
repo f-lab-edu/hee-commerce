@@ -48,9 +48,9 @@ public class OrderForm {
         this.paymentMethod = paymentMethod;
     }
 
-    public static OrderForm from(OrderFormDto orderFormDto) {
+    public static OrderForm of(OrderFormDto orderFormDto, int userId) {
         return OrderForm.builder()
-            .userId(orderFormDto.getUserId())
+            .userId(userId)
             .orderUuid(orderFormDto.getOrderUuid())
             .recipientInfoForm(orderFormDto.getRecipientInfoForm())
             .outOfStockHandlingOption(orderFormDto.getOutOfStockHandlingOption())
