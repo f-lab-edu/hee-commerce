@@ -92,7 +92,7 @@ public class AuthenticationService {
     private String extractAccessToken(String authorization) {
         String[] authorizationUnit = authorization.split(AUTH_TYPE+" ");
 
-        if(authorizationUnit.length == 0) {
+        if(authorizationUnit.length < 2) {
             return null;
         }
 
