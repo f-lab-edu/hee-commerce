@@ -15,7 +15,6 @@ import com.hcommerce.heecommerce.order.domain.OrderForm;
 import com.hcommerce.heecommerce.order.dto.OrderAfterApproveDto;
 import com.hcommerce.heecommerce.order.dto.OrderApproveForm;
 import com.hcommerce.heecommerce.order.dto.OrderForOrderApproveValidationDto;
-import com.hcommerce.heecommerce.order.dto.OrderFormDto;
 import com.hcommerce.heecommerce.order.entity.OrderFormSavedInAdvanceEntity;
 import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import com.hcommerce.heecommerce.order.exception.InvalidPaymentAmountException;
@@ -72,9 +71,7 @@ public class OrderService {
     /**
      * placeOrderInAdvance 는 주문 승인 전에 검증을 위해 미리 주문 내역을 저장하는 함수이다.
      */
-    public UUID placeOrderInAdvance(OrderFormDto orderFormDto) {
-        OrderForm orderForm = OrderForm.from(orderFormDto);
-
+    public UUID placeOrderInAdvance(OrderForm orderForm) {
         UUID dealProductUuid = orderForm.getDealProductUuid();
 
         UUID orderUuid = orderForm.getOrderUuid();
@@ -88,8 +85,6 @@ public class OrderService {
         boolean hasUserId = userQueryRepository.hasUserId(orderForm.getUserId());
 
         orderForm.validateHasUserId(hasUserId);
-
-        // TODO : 회원 기능 추가 후 구현
 
         // 3. 최대 주문 수량에 맞는 orderQuantity 인지
         int maxOrderQuantityPerOrder = dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(dealProductUuid);

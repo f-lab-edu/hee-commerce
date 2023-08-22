@@ -1,6 +1,9 @@
 package com.hcommerce.heecommerce.order;
 
+import com.hcommerce.heecommerce.auth.AuthUserInfo;
+import com.hcommerce.heecommerce.auth.AuthenticationService;
 import com.hcommerce.heecommerce.common.dto.ResponseDto;
+import com.hcommerce.heecommerce.order.domain.OrderForm;
 import com.hcommerce.heecommerce.order.dto.OrderApproveForm;
 import com.hcommerce.heecommerce.order.dto.OrderFormDto;
 import com.hcommerce.heecommerce.order.dto.OrderUuid;
@@ -10,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,9 +22,12 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    private final AuthenticationService authenticationService;
+
     @Autowired
-    public OrderController(OrderService orderService) {
+    public OrderController(OrderService orderService, AuthenticationService authenticationService) {
         this.orderService = orderService;
+        this.authenticationService = authenticationService;
     }
 
     /**
@@ -30,9 +37,15 @@ public class OrderController {
      */
     @PostMapping("/orders/place-in-advance")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseDto placeOrderInAdvance(@Valid @RequestBody OrderFormDto orderFormDto) {
+    public ResponseDto placeOrderInAdvance(
+        @RequestHeader(value = "Authorization") String authorization,
+        @Valid @RequestBody OrderFormDto orderFormDto
+    ) {
+        AuthUserInfo authUserInfo = authenticationService.parseAuthorization(authorization);
 
-        UUID orderUuid = orderService.placeOrderInAdvance(orderFormDto);
+        OrderForm orderForm = OrderForm.of(orderFormDto, authUserInfo.getUserId());
+
+        UUID orderUuid = orderService.placeOrderInAdvance(orderForm);
 
         return ResponseDto.builder()
             .code(HttpStatus.CREATED.name())
