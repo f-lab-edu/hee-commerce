@@ -7,10 +7,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-/**
- * 현재 JWT 토큰 사용하는 상황을 가정했는데, 세션 저장소 사용도 고려 중인 상황을 대비하여 AbstractAuthHepler 추상 클래스로 하고, SessionAuthHelper 또는 JwtAuthHelper
- * 인터페이스가 아닌 abstract 로 한 이유는 아직 결정되서 완성된 것이 아니라는 의도를 드러내고 싶어서?
- */
 @Service
 public class AuthenticationService {
 
