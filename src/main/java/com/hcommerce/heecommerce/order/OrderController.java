@@ -41,7 +41,7 @@ public class OrderController {
         @RequestHeader(value = "Authorization") String authorization,
         @Valid @RequestBody OrderFormDto orderFormDto
     ) {
-        AuthUserInfo authUserInfo = authenticationService.parseAuthorization(authorization);
+        AuthUserInfo authUserInfo = authenticationService.getAuthUserInfo(authorization);
 
         OrderForm orderForm = OrderForm.of(orderFormDto, authUserInfo.getUserId());
 
