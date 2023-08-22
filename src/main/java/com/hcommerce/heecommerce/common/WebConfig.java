@@ -19,6 +19,6 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(authInterceptor)
                 .order(1)
-                .addPathPatterns("/order/**"); // 주문 관련 기능은 회원만 가능하도록
+                .addPathPatterns("/orders/**"); // 주문 관련 기능은 회원만 가능하도록
     }
 }
