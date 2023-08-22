@@ -9,16 +9,12 @@ import java.beans.ConstructorProperties;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
-import org.hibernate.validator.constraints.Range;
 
 @Getter
 public class OrderFormDto {
 
     @NotNull(message = "주문 ID는 필수입니다.")
     private final UUID orderUuid;
-
-    @Range(min = 1, message = "주문자 ID를 확인해주세요.")
-    private final int userId;
 
     @Valid
     @NotNull(message = "수령자 정보는 필수입니다.")
@@ -39,7 +35,6 @@ public class OrderFormDto {
     @Builder
     @ConstructorProperties({
         "orderUuid",
-        "userId",
         "recipientInfoForm",
         "outOfStockHandlingOption",
         "dealProductUuid",
@@ -48,14 +43,12 @@ public class OrderFormDto {
     })
     public OrderFormDto(
         UUID orderUuid,
-        int userId,
         RecipientInfoForm recipientInfoForm,
         OutOfStockHandlingOption outOfStockHandlingOption,
         UUID dealProductUuid,
         int orderQuantity,
         PaymentMethod paymentMethod
     ) {
-        this.userId = userId;
         this.orderUuid = orderUuid;
         this.recipientInfoForm = recipientInfoForm;
         this.outOfStockHandlingOption = outOfStockHandlingOption;

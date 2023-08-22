@@ -10,7 +10,6 @@ import com.hcommerce.heecommerce.EnableMockMvc;
 import com.hcommerce.heecommerce.auth.AuthenticationService;
 import com.hcommerce.heecommerce.fixture.AuthFixture;
 import com.hcommerce.heecommerce.fixture.OrderFixture;
-import com.hcommerce.heecommerce.fixture.UserFixture;
 import com.hcommerce.heecommerce.order.domain.OrderForm;
 import com.hcommerce.heecommerce.order.dto.OrderApproveForm;
 import com.hcommerce.heecommerce.order.dto.OrderFormDto;
@@ -18,7 +17,6 @@ import com.hcommerce.heecommerce.order.enums.OutOfStockHandlingOption;
 import com.hcommerce.heecommerce.order.exception.InvalidPaymentAmountException;
 import com.hcommerce.heecommerce.order.exception.OrderOverStockException;
 import com.hcommerce.heecommerce.order.exception.TimeDealProductNotFoundException;
-import com.hcommerce.heecommerce.user.exception.UserNotFoundException;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -167,36 +165,6 @@ class OrderControllerTest {
                 // when
                 String content = objectMapper.writeValueAsString(
                     orderFormDtoWithNotExistDealProductUuid);
-
-                ResultActions resultActions = mockMvc.perform(
-                    post("/orders/place-in-advance")
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header("Authorization", AuthFixture.AUTHORIZATION)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(content)
-                );
-
-                // then
-                resultActions.andExpect(status().isNotFound());
-            }
-        }
-
-        @Nested
-        @DisplayName("with invalid userId")
-        class Context_With_Invalid_userId {
-            @Test
-            @DisplayName("returns 404")
-            void It_returns_404() throws Exception {
-
-                OrderFormDto orderFormDtoWithNotExistUserId = OrderFixture.rebuilder()
-                    .userId(UserFixture.INVALID_ID)
-                    .build();
-
-                // given
-                given(orderService.placeOrderInAdvance(any())).willThrow(UserNotFoundException.class);
-
-                // when
-                String content = objectMapper.writeValueAsString(orderFormDtoWithNotExistUserId);
 
                 ResultActions resultActions = mockMvc.perform(
                     post("/orders/place-in-advance")

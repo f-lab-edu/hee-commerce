@@ -45,7 +45,6 @@ public class OrderFixture {
     // 주문 사전 저장 Form
     private static OrderFormDto.OrderFormDtoBuilder orderFormDtoBuilder() {
         return OrderFormDto.builder()
-            .userId(USER_ID)
             .orderUuid(ORDER_UUID)
             .recipientInfoForm(recipientInfoForm)
             .outOfStockHandlingOption(OutOfStockHandlingOption.PARTIAL_ORDER)
