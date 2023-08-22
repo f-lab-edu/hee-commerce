@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcommerce.heecommerce.EnableMockMvc;
+import com.hcommerce.heecommerce.auth.AuthenticationService;
+import com.hcommerce.heecommerce.fixture.AuthFixture;
 import com.hcommerce.heecommerce.fixture.OrderFixture;
 import com.hcommerce.heecommerce.fixture.UserFixture;
 import com.hcommerce.heecommerce.order.domain.OrderForm;
@@ -49,6 +51,8 @@ class OrderControllerTest {
 
     private MockHttpSession session;
 
+    private AuthenticationService authenticationService;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -76,6 +80,7 @@ class OrderControllerTest {
                 ResultActions resultActions = mockMvc.perform(
                     post("/orders/place-in-advance")
                         .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", AuthFixture.AUTHORIZATION)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(content)
                 );
@@ -83,6 +88,62 @@ class OrderControllerTest {
                 // then
                 resultActions.andExpect(status().isCreated())
                     .andDo(OrderControllerRestDocs.placeOrderInAdvance());
+            }
+        }
+
+        @Nested
+        @DisplayName("with invalid Authorization")
+        class Context_With_Invalid_Authorization {
+            @Test
+            @DisplayName("returns 401")
+            void It_returns_401() throws Exception {
+
+                // given
+                String authorization = AuthFixture.AUTHORIZATION_WITH_INVALID_AUTH_TYPE;
+
+                OrderFormDto orderFormDto = OrderFixture.ORDER_FORM_DTO;
+
+                // when
+                String content = objectMapper.writeValueAsString(orderFormDto);
+
+                ResultActions resultActions = mockMvc.perform(
+                    post("/orders/place-in-advance")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", authorization)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content)
+                );
+
+                // then
+                resultActions.andExpect(status().isUnauthorized());
+            }
+        }
+
+        @Nested
+        @DisplayName("with invalid token")
+        class Context_With_Invalid_token {
+            @Test
+            @DisplayName("returns 401")
+            void It_returns_401() throws Exception {
+
+                // given
+                String authorization = AuthFixture.AUTHORIZATION_WITHOUT_TOKEN;
+
+                OrderFormDto orderFormDto = OrderFixture.ORDER_FORM_DTO;
+
+                // when
+                String content = objectMapper.writeValueAsString(orderFormDto);
+
+                ResultActions resultActions = mockMvc.perform(
+                    post("/orders/place-in-advance")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", authorization)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content)
+                );
+
+                // then
+                resultActions.andExpect(status().isUnauthorized());
             }
         }
 
@@ -110,6 +171,7 @@ class OrderControllerTest {
                 ResultActions resultActions = mockMvc.perform(
                     post("/orders/place-in-advance")
                         .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", AuthFixture.AUTHORIZATION)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(content)
                 );
@@ -118,7 +180,6 @@ class OrderControllerTest {
                 resultActions.andExpect(status().isNotFound());
             }
         }
-
 
         @Nested
         @DisplayName("with invalid userId")
@@ -140,6 +201,7 @@ class OrderControllerTest {
                 ResultActions resultActions = mockMvc.perform(
                     post("/orders/place-in-advance")
                         .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", AuthFixture.AUTHORIZATION)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(content)
                 );
@@ -166,6 +228,7 @@ class OrderControllerTest {
                 ResultActions resultActions = mockMvc.perform(
                     post("/orders/place-in-advance")
                         .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", AuthFixture.AUTHORIZATION).header("Authorization", AuthFixture.AUTHORIZATION)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(content)
                 );
@@ -198,6 +261,7 @@ class OrderControllerTest {
                     ResultActions resultActions = mockMvc.perform(
                         post("/orders/place-in-advance")
                             .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", AuthFixture.AUTHORIZATION)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(content)
                     );
@@ -227,6 +291,7 @@ class OrderControllerTest {
                     ResultActions resultActions = mockMvc.perform(
                         post("/orders/place-in-advance")
                             .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", AuthFixture.AUTHORIZATION)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(content)
                     );
@@ -254,6 +319,8 @@ class OrderControllerTest {
                 ResultActions resultActions = mockMvc.perform(
                     post("/orders/place-in-advance")
                         .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", AuthFixture.AUTHORIZATION)
+                        .header("Authorization", AuthFixture.AUTHORIZATION)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(content)
                 );
@@ -284,6 +351,7 @@ class OrderControllerTest {
                 ResultActions resultActions = mockMvc.perform(
                     post("/orders/approve")
                         .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", AuthFixture.AUTHORIZATION)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(content)
                 );
@@ -312,6 +380,7 @@ class OrderControllerTest {
                 ResultActions resultActions = mockMvc.perform(
                     post("/orders/approve")
                         .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", AuthFixture.AUTHORIZATION)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(content)
                 );

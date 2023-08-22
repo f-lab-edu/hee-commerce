@@ -1,5 +1,6 @@
 package com.hcommerce.heecommerce.common;
 
+import com.hcommerce.heecommerce.auth.InvalidTokenException;
 import com.hcommerce.heecommerce.common.dto.ResponseDto;
 import com.hcommerce.heecommerce.order.exception.InvalidPaymentAmountException;
 import com.hcommerce.heecommerce.order.exception.MaxOrderQuantityExceededException;
@@ -83,6 +84,17 @@ public class GlobalControllerAdvice {
             .build();
     }
 
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler
+    public ResponseDto invalidTokenExceptionHandler(InvalidTokenException e) {
+        log.error("class = {}, message = {}, cause = {}", e.getClass(), e.getMessage(), e.getCause());
+
+        return ResponseDto.builder()
+            .code(HttpStatus.UNAUTHORIZED.name())
+            .message(e.getMessage())
+            .build();
+    }
+
     /**
      * @ResponseStatus 어노테이션을 안 붙인 이유는 토스페이먼츠의 에러 코드가 400대일 수도 있고 500일 수도 있어어서, 동적으로 상태코드를 변경할 수 있도록 하기 위해서이다.
      */
@@ -100,7 +112,7 @@ public class GlobalControllerAdvice {
     @ExceptionHandler
     public ResponseDto fallbackExceptionHandler(Exception e) {
         log.error("class = {}, message = {}, cause = {}", e.getClass(), e.getMessage(), e.getCause());
-        log.debug("stackTrace = {}", e.getStackTrace());
+        log.error("stackTrace = {}", e.getStackTrace());
 
         return ResponseDto.builder()
                 .code(HttpStatus.INTERNAL_SERVER_ERROR.name())
