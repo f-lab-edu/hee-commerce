@@ -4,12 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 
-import com.hcommerce.heecommerce.common.utils.JwtUtils;
 import com.hcommerce.heecommerce.fixture.AuthFixture;
-import com.hcommerce.heecommerce.fixture.JwtFixture;
 import com.hcommerce.heecommerce.fixture.UserFixture;
 import com.hcommerce.heecommerce.user.UserQueryRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,9 +22,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 @DisplayName("AuthenticationService")
 class AuthenticationServiceTest {
 
-    @Mock
-    private JwtUtils jwtUtils;
-
     @Value("${jwt.secret}")
     private String secret;
 
@@ -36,6 +30,9 @@ class AuthenticationServiceTest {
 
     @Mock
     private UserQueryRepository userQueryRepository;
+
+    @Mock
+    private AuthHelper authHelper;
 
     private MockHttpServletRequest request;
 
@@ -57,9 +54,7 @@ class AuthenticationServiceTest {
                 // given
                 request.addHeader("Authorization", AuthFixture.AUTHORIZATION);
 
-                given(jwtUtils.decode(any())).willReturn(JwtFixture.CLAIMS);
-
-                given(userQueryRepository.hasUserId(anyInt())).willReturn(true);
+                given(authHelper.isAuthenticatedUser(any(), any())).willReturn(true);
 
                 // when
                 boolean result = authenticationService.isAuthenticatedUser(request);
@@ -70,93 +65,15 @@ class AuthenticationServiceTest {
         }
 
         @Nested
-        @DisplayName("when authorization is empty")
-        class Context_When_Authorization_Is_Empty {
+        @DisplayName("with invalid authorization")
+        class Context_With_Invalid_Authorization {
             @Test
             @DisplayName("returns false")
             void It_returns_false() {
-                // given
-                request.addHeader("Authorization", "");
-
-                given(jwtUtils.decode(any())).willReturn(JwtFixture.CLAIMS);
-
-                given(userQueryRepository.hasUserId(anyInt())).willReturn(true);
-
-                // when
-                boolean result = authenticationService.isAuthenticatedUser(request);
-
-                // then
-                assertFalse(result);
-            }
-        }
-
-        @Nested
-        @DisplayName("with invalid authType")
-        class Context_With_Invalid_AuthType {
-            @Test
-            @DisplayName("returns false")
-            void It_returns_false() {
-                // given
-                request.addHeader("Authorization", AuthFixture.AUTHORIZATION_WITH_INVALID_AUTH_TYPE);
-
-                // when
-                boolean result = authenticationService.isAuthenticatedUser(request);
-
-                // then
-                assertFalse(result);
-            }
-        }
-
-        // accessToken
-        @Nested
-        @DisplayName("with invalid accessToken")
-        class Context_With_Invalid_AccessToken {
-            @Test
-            @DisplayName("returns false")
-            void It_returns_false() {
-                // given
-                request.addHeader("Authorization", AuthFixture.AUTHORIZATION_WITHOUT_TOKEN);
-
-                // when
-                boolean result = authenticationService.isAuthenticatedUser(request);
-
-                // then
-                assertFalse(result);
-            }
-        }
-
-        @Nested
-        @DisplayName("with invalid authUserInfo")
-        class Context_With_Invalid_AuthUserInfo {
-            @Test
-            @DisplayName("returns false")
-            void It_returns_false() {
-                // given
-                request.addHeader("Authorization", AuthFixture.AUTHORIZATION_WITHOUT_TOKEN_PAYLOAD);
-
-                given(jwtUtils.decode(any())).willReturn(null);
-
-                // when
-                boolean result = authenticationService.isAuthenticatedUser(request);
-
-                // then
-                assertFalse(result);
-            }
-        }
-        // authUserInfo
-
-        @Nested
-        @DisplayName("with invalid userId")
-        class Context_With_Invalid_UserId {
-            @Test
-            @DisplayName("returns true")
-            void It_returns_true() {
                 // given
                 request.addHeader("Authorization", AuthFixture.AUTHORIZATION);
 
-                given(jwtUtils.decode(any())).willReturn(JwtFixture.CLAIMS);
-
-                given(userQueryRepository.hasUserId(anyInt())).willReturn(false);
+                given(authHelper.isAuthenticatedUser(any(), any())).willReturn(false);
 
                 // when
                 boolean result = authenticationService.isAuthenticatedUser(request);
@@ -168,14 +85,14 @@ class AuthenticationServiceTest {
     }
 
     @Nested
-    @DisplayName("parseAuthorization")
-    class Describe_ParseAuthorization {
+    @DisplayName("getAuthUserInfo")
+    class Describe_GetAuthUserInfo {
         @Test
         @DisplayName("returns tokenPayload with `userId`")
         void It_returns_TokenPayload() {
-            given(jwtUtils.decode(any())).willReturn(JwtFixture.CLAIMS);
+            given(authHelper.getAuthUserInfo(any())).willReturn(new AuthUserInfo(1));
 
-            AuthUserInfo authUserInfo = authenticationService.parseAuthorization(AuthFixture.AUTHORIZATION);
+            AuthUserInfo authUserInfo = authenticationService.getAuthUserInfo(AuthFixture.AUTHORIZATION);
 
             assertEquals(authUserInfo.getUserId(), UserFixture.ID);
         }
