@@ -86,8 +86,6 @@ public class OrderService {
 
         orderForm.validateHasUserId(hasUserId);
 
-        // TODO : 회원 기능 추가 후 구현
-
         // 3. 최대 주문 수량에 맞는 orderQuantity 인지
         int maxOrderQuantityPerOrder = dealProductQueryRepository.getMaxOrderQuantityPerOrderByDealProductUuid(dealProductUuid);
 
