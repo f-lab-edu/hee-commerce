@@ -3,6 +3,7 @@ package com.hcommerce.heecommerce.common.utils;
 import com.hcommerce.heecommerce.auth.InvalidTokenException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import java.security.Key;
@@ -44,6 +45,8 @@ public class JwtUtils {
             throw new InvalidTokenException("token(value = "+token+") is invalid");
         } catch (IllegalArgumentException e) { // token이 Null 또는 "", " " 일 경우, IllegalArgumentException: JWT String argument cannot be null or empty. 발생
             throw new InvalidTokenException("token(value = null or empty) is invalid");
+        } catch (MalformedJwtException e) {
+            throw new InvalidTokenException("token(value = "+token+") is invalid");
         } catch (Exception e) {
             throw new RuntimeException("JwtUtils : decode 예외"); // TODO : 임시로 만들어 놓음
         }
