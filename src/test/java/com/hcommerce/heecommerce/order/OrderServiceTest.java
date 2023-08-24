@@ -218,8 +218,6 @@ class OrderServiceTest {
 
                     given_with_inventory(OrderFixture.INVENTORY);
 
-                    given_with_inventory_after_decrease(OrderFixture.INVENTORY_AFTER_DECREASE);
-
                     UUID uuidFixture = UUID.randomUUID();
 
                     given_when_saveOrderInAdvance_is_success(uuidFixture);
@@ -237,37 +235,37 @@ class OrderServiceTest {
             }
         }
 
-        @Nested
-        @DisplayName("when Invalid inventory decrease occurs")
-        class Context_With_Invalid_Inventory_Decrease_Occurs {
-            @Test
-            @DisplayName("rollbacks inventory and throws OrderOverStockException")
-            void It_Rollbacks_inventory_And_throws_OrderOverStockException() {
-                // given
-                given_with_valid_dealProductUuid();
-
-                given_with_valid_userId();
-
-                given_with_maxOrderQuantityPerOrder(OrderFixture.MAX_ORDER_QUANTITY_PER_ORDER);
-
-                given_with_inventory(OrderFixture.INVENTORY);
-
-                given_with_inventory_after_decrease(OrderFixture.INVALID_INVENTORY_AFTER_DECREASE);
-
-                UUID ROLLBACK_NEEDED_DEAL_PRODUCT_UUID = UUID.randomUUID();
-
-                OrderForm orderForm = OrderFixture.OrderFormRebuilder()
-                                            .dealProductUuid(ROLLBACK_NEEDED_DEAL_PRODUCT_UUID)
-                                            .build();
-
-                // when
-                assertThrows(OrderOverStockException.class, () -> {
-                    orderService.placeOrderInAdvance(orderForm);
-                });
-
-                verify(inventoryCommandRepository).increase(any());
-            }
-        }
+//        @Nested
+//        @DisplayName("when Invalid inventory decrease occurs")
+//        class Context_With_Invalid_Inventory_Decrease_Occurs {
+//            @Test
+//            @DisplayName("rollbacks inventory and throws OrderOverStockException")
+//            void It_Rollbacks_inventory_And_throws_OrderOverStockException() {
+//                // given
+//                given_with_valid_dealProductUuid();
+//
+//                given_with_valid_userId();
+//
+//                given_with_maxOrderQuantityPerOrder(OrderFixture.MAX_ORDER_QUANTITY_PER_ORDER);
+//
+//                given_with_inventory(OrderFixture.INVENTORY);
+//
+////                given_with_inventory_after_decrease(OrderFixture.INVALID_INVENTORY_AFTER_DECREASE);
+//
+//                UUID ROLLBACK_NEEDED_DEAL_PRODUCT_UUID = UUID.randomUUID();
+//
+//                OrderForm orderForm = OrderFixture.OrderFormRebuilder()
+//                                            .dealProductUuid(ROLLBACK_NEEDED_DEAL_PRODUCT_UUID)
+//                                            .build();
+//
+//                // when
+//                assertThrows(OrderOverStockException.class, () -> {
+//                    orderService.placeOrderInAdvance(orderForm);
+//                });
+//
+//                verify(inventoryCommandRepository).increase(any());
+//            }
+//        }
 
         private void given_with_valid_dealProductUuid() {
             given(dealProductQueryRepository.hasDealProductUuid(any())).willReturn(true);
@@ -291,16 +289,10 @@ class OrderServiceTest {
 
         private void given_when_determineRealOrderQuantity_is_success() {
             given_with_inventory(OrderFixture.INVENTORY);
-
-            given_with_inventory_after_decrease(OrderFixture.INVENTORY_AFTER_DECREASE);
         }
 
         private void given_with_inventory(int inventory) {
             given(inventoryQueryRepository.get(any())).willReturn(inventory);
-        }
-
-        private void given_with_inventory_after_decrease(int inventoryAfterDecrease) {
-            given(inventoryCommandRepository.decrease(any())).willReturn(inventoryAfterDecrease);
         }
 
         private void given_when_saveOrderInAdvance_is_success(UUID orderUuid) {
@@ -332,6 +324,8 @@ class OrderServiceTest {
 
                 given(restTemplate.postForEntity(TosspaymentsUtils.TOSS_PAYMENT_CONFIRM_URL, request, JsonNode.class)).willReturn(new ResponseEntity<>(jsonNode, HttpStatus.CREATED));
 
+                given(inventoryQueryRepository.get(any())).willReturn(OrderFixture.INVENTORY);
+
                 // when + then
                 UUID uuid = orderService.approveOrder(orderApproveForm);
 
@@ -358,6 +352,58 @@ class OrderServiceTest {
                 assertThrows(InvalidPaymentAmountException.class, () -> {
                     orderService.approveOrder(orderApproveFormWithInValidAmount);
                 });
+            }
+        }
+
+        @Nested
+        @DisplayName("with invalid realOrderQuantity")
+        class Context_With_Invalid_RealOrderQuantity {
+            @Test
+            @DisplayName("throws OrderOverStockException")
+            void It_throws_OrderOverStockException() {
+                // given
+                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(OrderFixture.orderForOrderApproveValidationDto);
+
+                HttpEntity<String> request = TosspaymentsUtils.createHttpRequestForPaymentApprove(OrderFixture.orderApproveForm);
+
+                JsonNode jsonNode = new ObjectMapper().convertValue(TossConfirmResponse.of(), JsonNode.class);
+
+                given(restTemplate.postForEntity(TosspaymentsUtils.TOSS_PAYMENT_CONFIRM_URL, request, JsonNode.class)).willReturn(new ResponseEntity<>(jsonNode, HttpStatus.CREATED));
+
+                given(inventoryQueryRepository.get(any())).willReturn(0);
+
+                // when + then
+                assertThrows(OrderOverStockException.class, () -> {
+                    orderService.approveOrder(OrderFixture.orderApproveForm);
+                });
+            }
+        }
+
+        @Nested
+        @DisplayName("when Invalid inventory decrease occurs")
+        class Context_With_Invalid_Inventory_Decrease_Occurs {
+            @Test
+            @DisplayName("rollbacks inventory and throws OrderOverStockException")
+            void It_Rollbacks_inventory_And_throws_OrderOverStockException() {
+                // given
+                given(orderQueryRepository.findOrderEntityForOrderApproveValidation(any())).willReturn(OrderFixture.orderForOrderApproveValidationDto);
+
+                HttpEntity<String> request = TosspaymentsUtils.createHttpRequestForPaymentApprove(OrderFixture.orderApproveForm);
+
+                JsonNode jsonNode = new ObjectMapper().convertValue(TossConfirmResponse.of(), JsonNode.class);
+
+                given(restTemplate.postForEntity(TosspaymentsUtils.TOSS_PAYMENT_CONFIRM_URL, request, JsonNode.class)).willReturn(new ResponseEntity<>(jsonNode, HttpStatus.CREATED));
+
+                given(inventoryQueryRepository.get(any())).willReturn(OrderFixture.INVENTORY);
+
+                given(inventoryCommandRepository.decrease(any())).willReturn(OrderFixture.INVALID_INVENTORY_AFTER_DECREASE);
+
+                // when + then
+                assertThrows(OrderOverStockException.class, () -> {
+                    orderService.approveOrder(OrderFixture.orderApproveForm);
+                });
+
+                verify(inventoryCommandRepository).increase(any());
             }
         }
     }
