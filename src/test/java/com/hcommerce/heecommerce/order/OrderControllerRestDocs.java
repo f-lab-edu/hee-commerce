@@ -21,9 +21,6 @@ public class OrderControllerRestDocs {
             requestFields(
                 fieldWithPath("orderUuid").type(JsonFieldType.STRING).description("주문 ID"),
 
-                // 주문자 정보
-                fieldWithPath("userId").type(JsonFieldType.NUMBER).description("주문자 ID"),
-
                 // 받는 사람 정보
                 fieldWithPath("recipientInfoForm.recipientName").type(JsonFieldType.STRING).description("받는 사람 이름"),
                 fieldWithPath("recipientInfoForm.recipientPhoneNumber").type(JsonFieldType.STRING).description("받는 사람 휴대폰 번호"),
