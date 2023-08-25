@@ -95,21 +95,8 @@ public class OrderService {
         // (1) 재고 조회
         int inventory = inventoryQueryRepository.get(dealProductUuid);
 
-        // (2) 실제 주문 가능 수량 계산
+        // (2) 실제 주문 가능 수량 계산 : 재고 1차 검증 포함
         int realOrderQuantity = orderForm.determineRealOrderQuantity(inventory);
-
-        // (3) 재고 감소
-        int inventoryAfterDecrease = inventoryCommandRepository.decrease(
-                                                                    InventoryIncreaseDecreaseDto.builder()
-                                                                    .dealProductUuid(dealProductUuid)
-                                                                    .orderUuid(orderUuid)
-                                                                    .inventory(realOrderQuantity)
-                                                                    .inventoryEventType(InventoryEventType.ORDER)
-                                                                    .build()
-                                                                );
-
-        // (4) 재고 사후 검증
-        postValidateOrderQuantityInInventory(inventoryAfterDecrease, dealProductUuid, orderUuid, realOrderQuantity);
 
         // 5. 주문 내역 미리 저장
         try {
@@ -212,21 +199,46 @@ public class OrderService {
      * approveOrder 는 주문 승인을 하기 위한 함수이다.
      */
     public UUID approveOrder(OrderApproveForm orderApproveForm) {
-        String orderId = orderApproveForm.getOrderId();
+        UUID orderUuid = UUID.fromString(orderApproveForm.getOrderId());
 
         // 0. DB에서 검증에 필요한 데이터 가져오기
         OrderForOrderApproveValidationDto orderForm = orderQueryRepository.findOrderEntityForOrderApproveValidation(orderApproveForm.getOrderId());
+
+        UUID dealProductUuid = TypeConversionUtils.convertBinaryToUuid(orderForm.getDealProductUuid());
+
+        int realOrderQuantity = orderForm.getRealOrderQuantity();
 
         // 1. orderApproveForm 검증
         validateOrderApproveForm(orderApproveForm, orderForm);
 
         try {
-            // 3. 토스 페이먼트 결제 승인
+            // 2. 토스 페이먼트 결제 승인
             TossPaymentsApproveResultForStorage tossPaymentsApproveResultForStorage = approvePayment(orderApproveForm);
 
-            // 4. 주문 관련 데이터 저장
+            // 3. 재고 2차 검증
+            int inventory = inventoryQueryRepository.get(dealProductUuid);
+
+            if(inventory <= 0 || orderForm.getRealOrderQuantity() > inventory) {
+                throw new OrderOverStockException();
+            }
+
+            // 4. 재고 감소
+            // (1) 재고 감소
+            int inventoryAfterDecrease = inventoryCommandRepository.decrease(
+                InventoryIncreaseDecreaseDto.builder()
+                    .dealProductUuid(dealProductUuid)
+                    .orderUuid(orderUuid)
+                    .inventory(realOrderQuantity)
+                    .inventoryEventType(InventoryEventType.ORDER)
+                    .build()
+            );
+
+            // (2) 재고 사후 검증
+            postValidateOrderQuantityInInventory(inventoryAfterDecrease, dealProductUuid, orderUuid, realOrderQuantity);
+
+            // 6. 주문 관련 데이터 저장
             OrderAfterApproveDto orderAfterApproveDto = OrderAfterApproveDto.builder()
-                .orderUuid(TypeConversionUtils.convertUuidToBinary(UUID.fromString(orderId)))
+                .orderUuid(TypeConversionUtils.convertUuidToBinary(orderUuid))
                 .realOrderQuantity(orderForm.getRealOrderQuantity())
                 .paymentKey(orderApproveForm.getPaymentKey())
                 .paymentApprovedAt(DateTimeConversionUtils.convertIsoDateTimeToInstant(tossPaymentsApproveResultForStorage.getApprovedAt()))
@@ -234,8 +246,8 @@ public class OrderService {
 
             orderCommandRepository.updateOrderAfterApprove(orderAfterApproveDto);
 
-            return UUID.fromString(orderId);
-        } catch (TosspaymentsException tosspaymentsException) { // TODO : 주문 실패에 따른 재고 데이터의 일관성과 정합성을 맞춰주는 작업은 스케줄러 하나 만들어서 주기(예 : 10초 또는 1분)마다 이미 저장된 주문이 15분 이내로 결제 완료 안된 경우는 재고 업데이트 해주는 걸로 해볼 예정
+            return orderUuid;
+        } catch (TosspaymentsException tosspaymentsException) {
             log.error("[tosspaymentsException] message = {}, code = {} ", tosspaymentsException.getMessage(), tosspaymentsException.getCode());
             throw tosspaymentsException;
         } catch (Exception e) { // TODO : MySQL 저장 실패시에 대한 저장 Exception 따로 만들어야 되나? 재고량 rollback은 필요 없어 보임. 어째든 토스에서 결제 승인을 했으므로,

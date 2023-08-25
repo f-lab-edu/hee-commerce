@@ -196,7 +196,7 @@ class OrderControllerTest {
                 ResultActions resultActions = mockMvc.perform(
                     post("/orders/place-in-advance")
                         .accept(MediaType.APPLICATION_JSON)
-                        .header("Authorization", AuthFixture.AUTHORIZATION).header("Authorization", AuthFixture.AUTHORIZATION)
+                        .header("Authorization", AuthFixture.AUTHORIZATION)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(content)
                 );
@@ -229,7 +229,7 @@ class OrderControllerTest {
                     ResultActions resultActions = mockMvc.perform(
                         post("/orders/place-in-advance")
                             .accept(MediaType.APPLICATION_JSON)
-                        .header("Authorization", AuthFixture.AUTHORIZATION)
+                            .header("Authorization", AuthFixture.AUTHORIZATION)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(content)
                     );
@@ -270,33 +270,6 @@ class OrderControllerTest {
             }
         }
 
-        @Nested
-        @DisplayName("when Invalid inventory decrease occurs")
-        class Context_With_Invalid_Inventory_Decrease_Occurs {
-            @Test
-            @DisplayName("returns 409 error")
-            void It_Returns_409_Error() throws Exception {
-                // given
-                given(orderService.placeOrderInAdvance(any())).willThrow(OrderOverStockException.class);
-
-                OrderFormDto orderFormDto = OrderFixture.ORDER_FORM_DTO;
-
-                String content = objectMapper.writeValueAsString(orderFormDto);
-
-                // when
-                ResultActions resultActions = mockMvc.perform(
-                    post("/orders/place-in-advance")
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header("Authorization", AuthFixture.AUTHORIZATION)
-                        .header("Authorization", AuthFixture.AUTHORIZATION)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(content)
-                );
-
-                // then
-                resultActions.andExpect(status().isConflict());
-            }
-        }
     }
 
     @Nested
@@ -339,7 +312,6 @@ class OrderControllerTest {
                 // given
                 given(orderService.approveOrder(any())).willThrow(InvalidPaymentAmountException.class);
 
-
                 // when
                 OrderApproveForm orderApproveForm = OrderFixture.orderApproveForm;
 
@@ -355,6 +327,33 @@ class OrderControllerTest {
 
                 // then
                 resultActions.andExpect(status().isBadRequest());
+            }
+        }
+
+        @Nested
+        @DisplayName("with invalid realOrderQuantity")
+        class Context_With_Invalid_RealOrderQuantity {
+            @Test
+            @DisplayName("returns 400 error")
+            void It_Returns_400_error() throws Exception {
+                // given
+                given(orderService.approveOrder(any())).willThrow(OrderOverStockException.class);
+
+                // when
+                OrderApproveForm orderApproveForm = OrderFixture.orderApproveForm;
+
+                String content = objectMapper.writeValueAsString(orderApproveForm);
+
+                ResultActions resultActions = mockMvc.perform(
+                    post("/orders/approve")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", AuthFixture.AUTHORIZATION)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content)
+                );
+
+                // then
+                resultActions.andExpect(status().isConflict());
             }
         }
     }

@@ -40,7 +40,10 @@ public class OrderFixture {
 
     public static final int INVALID_INVENTORY_AFTER_DECREASE = -1;
 
+    public static final int AMOUNT = 15000;
     public static final int INVALID_AMOUNT = 1000;
+
+
 
     // 주문 사전 저장 Form
     private static OrderFormDto.OrderFormDtoBuilder orderFormDtoBuilder() {
@@ -86,7 +89,7 @@ public class OrderFixture {
     private static OrderApproveForm.OrderApproveFormBuilder orderApproveFormBuilder() {
         return OrderApproveForm.builder()
             .orderId(ORDER_UUID.toString())
-            .amount(15000)
+            .amount(AMOUNT)
             .paymentKey("tossPaymentsPaymentKey");
     }
 
@@ -98,8 +101,8 @@ public class OrderFixture {
 
     // 주문 승인 유효성 검사를 위한 DTO
     public static final OrderForOrderApproveValidationDto orderForOrderApproveValidationDto = OrderForOrderApproveValidationDto.builder()
-                                                                                                        .realOrderQuantity(3)
-                                                                                                        .totalPaymentAmount(15000)
+                                                                                                        .realOrderQuantity(ORDER_QUANTITY)
+                                                                                                        .totalPaymentAmount(AMOUNT)
                                                                                                         .outOfStockHandlingOption(OutOfStockHandlingOption.ALL_CANCEL)
                                                                                                         .dealProductUuid(TypeConversionUtils.convertUuidToBinary(UUID.randomUUID()))
                                                                                                         .build();
