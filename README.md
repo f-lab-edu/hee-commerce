@@ -26,7 +26,6 @@
 - `트랜잭션이 필요한 엔티티 구조`을 `영속성이 필요 없는 필드`를 제거하고 `새로운 클래스`를 만들어서 `트랜잭션 필요 없는 엔티티 구조`로 변경([#72](https://github.com/f-lab-edu/hee-commerce/pull/72)) 
 - 다중 서버 환경에서 재고 차감과 관련된 `동시성 이슈 문제`를 `분산락`이 아닌 `딜 상품과 재고 분리형 저장 구조`와 `재고 사후 검증 단계 도입`으로 해결([wiki](https://github.com/f-lab-edu/hee-commerce/wiki/%EC%A3%BC%EB%AC%B8-API-%EB%A1%9C%EC%A7%81))
 
-
 ### 2. 테스트 코드 작성
 - RestDocs를 이용하여 API 개발 시 TDD 원칙 적용 ([초기 주문 완료 API](https://github.com/f-lab-edu/hee-commerce/pull/40), [주문 사전 저장 API](https://github.com/f-lab-edu/hee-commerce/pull/98/commits/01af70dcaabeeaef363f0a3bf37d0759e36456cc), [주문 승인 API](https://github.com/f-lab-edu/hee-commerce/commit/66c0e341fe797054d3b8455d4f6e803133ef3cec), [딜 상풍 목록 조회 API](https://github.com/f-lab-edu/hee-commerce/pull/38), [딜 상품 상세보기 API](https://github.com/f-lab-edu/hee-commerce/pull/50))
 - `테스트 코드`로 `비즈니스 로직의 문서화`를 위해 `서비스 클래스`가 아닌 `도메인 모델`에게 `비즈니스 로직 책임` 변경([#167](https://github.com/f-lab-edu/hee-commerce/pull/167))
@@ -36,11 +35,12 @@
 - `유지보수성`을 고려해서 재고 증가/감소 및 재고 히스토리 저장 로직을 `응집력` 있게 묶어서 관리([#158](https://github.com/f-lab-edu/hee-commerce/pull/158))
 - `유지보수성`을 고려해서 RedisUtils 클래스를 만들어서  Redis의 key를 한 곳에서 `응집력`있게 관리 ([#153](https://github.com/f-lab-edu/hee-commerce/pull/153))
 - `유연한 코드`를 위해 `의존성 주입`을 활용하여 인증 로직 구현([#171](https://github.com/f-lab-edu/hee-commerce/pull/171))
-- int 대신 Integer 사용하여 `동적쿼리`를 단순한 `정적 쿼리`로 수정([#133](https://github.com/f-lab-edu/hee-commerce/pull/133), [#144](https://github.com/f-lab-edu/hee-commerce/pull/144))
+- int 대신 Integer 사용하여 `동적쿼리`를 단순한 `정적 쿼리`로 변경([#133](https://github.com/f-lab-edu/hee-commerce/pull/133), [#144](https://github.com/f-lab-edu/hee-commerce/pull/144))
 
-### 4. 확장성을 고려한 코드 및 설계 (작성 예정) 
-### 5. 고가용성을 고려한 시스템 설계 및 구현(진행 중)
-### 6. 비동기로 진행되는 리뷰 상황에 대해 효율적인 소통을 위해 Github의 다양한 기능(이슈, 주석, 코멘트, PR)을 활용하여 문서화
+### 4. 고가용성을 고려한 시스템 설계(수정 필요) 및 구현(진행 중)
+- [시스템 설계 구조](https://app.diagrams.net/#G12p5UVtXs0pfISlmnFDNGlt4g1ignoKgO#%7B%22pageId%22%3A%227dibCqtFsK05N7zEinu2%22%7D)
+
+### 5. 비동기로 진행되는 리뷰 상황에 대해 효율적인 소통을 위해 Github의 다양한 기능(이슈, 주석, 코멘트, PR)을 활용하여 문서화
 - PR에 이 작업이 무엇인지, 왜 그렇게 했는지 등 맥락을 전달하기 위해 노력했습니다.
 
 ## 프로젝트하면서 했던 고민 포인트 (작성 예정)
