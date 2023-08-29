@@ -44,5 +44,10 @@
 - PR에 이 작업이 무엇인지, 왜 그렇게 했는지 등 맥락을 전달하기 위해 노력했습니다.
 
 ## 프로젝트하면서 했던 고민 포인트 (작성 예정)
+### 1. 딜 상품과 재고를 통합형 구조로 Redis에 저장할까? 분리형 구조로 저장할까? ([wiki](https://github.com/f-lab-edu/hee-commerce/wiki/%EB%94%9C-%EC%83%81%ED%92%88%EA%B3%BC-%EC%9E%AC%EA%B3%A0%EB%A5%BC-%ED%86%B5%ED%95%A9%ED%98%95-%EA%B5%AC%EC%A1%B0%EB%A1%9C-Redis%EC%97%90-%EC%A0%80%EC%9E%A5%ED%95%A0%EA%B9%8C%3F-%EB%B6%84%EB%A6%AC%ED%98%95-%EA%B5%AC%EC%A1%B0%EB%A1%9C-%EC%A0%80%EC%9E%A5%ED%95%A0%EA%B9%8C%3F))
+### 2. 주문 처리로 인한 재고 차감에서 발생하는 동시성 이슈 문제를 어떻게 해결할까? ([wiki](https://github.com/f-lab-edu/hee-commerce/wiki/%EC%A3%BC%EB%AC%B8-API-%EB%A1%9C%EC%A7%81))
+### 3. 부분 주문 처리가 된 경우, 실제 사용자가 요청한 주문 수량과 실제 주문 처리 가능한 수량이 달라진다. CS(고객 서비스) 대응을 위해 실제 사용자가 요청한 주문 수량과 실제 주문 처리 가능한 수량 모두 DB에 저장되어 있어야 하는데, 어떻게 저장할까? ([wiki](https://github.com/f-lab-edu/hee-commerce/wiki/%EB%B6%80%EB%B6%84-%EC%A3%BC%EB%AC%B8-%EC%B2%98%EB%A6%AC%EC%99%80-%EA%B4%80%EB%A0%A8%EB%90%9C-%EB%8D%B0%EC%9D%B4%ED%84%B0-%EC%A0%80%EC%9E%A5))
 
+### 3. 재고를 Redis에서 관리하고 있지만, Redis에 장애가 날 경우 등을 대비하여 백업용으로 MySQL에도 저장해야 한다. 어떻게 저장할까?
+-  주문 처리가 될 때마다 deal_product 테이블의 inventory를 업데이트 시키면, DB 병목이 발생할 것으로 예상되고,  또한, 다중 서버 환경에 의해 동시성 이슈 문제도 발생하기 때문에, 이를 해결하기 하기 위해 Lock 방식을 사용하게 될 경우, TPS도 낮아질 것이라고 예상된다. 어떻게 저장해야 할까?
 
