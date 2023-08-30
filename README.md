@@ -45,4 +45,3 @@
 ## 🍿 주문 API WorkFlow
 ![스크린샷 2023-08-28 오후 7 25 25](https://github.com/f-lab-edu/hee-commerce/assets/60481383/03facf90-9175-4e27-a7eb-ebecfd6be993)
 
-> 예외처리는 어디까지 생각했는지 궁금하시면 [draw.io](https://app.diagrams.net/#G12p5UVtXs0pfISlmnFDNGlt4g1ignoKgO#%7B%22pageId%22%3A%22T2qS1Wb9VKf4C0Zg0WWn%22%7D)를 참고해주세요!
