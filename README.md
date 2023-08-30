@@ -1,7 +1,7 @@
 # hee-commerce
 ## 프로젝트 개요
 - hee-commerce는 티몬 과 같은 이커머스 서비스에서 운영될 수 있는 타임딜 서버로, 10분동안 TPS 3000를 감당할 수 있도록 구현 중입니다. 
-- 문제 해결점을 찾기에 앞서 문제 정의부터 명확히하는 것이 중요하다고 생각하여, 서버 시나리오를 [구글 Docs](https://docs.google.com/document/d/1JlKVZVZQwWjxF3bbVW5a4K3YmnfC6gYYoMHhAn5JKLs/edit)에 상황을 구체화한 후 프로젝트를 시작하였고, 특히 “주문 API”에 집중하여 프로젝트를 진행했습니다.
+- 문제 해결점을 찾기에 앞서 문제 정의부터 명확히하는 것이 중요하다고 생각하여, 서버 시나리오를 [구글 Docs](https://docs.google.com/document/d/1dzybvtKYLEijSoLKOdGt6cXu-6n38Y_qH8jO7ran8WU/edit)에 상황을 구체화한 후 프로젝트를 시작하였고, 특히 “주문 API”에 집중하여 프로젝트를 진행했습니다.
 
 ## 기술 스택
 - JAVA 17, SpringBoot 3, MyBatis 3.5, MySQL 8, Redis 7.0, Flyway 9.5.1, RestDocs, Docker
