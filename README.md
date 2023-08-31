@@ -23,7 +23,8 @@
 - int 대신 Integer 사용하여 `동적쿼리`를 단순한 `정적 쿼리`로 변경([#133](https://github.com/f-lab-edu/hee-commerce/pull/133), [#144](https://github.com/f-lab-edu/hee-commerce/pull/144))
 
 ### 4. 고가용성을 고려한 시스템 설계 (진행 중)
-- [시스템 설계 구조](https://app.diagrams.net/#G12p5UVtXs0pfISlmnFDNGlt4g1ignoKgO#%7B%22pageId%22%3A%227dibCqtFsK05N7zEinu2%22%7D)
+- [시스템 설계 구조](https://app.diagrams.net/#G1uWe-LuEP5ayfhteyHAtZFGyv2nvTm1-m#%7B%22pageId%22%3A%2261v5buV0yLBeLvqyWT7O%22%7D)
+
 
 ### 5. 비동기로 진행되는 리뷰 상황에 대해 효율적인 소통을 위해 Github의 다양한 기능(이슈, 주석, 코멘트, PR)을 활용하여 문서화
 - PR에 이 작업이 무엇인지, 왜 그렇게 했는지 등 맥락을 전달하기 위해 노력했습니다. (예시 : [#72](https://github.com/f-lab-edu/hee-commerce/pull/72))
