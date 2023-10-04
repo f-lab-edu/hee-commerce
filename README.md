@@ -8,7 +8,7 @@
 
 ## ✨ 프로젝트하면서 중요시 했던 포인트
 ### 1. 다양하고 새로운 기술보다 `문제`에 집중해서 오버엔지니어링 하지 않기
-- `트랜잭션이 필요한 엔티티 구조`을 `영속성이 필요 없는 필드`를 제거하고 `새로운 클래스`를 만들어서 `트랜잭션 필요 없는 엔티티 구조`로 변경([#72](https://github.com/f-lab-edu/hee-commerce/pull/72)) 
+- `트랜잭션이 필요한 엔티티 구조`을 `영속성이 필요 없는 필드`를 제거하고 `새로운 클래스`를 만들어서 `트랜잭션 필요 없는 엔티티 구조`로 변경([#81](https://github.com/f-lab-edu/hee-commerce/pull/81)) 
 - 다중 서버 환경에서 재고 차감과 관련된 `동시성 이슈 문제`를 `분산락`이 아닌 `딜 상품과 재고 분리형 저장 구조`와 `재고 사후 검증 단계 도입`으로 해결([wiki](https://github.com/f-lab-edu/hee-commerce/wiki/%EC%A3%BC%EB%AC%B8-%EC%B2%98%EB%A6%AC%EB%A1%9C-%EC%9D%B8%ED%95%9C-%EC%9E%AC%EA%B3%A0-%EC%B0%A8%EA%B0%90%EC%97%90%EC%84%9C-%EB%B0%9C%EC%83%9D%ED%95%98%EB%8A%94-%EB%8F%99%EC%8B%9C%EC%84%B1-%EC%9D%B4%EC%8A%88-%EB%AC%B8%EC%A0%9C%EB%A5%BC-%EC%96%B4%EB%96%BB%EA%B2%8C-%ED%95%B4%EA%B2%B0%ED%95%A0%EA%B9%8C%3F))
 
 ### 2. 테스트 코드 작성
